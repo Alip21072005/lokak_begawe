@@ -15,8 +15,8 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Dashboard Mitra" />
     <div>
-        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <h1 class="text-3xl font-bold">Dashboard Mitra</h1>
     </div>
 </template>

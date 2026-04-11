@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('mitras', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('user_id');
-            $table->uuid('lokasi_id');
-            $table->uuid('kategori_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('lokasi_id')->references('id')->on('lokasi')->onDelete('cascade');
-            $table->foreign('kategori_id')->references('id')->on('kategori')->onDelete('cascade');
+
+            // Gunakan foreignUuid agar sinkron dengan ID tabel induk yang juga UUID
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('lokasi_id')->constrained('lokasis')->onDelete('cascade');
+            $table->foreignUuid('kategori_id')->constrained('kategoris')->onDelete('cascade');
+
             $table->string('nama_mitra');
             $table->string('logo_mitra')->nullable();
             $table->string('banner_mitra')->nullable();
@@ -29,8 +29,6 @@ return new class extends Migration
             $table->string('nohp_mitra');
             $table->string('dokumen_mitra')->nullable();
             $table->boolean('status_mitra')->default(false);
-
-
 
             $table->timestamps();
         });

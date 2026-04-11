@@ -13,8 +13,8 @@ class Mitra extends Model
 
 
 
-    protected $table = 'mitra';
-    protected $primaryKey = 'mitra_id';
+    protected $table = 'mitras';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'user_id',
