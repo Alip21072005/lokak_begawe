@@ -13,7 +13,7 @@ const appName = import.meta.env.VITE_APP_NAME || 'Lokak Begawe';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    // Resolve menggunakan folder 'pages' (huruf kecil) sesuai strukturmu
+    // Menggunakan resolvePageComponent untuk memetakan file di folder pages
     resolve: (name) => {
         const page = resolvePageComponent(
             `./pages/${name}.vue`,
@@ -21,10 +21,10 @@ createInertiaApp({
         );
         
         page.then((module) => {
-            // Logika Layout Switching kamu
+            // Logika Otomatis Layout Switching
             if (module.default.layout === undefined) {
                 if (name === 'Welcome') {
-                    module.default.layout = null; // Landing page tanpa layout utama
+                    module.default.layout = null; // Landing page tanpa layout
                 } else if (name.startsWith('auth/')) {
                     module.default.layout = AuthLayout;
                 } else if (name.startsWith('settings/')) {
@@ -43,10 +43,10 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#5B7C88', // Warna biru sesuai tema landing page
+        color: '#5B7C88', // Warna biru tema Lokak Begawe
     },
 });
-
-// Inisialisasi fitur bawaan proyekmu
-initializeTheme();
-initializeFlashToast();
+if (typeof window !== 'undefined') {
+    initializeTheme();
+    initializeFlashToast();
+}

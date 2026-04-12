@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Pastikan pemanggilan nama file sesuai dengan yang ada di folder Pages
 Route::inertia('/', 'Welcome')->name('home');
 Route::inertia('/lowongan', 'Lowongan')->name('lowongan'); 
 Route::inertia('/mitra', 'Mitra')->name('mitra'); 

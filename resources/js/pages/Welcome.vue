@@ -22,7 +22,24 @@ const submitSuggestion = () => {
     alert('Saran berhasil dikirim!');
 };
 
-// Data Dummy untuk Lowongan (Sesuai Foto)
+// --- LOGIKA MODAL LOWONGAN ---
+const isModalOpen = ref(false);
+const selectedJob = ref<any>(null);
+
+const openJobDetail = (job: any) => {
+    selectedJob.value = job;
+    isModalOpen.value = true;
+    // Mencegah scroll pada latar belakang saat modal aktif
+    document.body.style.overflow = 'hidden';
+};
+
+const closeModal = () => {
+    isModalOpen.value = false;
+    selectedJob.value = null;
+    document.body.style.overflow = 'auto';
+};
+
+// Data Dummy untuk Lowongan
 const lowonganTerbaru = [
     { id: 1, title: 'FRONTEND DEVELOPER (REACT)', company: 'UNIVERSITAS DEHASEN', salary: 'Rp 8-12 Juta', location: 'KOTA BENGKULU', icon: '🎓' },
     { id: 2, title: 'FRONTEND DEVELOPER (REACT)', company: 'CODE 21', salary: 'Rp 8-12 Juta', location: 'MUKOMUKO', icon: '💎' },
@@ -30,7 +47,7 @@ const lowonganTerbaru = [
     { id: 4, title: 'MENTOR BOOTCAMP (AI)', company: 'PHINCON ACADEMY', salary: 'Rp 15-20 Juta', location: 'MANNA', icon: '🤖' },
 ];
 
-// Data Dummy untuk Mitra (Sesuai Foto)
+// Data Dummy untuk Mitra
 const mitraTeratas = [
     { id: 1, name: 'UNIVERSITAS DEHASEN', location: 'Kota Bengkulu', jobs: '15 PEKERJAAN', rating: '4.3 (154)' },
     { id: 2, name: 'CODE 21', location: 'MUKOMUKO', jobs: '10 PEKERJAAN', rating: '4.3 (154)' },
@@ -90,7 +107,9 @@ const mitraTeratas = [
             <section class="mb-20">
                 <h2 class="text-xl font-black text-[#1A313C] uppercase mb-10 italic">LOWONGAN <span class="text-[#598392]">TERBARU</span></h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div v-for="job in lowonganTerbaru" :key="job.id" class="bg-white p-7 rounded-[35px] shadow-sm hover:shadow-xl transition-all border border-slate-50 relative group">
+                    <div v-for="job in lowonganTerbaru" :key="job.id" 
+                        @click="openJobDetail(job)"
+                        class="bg-white p-7 rounded-[35px] shadow-sm hover:shadow-xl transition-all border border-slate-50 relative group cursor-pointer">
                         <span class="absolute top-6 right-6 px-3 py-1 bg-teal-100 text-teal-800 text-[8px] font-black rounded-full uppercase italic">Baru Saja</span>
                         <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl mb-6">{{ job.icon }}</div>
                         <h3 class="font-black text-sm mb-1 uppercase leading-tight">{{ job.title }}</h3>
@@ -122,24 +141,40 @@ const mitraTeratas = [
                     </div>
                 </div>
             </section>
+        </main>
 
-            <section class="mb-20">
-                <h2 class="text-xl font-black text-[#1A313C] uppercase mb-10 italic">KATA <span class="text-[#598392]">MEREKA</span></h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div v-for="n in 4" :key="n" class="bg-white p-10 rounded-[40px] shadow-sm border border-slate-50 relative text-center">
-                        <span class="text-4xl text-slate-200 font-serif leading-none">“</span>
-                        <p class="text-[10px] font-black uppercase italic leading-relaxed text-slate-700 mb-8 mt-4">
-                            Platform ini sangat memudahkan saya mencari pekerjaan yang sesuai dengan passion saya di bidang IT. Interface-nya keren banget!
-                        </p>
-                        <div class="flex flex-col items-center gap-2 pt-6 border-t border-slate-100">
-                            <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
-                            <span class="font-black text-[9px] uppercase tracking-widest">Sahrul Refoam Simalungun</span>
-                            <span class="text-[8px] text-[#598392] font-bold uppercase italic">Web Developer</span>
+        <div v-if="isModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm mt-[60px]" @click="closeModal"></div>
+            
+            <div class="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 z-[70]">
+                <div class="p-8 md:p-12">
+                    <div class="flex justify-between items-start mb-8">
+                        <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl">
+                            {{ selectedJob?.icon }}
+                        </div>
+                        <button @click="closeModal" class="p-2 hover:bg-slate-100 rounded-full transition text-slate-400">✕</button>
+                    </div>
+                    
+                    <h2 class="text-xl font-black uppercase italic mb-1">{{ selectedJob?.title }}</h2>
+                    <p class="text-[10px] font-bold text-[#598392] uppercase mb-6">{{ selectedJob?.company }}</p>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-center gap-3 text-[11px] font-bold">
+                            <span class="text-slate-400 w-20 uppercase">Gaji:</span>
+                            <span class="text-[#1A313C]">{{ selectedJob?.salary }}</span>
+                        </div>
+                        <div class="flex items-center gap-3 text-[11px] font-bold">
+                            <span class="text-slate-400 w-20 uppercase">Lokasi:</span>
+                            <span class="text-[#1A313C]">📍 {{ selectedJob?.location }}</span>
                         </div>
                     </div>
+
+                    <button class="w-full py-4 bg-[#1A313C] text-white rounded-2xl font-black uppercase italic text-[10px] shadow-lg hover:bg-[#598392] transition-all">
+                        Lamar Sekarang
+                    </button>
                 </div>
-            </section>
-        </main>
+            </div>
+        </div>
 
         <footer class="bg-[#598392] text-white py-16 px-11">
             <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
