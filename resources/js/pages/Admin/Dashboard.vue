@@ -15,8 +15,8 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head title="Dashboard Admin" />
     <div>
-        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <h1 class="text-3xl font-bold">Dashboard Admin</h1>
     </div>
 </template>
