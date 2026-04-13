@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     Search,
     FileText,
     Bookmark,
     MessageSquare,
-    User,
-    Settings,
     Users,
     Briefcase,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -22,7 +19,6 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
@@ -61,19 +57,24 @@ const pelamarNavItems: NavItem[] = [
 
 const adminNavItems: NavItem[] = [
     {
-        title: 'Dashboard Admin',
+        title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
     {
-        title: 'Kelola Pengguna',
+        title: 'Kelola Pelamar',
         href: '#',
         icon: Users,
     },
     {
-        title: 'Semua Lowongan',
+        title: 'Kelola Mitra',
         href: '#',
         icon: Briefcase,
+    },
+    {
+        title: 'Kelola Lowongan',
+        href: '#',
+        icon: FileText,
     },
 ];
 
@@ -106,19 +107,6 @@ const activeNavItems = computed(() => {
 
     return pelamarNavItems;
 });
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Profil & CV',
-        href: '#',
-        icon: User,
-    },
-    {
-        title: 'Pengaturan Akun',
-        href: '#',
-        icon: Settings,
-    },
-];
 </script>
 
 <template>
@@ -126,11 +114,7 @@ const footerNavItems: NavItem[] = [
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
-                            <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
+                    <AppLogo />
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
@@ -140,7 +124,6 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
