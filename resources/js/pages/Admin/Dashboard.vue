@@ -1,10 +1,10 @@
 <script setup lang="ts">
+// 1. Import AppLayout (pastikan path-nya sesuai dengan struktur folder kamu)
 import { Head } from '@inertiajs/vue3';
 import { Users, Building2, Briefcase } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { dashboard } from '@/routes';
+import AppLayout from '@/layouts/AppLayout.vue';
 
-// 1. Definisikan tipe data props agar TypeScript tidak error
 const props = defineProps<{
     counts?: {
         pelamar: number;
@@ -13,36 +13,29 @@ const props = defineProps<{
     };
 }>();
 
+// Mengatur breadcrumbs untuk ditampilkan di AppLayout
 defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-            },
-        ],
-    },
+    layout: AppLayout, // Menggunakan AppLayout sebagai persistent layout
 });
 
-// 2. Mapping data dari props ke dalam array stats
 const stats = computed(() => [
     {
         name: 'Jumlah Pelamar',
-        value: props.counts?.pelamar.toLocaleString('id-ID'), // Format angka: 1.234
+        value: props.counts?.pelamar?.toLocaleString('id-ID') ?? 0,
         icon: Users,
         color: 'text-blue-600',
         bg: 'bg-blue-100',
     },
     {
         name: 'Jumlah Mitra',
-        value: props.counts?.mitra.toLocaleString('id-ID'),
+        value: props.counts?.mitra?.toLocaleString('id-ID') ?? 0,
         icon: Building2,
         color: 'text-green-600',
         bg: 'bg-green-100',
     },
     {
         name: 'Jumlah Lowongan',
-        value: props.counts?.lowongan.toLocaleString('id-ID'),
+        value: props.counts?.lowongan?.toLocaleString('id-ID') ?? 0,
         icon: Briefcase,
         color: 'text-purple-600',
         bg: 'bg-purple-100',
@@ -65,7 +58,7 @@ const stats = computed(() => [
             <div
                 v-for="stat in stats"
                 :key="stat.name"
-                class="flex items-center space-x-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm"
+                class="transition-hover flex items-center space-x-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md"
             >
                 <div :class="[stat.bg, 'rounded-lg p-3']">
                     <component

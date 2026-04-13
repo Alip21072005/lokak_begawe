@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
 
 const form = useForm({
     name: '',
@@ -20,104 +21,169 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Daftar sebagai Pelamar" />
+    <Head title="Daftar Pelamar Kerja" />
 
-    <div class="flex min-h-screen items-center justify-center bg-gray-50">
+    <div
+        class="flex min-h-screen w-full items-center justify-center bg-slate-50 p-4 sm:p-6"
+    >
         <div
-            class="w-full max-w-md space-y-6 rounded-lg bg-white p-8 shadow-md"
+            class="w-full max-w-xl rounded-[2.5rem] bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] sm:p-12"
         >
-            <div class="text-center">
-                <h2 class="text-2xl font-bold text-gray-900">
-                    Daftar sebagai Pelamar
+            <div class="mb-10 flex flex-col items-center text-center">
+                <h2
+                    class="mb-2 text-sm font-bold tracking-[0.2em] text-slate-400 uppercase"
+                >
+                    Registrasi
                 </h2>
-                <p class="mt-2 text-sm text-gray-500">
-                    Mulai cari pekerjaan impianmu hari ini.
+                <h1
+                    class="text-3xl leading-tight font-black tracking-tight text-slate-900 uppercase italic"
+                >
+                    Halo, <span class="text-sky-700">Pencari Kerja</span>
+                </h1>
+                <p
+                    class="mt-2 text-xs font-medium tracking-wide text-slate-500 uppercase"
+                >
+                    Temukan pekerjaan impianmu di sini
                 </p>
             </div>
 
-            <form @submit.prevent="submit" class="space-y-4">
-                <div>
-                    <Label for="name">Nama Lengkap</Label>
+            <form @submit.prevent="submit" class="space-y-5">
+                <div class="grid gap-2">
+                    <Label
+                        for="name"
+                        class="text-xs font-bold tracking-wider text-slate-700 uppercase"
+                    >
+                        Nama Lengkap
+                    </Label>
                     <Input
                         id="name"
-                        type="text"
                         v-model="form.name"
                         required
                         autofocus
+                        placeholder="Masukkan nama lengkap kamu"
+                        class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all placeholder:text-slate-400 focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                     />
-                    <span
-                        v-if="form.errors.name"
-                        class="text-sm text-red-600"
-                        >{{ form.errors.name }}</span
-                    >
+                    <InputError :message="form.errors.name" />
                 </div>
 
-                <div>
-                    <Label for="email">Email</Label>
+                <div class="grid gap-2">
+                    <Label
+                        for="email"
+                        class="text-xs font-bold tracking-wider text-slate-700 uppercase"
+                    >
+                        Email Aktif
+                    </Label>
                     <Input
                         id="email"
                         type="email"
                         v-model="form.email"
                         required
+                        placeholder="contoh@email.com"
+                        class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all placeholder:text-slate-400 focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                     />
-                    <span
-                        v-if="form.errors.email"
-                        class="text-sm text-red-600"
-                        >{{ form.errors.email }}</span
-                    >
+                    <InputError :message="form.errors.email" />
                 </div>
 
-                <div>
-                    <Label for="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        v-model="form.password"
-                        required
-                    />
-                    <span
-                        v-if="form.errors.password"
-                        class="text-sm text-red-600"
-                        >{{ form.errors.password }}</span
-                    >
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="grid gap-2">
+                        <Label
+                            for="password"
+                            class="text-xs font-bold tracking-wider text-slate-700 uppercase"
+                        >
+                            Password
+                        </Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            v-model="form.password"
+                            required
+                            placeholder="••••••••"
+                            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all placeholder:text-slate-400 focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                        />
+                        <InputError :message="form.errors.password" />
+                    </div>
+
+                    <div class="grid gap-2">
+                        <Label
+                            for="password_confirmation"
+                            class="text-xs font-bold tracking-wider text-slate-700 uppercase"
+                        >
+                            Konfirmasi
+                        </Label>
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            v-model="form.password_confirmation"
+                            required
+                            placeholder="••••••••"
+                            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all placeholder:text-slate-400 focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                        />
+                    </div>
                 </div>
 
-                <div>
-                    <Label for="password_confirmation"
-                        >Konfirmasi Password</Label
+                <div class="pt-6">
+                    <Button
+                        type="submit"
+                        class="h-14 w-full rounded-2xl bg-sky-700 font-bold tracking-[0.15em] text-white uppercase shadow-lg shadow-sky-700/20 transition-all hover:bg-sky-800 hover:shadow-sky-800/30 active:scale-[0.98]"
+                        :disabled="form.processing"
                     >
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        v-model="form.password_confirmation"
-                        required
-                    />
+                        <Spinner
+                            v-if="form.processing"
+                            class="mr-2 h-5 w-5 text-white"
+                        />
+                        <span v-if="!form.processing">Buat Akun Pelamar</span>
+                        <span v-else>Memproses...</span>
+                    </Button>
                 </div>
 
-                <Button
-                    type="submit"
-                    class="w-full"
-                    :disabled="form.processing"
-                >
-                    Daftar Sekarang
-                </Button>
+                <div class="space-y-5 pt-6 text-center">
+                    <p
+                        class="text-xs font-semibold tracking-wide text-slate-500 uppercase"
+                    >
+                        Sudah punya akun?
+                        <Link
+                            href="/login"
+                            class="ml-1 text-sky-700 transition-all hover:text-sky-800 hover:underline hover:underline-offset-4"
+                        >
+                            Masuk di sini
+                        </Link>
+                    </p>
+
+                    <div class="relative py-2">
+                        <div class="absolute inset-0 flex items-center">
+                            <span
+                                class="w-full border-t border-slate-200"
+                            ></span>
+                        </div>
+                        <div
+                            class="relative flex justify-center text-[10px] uppercase"
+                        >
+                            <span
+                                class="bg-white px-3 font-bold tracking-widest text-slate-400"
+                                >ATAU</span
+                            >
+                        </div>
+                    </div>
+
+                    <p
+                        class="text-xs font-semibold tracking-wide text-slate-500 uppercase"
+                    >
+                        Ingin pasang lowongan kerja?
+                        <Link
+                            href="/register/mitra"
+                            class="ml-1 text-slate-700 transition-all hover:text-slate-900 hover:underline hover:underline-offset-4"
+                        >
+                            Daftar Mitra
+                        </Link>
+                    </p>
+                </div>
             </form>
-
-            <div class="text-center text-sm text-gray-600">
-                Sudah punya akun?
-                <Link href="/login" class="text-blue-600 hover:underline"
-                    >Masuk di sini</Link
-                >
-                <br />
-                <span class="mt-2 block text-xs text-gray-400">
-                    Perusahaan yang ingin merekrut?
-                    <Link
-                        href="/register/mitra"
-                        class="text-blue-600 hover:underline"
-                        >Daftar sebagai Mitra</Link
-                    >
-                </span>
-            </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+input:focus {
+    outline: none !important;
+}
+</style>
