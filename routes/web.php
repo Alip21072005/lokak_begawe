@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\RegisterPelamarController;
 use App\Http\Controllers\Auth\RegisterMitraController;
+use App\Http\Controllers\DashboardAdminController; // Import sudah benar
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Features;
@@ -13,7 +14,7 @@ Route::inertia('/', 'Welcome', [
 
 Route::middleware(['auth'])->group(function () {
 
-
+    // 1. Dashboard Redirector
     Route::get('dashboard', function () {
         $user = Auth::user();
         $role = $user->role instanceof \UnitEnum ? $user->role->value : $user->role;
@@ -30,22 +31,17 @@ Route::middleware(['auth'])->group(function () {
         }
     })->name('dashboard');
 
-    Route::get('dashboard/admin', function () {
-        $user = Auth::user();
-        $role = $user->role instanceof \UnitEnum ? $user->role->value : $user->role;
+    // 2. PERBAIKAN: Route Admin (Langsung panggil Controller)
+    // Jangan bungkus di dalam function() lagi
+    Route::get('dashboard/admin', [DashboardAdminController::class, 'index'])
+        ->name('dashboard.admin');
 
-        if ($role !== 'admin') return redirect()->route('dashboard');
-
-        return inertia('Admin/Dashboard', [
-            'auth' => ['user' => $user]
-        ]);
-    })->name('dashboard.admin');
-
-
+    // 3. Route Mitra
     Route::get('dashboard/mitra', function () {
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $role = $user->role instanceof \UnitEnum ? $user->role->value : $user->role;
+
         if ($role !== 'mitra') return redirect()->route('dashboard');
 
         return inertia('Mitra/Dashboard', [
@@ -53,11 +49,12 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('dashboard.mitra');
 
-
+    // 4. Route Pelamar
     Route::get('dashboard/pelamar', function () {
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $role = $user->role instanceof \UnitEnum ? $user->role->value : $user->role;
+
         if ($role !== 'pelamar') return redirect()->route('dashboard');
 
         return inertia('Pelamar/Dashboard', [
@@ -69,7 +66,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware('guest')->group(function () {
-    // Pastikan folder 'auth' ini benar-benar ada di resources/js/pages/auth/
     Route::get('/register/pelamar', fn() => inertia('auth/RegisterPelamar'))->name('register.pelamar');
     Route::get('/register/mitra', fn() => inertia('auth/RegisterMitra'))->name('register.mitra');
 
@@ -78,6 +74,7 @@ Route::middleware('guest')->group(function () {
 });
 
 require __DIR__ . '/settings.php';
+
 Route::get('/cek-auth', function () {
     if (Auth::check()) {
         $user = Auth::user();
