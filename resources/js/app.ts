@@ -13,27 +13,41 @@ const appName = import.meta.env.VITE_APP_NAME || 'Lokak Begawe';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    // Menggunakan resolvePageComponent untuk memetakan file di folder pages
     resolve: (name) => {
         const page = resolvePageComponent(
             `./pages/${name}.vue`,
             import.meta.glob<DefineComponent>('./pages/**/*.vue')
         );
         
-        page.then((module) => {
-            // Logika Otomatis Layout Switching
-            if (module.default.layout === undefined) {
-                if (name === 'Welcome') {
-                    module.default.layout = null; // Landing page tanpa layout
-                } else if (name.startsWith('auth/')) {
-                    module.default.layout = AuthLayout;
-                } else if (name.startsWith('settings/')) {
-                    module.default.layout = [AppLayout, SettingsLayout];
-                } else {
-                    module.default.layout = AppLayout;
-                }
-            }
-        });
+page.then((module) => {
+    if (module.default.layout === undefined) {
+        const n = name.toLowerCase();
+        
+        //
+if (name === 'Welcome' || name === 'Lowongan' || name === 'Lowongan/Lowongan' || name === 'Mitra/Carimitra') {
+    console.log('Halaman Aktif:', name);
+} ///
+
+        const isLandingPage = 
+            n === 'welcome' || 
+            n === 'lowongan' || 
+            n === 'lowongan/lowongan' ||
+            n === 'mitra/carimitra' ||  // Nama file kamu: pages/Mitra/Carimitra.vue
+            n.startsWith('lowongan/') || 
+            n.startsWith('mitra/');
+
+        if (isLandingPage) {
+            module.default.layout = null; 
+        } else if (n.startsWith('auth/')) {
+            module.default.layout = AuthLayout;
+        } else if (n.startsWith('settings/')) {
+            module.default.layout = [AppLayout, SettingsLayout];
+        } else {
+            // Jika masih membandel ada sidebar, pastikan ini null
+            module.default.layout = null; 
+        }
+    }
+});
 
         return page;
     },
@@ -43,9 +57,11 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#5B7C88', // Warna biru tema Lokak Begawe
+        color: '#5B7C88',
     },
 });
+
+// Tetap aman dari error 'window is not defined'
 if (typeof window !== 'undefined') {
     initializeTheme();
     initializeFlashToast();

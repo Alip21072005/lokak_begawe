@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import Navbar from '@/components/Navbar.vue';
 
 // Form untuk fitur pencarian (Search Bar)
 const searchForm = useForm({
@@ -19,32 +20,7 @@ const handleSearch = () => {
 
     <div class="min-h-screen bg-[#DDEEF3] font-sans text-[#1A313C] overflow-x-hidden">
         
-        <header class="py-3 px-4 md:px-11 w-full text-[#DDEEF3] sticky top-0 bg-[#598392] z-50 shadow-md">
-            <nav class="flex items-center justify-between max-w-7xl mx-auto">
-                <Link href="/" class="flex items-center gap-2">
-                    <div class="w-8 h-8 md:w-10 md:h-10 bg-slate-700 rounded-xl flex items-center justify-center font-black text-white italic text-sm md:text-base">L</div>
-                    <div class="flex flex-col">
-                        <span class="font-black text-lg md:text-xl uppercase tracking-tighter text-white leading-none">LOKAKBEGAWE</span>
-                        <span class="text-[8px] md:text-[9px] text-slate-300 italic">Ado Lokak, Pela Begawe</span>
-                    </div>
-                </Link>
-
-                <div class="hidden lg:flex items-center gap-7 uppercase font-extrabold text-slate-300 text-xs">
-                    <Link href="/" class="hover:text-white transition">Beranda</Link>
-                    <Link href="/lowongan" class="text-white border-b-2 border-white pb-1">Lowongan</Link>
-                    <Link href="/mitra" class="hover:text-white transition">Mitra</Link>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <button class="text-slate-300 hover:text-white p-1">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                    </button>
-                    <Link href="/login" class="px-4 py-2 rounded-lg text-[10px] font-bold text-slate-300 border border-slate-700 hover:border-white hover:text-white transition uppercase">
-                        👤 Login User
-                    </Link>
-                </div>
-            </nav>
-        </header>
+        <Navbar />
 
         <main class="py-12 px-4 md:px-11 max-w-7xl mx-auto">
             <div class="mb-10">
@@ -54,7 +30,7 @@ const handleSearch = () => {
                 <p class="text-xs md:text-sm font-bold opacity-60 uppercase tracking-widest mt-2">Temukan masa depanmu di tanah Bengkulu</p>
             </div>
             
-            <div class="flex flex-col md:flex-row gap-4 mb-16 bg-white/40 p-4 rounded-[32px] shadow-sm backdrop-blur-sm">
+            <div class="flex flex-col md:flex-row gap-4 mb-16 bg-white/40 p-4 rounded-[32px] shadow-sm backdrop-blur-sm border border-white/20">
                 <div class="flex-1">
                     <input 
                         v-model="searchForm.keyword"

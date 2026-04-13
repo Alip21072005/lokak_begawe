@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import Navbar from '@/components/Navbar.vue';
 
 // Definisikan Props untuk data dari Laravel
 defineProps<{
@@ -61,29 +62,7 @@ const mitraTeratas = [
 
     <div class="min-h-screen bg-[#DDEEF3] font-sans text-[#1A313C] overflow-x-hidden">
         
-        <header class="py-3 px-4 md:px-11 w-full text-[#DDEEF3] sticky top-0 bg-[#598392] z-50 shadow-md">
-            <nav class="flex items-center justify-between max-w-7xl mx-auto">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-slate-700 rounded-xl flex items-center justify-center font-black text-white italic">L</div>
-                    <div class="flex flex-col leading-none">
-                        <span class="font-black text-lg uppercase tracking-tighter text-white">LOKAKBEGAWE</span>
-                        <span class="text-[8px] text-slate-300 italic uppercase">Ado Lokak, Pela Begawe</span>
-                    </div>
-                </div>
-
-                <div class="hidden lg:flex items-center gap-7 uppercase font-extrabold text-slate-300 text-[10px]">
-                    <Link href="/" class="text-white border-b-2 border-white pb-1">Beranda</Link>
-                    <Link href="/lowongan" class="hover:text-white transition">Lowongan</Link>
-                    <Link href="/mitra" class="hover:text-white transition">Mitra</Link>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <button class="text-slate-300 hover:text-white p-1">🔔</button>
-                    <Link href="/login" class="px-4 py-1.5 rounded-lg text-[9px] font-bold text-slate-300 border border-slate-700 hover:border-white transition uppercase">LOGIN USER</Link>
-                    <Link href="/login-mitra" class="px-4 py-1.5 rounded-lg bg-[#1A313C] text-[9px] font-bold text-white hover:bg-slate-800 transition uppercase italic">LOGIN MITRA</Link>
-                </div>
-            </nav>
-        </header>
+        <Navbar />
 
         <main class="py-8 px-4 md:px-11 max-w-7xl mx-auto">
             <section class="mb-16 grid grid-cols-1 lg:grid-cols-12 items-center bg-[#598392] p-10 md:p-16 rounded-[40px] shadow-2xl text-white relative overflow-hidden">

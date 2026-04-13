@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import Navbar from '@/components/Navbar.vue';
 
 // Definisikan Props
 defineProps<{
@@ -18,7 +20,7 @@ const submitSuggestion = () => {
     alert('Saran berhasil dikirim!');
 };
 
-// Data Dummy untuk Mitra (Sesuai dengan Grid di Gambar)
+// Data Dummy untuk Mitra
 const mitraList = [
     { id: 1, name: 'UNIVERSITAS DEHASEN', location: 'KOTA BENGKULU', jobs: '15 PEKERJAAN', rating: '4.3 (154)', logo: '🎓' },
     { id: 2, name: 'CODE 21', location: 'MUKOMUKO', jobs: '15 PEKERJAAN', rating: '4.3 (154)', logo: '💎' },
@@ -36,33 +38,11 @@ const mitraList = [
 
     <div class="min-h-screen bg-[#F1EDE4] font-sans text-[#1A313C] overflow-x-hidden">
         
-        <header class="py-3 px-4 md:px-11 w-full text-[#DDEEF3] sticky top-0 bg-[#598392] z-50 shadow-md">
-            <nav class="flex items-center justify-between max-w-7xl mx-auto">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-slate-700 rounded-xl flex items-center justify-center font-black text-white italic">L</div>
-                    <div class="flex flex-col leading-none">
-                        <span class="font-black text-lg uppercase tracking-tighter text-white">LOKAKBEGAWE</span>
-                        <span class="text-[8px] text-slate-300 italic uppercase">Ado Lokak, Pela Begawe</span>
-                    </div>
-                </div>
-
-                <div class="hidden lg:flex items-center gap-7 uppercase font-extrabold text-slate-300 text-[10px]">
-                    <Link href="/" class="hover:text-white transition">Beranda</Link>
-                    <Link href="/lowongan" class="hover:text-white transition">Lowongan</Link>
-                    <Link href="/mitra" class="text-white border-b-2 border-white pb-1">Mitra</Link>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <button class="text-slate-300 hover:text-white p-1">🔔</button>
-                    <Link href="/login" class="px-4 py-1.5 rounded-lg text-[9px] font-bold text-slate-300 border border-slate-700 hover:border-white transition uppercase">LOGIN USER</Link>
-                    <Link href="/login-mitra" class="px-4 py-1.5 rounded-lg bg-[#1A313C] text-[9px] font-bold text-white hover:bg-slate-800 transition uppercase italic">LOGIN MITRA</Link>
-                </div>
-            </nav>
-        </header>
+        <Navbar />
 
         <main class="py-10 px-4 md:px-11 max-w-7xl mx-auto">
             <div class="mb-8">
-                <h1 class="text-2xl font-black text-[#598392] italic uppercase italic">CARI <span class="text-[#1A313C]">MITRA</span></h1>
+                <h1 class="text-2xl font-black text-[#598392] italic uppercase">CARI <span class="text-[#1A313C]">MITRA</span></h1>
             </div>
 
             <section class="mb-12">
