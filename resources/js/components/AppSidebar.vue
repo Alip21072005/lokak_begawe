@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-vue-next';
+import { usePage } from '@inertiajs/vue3';
+import {
+    LayoutGrid,
+    Search,
+    FileText,
+    Bookmark,
+    MessageSquare,
+    Users,
+    Briefcase,
+} from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
-import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import {
@@ -11,32 +19,94 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
+const page = usePage();
+const userRole = computed(() => page.props.auth.user?.role);
+
+const pelamarNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
+    {
+        title: 'Cari Lowongan',
+        href: '#',
+        icon: Search,
+    },
+    {
+        title: 'Lamaran Saya',
+        href: '#',
+        icon: FileText,
+    },
+    {
+        title: 'Pekerjaan Disimpan',
+        href: '#',
+        icon: Bookmark,
+    },
+    {
+        title: 'Pesan',
+        href: '#',
+        icon: MessageSquare,
+    },
 ];
 
-const footerNavItems: NavItem[] = [
+const adminNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: FolderGit2,
+        title: 'Dashboard',
+        href: dashboard(),
+        icon: LayoutGrid,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        title: 'Kelola Pelamar',
+        href: '#',
+        icon: Users,
+    },
+    {
+        title: 'Kelola Mitra',
+        href: '#',
+        icon: Briefcase,
+    },
+    {
+        title: 'Kelola Lowongan',
+        href: '#',
+        icon: FileText,
     },
 ];
+
+const mitraNavItems: NavItem[] = [
+    {
+        title: 'Dashboard Mitra',
+        href: dashboard(),
+        icon: LayoutGrid,
+    },
+    {
+        title: 'Pasang Lowongan',
+        href: '#',
+        icon: FileText,
+    },
+    {
+        title: 'Kelola Pelamar',
+        href: '#',
+        icon: Users,
+    },
+];
+
+const activeNavItems = computed(() => {
+    if (userRole.value === 'admin') {
+        return adminNavItems;
+    }
+
+    if (userRole.value === 'mitra') {
+        return mitraNavItems;
+    }
+
+    return pelamarNavItems;
+});
 </script>
 
 <template>
@@ -44,21 +114,16 @@ const footerNavItems: NavItem[] = [
         <SidebarHeader>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton size="lg" as-child>
-                        <Link :href="dashboard()">
-                            <AppLogo />
-                        </Link>
-                    </SidebarMenuButton>
+                    <AppLogo />
                 </SidebarMenuItem>
             </SidebarMenu>
         </SidebarHeader>
 
         <SidebarContent>
-            <NavMain :items="mainNavItems" />
+            <NavMain :items="activeNavItems" />
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>

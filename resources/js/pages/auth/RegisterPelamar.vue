@@ -1,60 +1,50 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const form = useForm({
     name: '',
-    company_name: '',
     email: '',
     password: '',
     password_confirmation: '',
 });
 
 const submit = () => {
-    form.post('/register/mitra', {
+    form.post('/register/pelamar', {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
 </script>
 
 <template>
-    <Head title="Daftar sebagai Mitra Perusahaan" />
+    <Head title="Daftar sebagai Pelamar" />
 
-    <div class="flex min-h-screen items-center justify-center bg-slate-50">
+    <div class="flex min-h-screen items-center justify-center bg-gray-50">
         <div
-            class="w-full max-w-md space-y-6 rounded-lg border-t-4 border-blue-600 bg-white p-8 shadow-md"
+            class="w-full max-w-md space-y-6 rounded-lg bg-white p-8 shadow-md"
         >
             <div class="text-center">
                 <h2 class="text-2xl font-bold text-gray-900">
-                    Daftar sebagai Mitra
+                    Daftar sebagai Pelamar
                 </h2>
                 <p class="mt-2 text-sm text-gray-500">
-                    Pasang lowongan dan temukan talenta terbaik.
+                    Mulai cari pekerjaan impianmu hari ini.
                 </p>
             </div>
 
             <form @submit.prevent="submit" class="space-y-4">
                 <div>
-                    <Label for="company_name">Nama Perusahaan</Label>
+                    <Label for="name">Nama Lengkap</Label>
                     <Input
-                        id="company_name"
+                        id="name"
                         type="text"
-                        v-model="form.company_name"
+                        v-model="form.name"
                         required
                         autofocus
                     />
-                    <span
-                        v-if="form.errors.company_name"
-                        class="text-sm text-red-600"
-                        >{{ form.errors.company_name }}</span
-                    >
-                </div>
-
-                <div>
-                    <Label for="name">Nama Penanggung Jawab (PIC)</Label>
-                    <Input id="name" type="text" v-model="form.name" required />
                     <span
                         v-if="form.errors.name"
                         class="text-sm text-red-600"
@@ -63,7 +53,7 @@ const submit = () => {
                 </div>
 
                 <div>
-                    <Label for="email">Email Perusahaan</Label>
+                    <Label for="email">Email</Label>
                     <Input
                         id="email"
                         type="email"
@@ -106,10 +96,10 @@ const submit = () => {
 
                 <Button
                     type="submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700"
+                    class="w-full"
                     :disabled="form.processing"
                 >
-                    Daftar sebagai Mitra
+                    Daftar Sekarang
                 </Button>
             </form>
 
@@ -120,11 +110,11 @@ const submit = () => {
                 >
                 <br />
                 <span class="mt-2 block text-xs text-gray-400">
-                    Sedang mencari kerja?
+                    Perusahaan yang ingin merekrut?
                     <Link
-                        href="/register/pelamar"
+                        href="/register/mitra"
                         class="text-blue-600 hover:underline"
-                        >Daftar sebagai Pelamar</Link
+                        >Daftar sebagai Mitra</Link
                     >
                 </span>
             </div>

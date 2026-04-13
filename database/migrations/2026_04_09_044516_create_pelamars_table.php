@@ -12,27 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pelamars', function (Blueprint $table) {
+            // Gunakan pelamar_id sebagai primary key UUID
             $table->uuid('pelamar_id')->primary();
-            $table->uuid('user_id');
-            $table->uuid('lokasi_id');
-            $table->uuid('pendidikan_id');
-            $table->uuid('pengalaman_id');
-            $table->uuid('lamaran_id');
-            $table->uuid('skill_id');
+
+            // Relasi ke tabel Users
+            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+
+            // Relasi ke tabel master lainnya (Cukup satu baris per relasi)
+            $table->foreignUuid('lokasi_id')->constrained('lokasis')->onDelete('cascade');
+            $table->foreignUuid('pendidikan_id')->constrained('pendidikans')->onDelete('cascade');
+            $table->foreignUuid('pengalaman_id')->constrained('pengalamans')->onDelete('cascade');
+            $table->foreignUuid('lamaran_id')->constrained('lamarans')->onDelete('cascade');
+            $table->foreignUuid('skill_id')->constrained('skills')->onDelete('cascade');
+
             $table->string('nama_pelamar');
             $table->string('email_pelamar');
             $table->string('nohp_pelamar');
             $table->text('alamat_pelamar');
             $table->string('jenis_kelamin');
             $table->string('cv_pelamar')->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('lokasi_id')->references('id')->on('lokasi')->onDelete('cascade');
-            $table->foreign('pendidikan_id')->references('id')->on('pendidikans')->onDelete('cascade');
-            $table->foreign('pengalaman_id')->references('id')->on('pengalamans')->onDelete('cascade');
-            $table->foreign('lamaran_id')->references('id')->on('lamarans')->onDelete('cascade');
-            $table->foreign('skill_id')->references('id')->on('skills')->onDelete('cascade');
             $table->string('foto_pelamar')->nullable();
-            $table->string('cv_pelamar')->nullable();
+
             $table->timestamps();
         });
     }

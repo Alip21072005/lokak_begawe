@@ -13,7 +13,7 @@ class Pelamar extends Model
     use UUID;
 
 
-    protected $table = 'pelamar';
+    protected $table = 'pelamars';
     protected $primaryKey = 'pelamar_id';
 
     protected $fillable = [
