@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import Navbar from '@/components/Navbar.vue';
+import Navbar from '@/components/navbar.vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { ref, onUnmounted, defineAsyncComponent } from 'vue';
 
-// Definisikan Props untuk data dari Laravel
-defineProps<{
-    canLogin?: boolean;
-    canRegister?: boolean;
-    laravelVersion: string;
-    phpVersion: string;
-}>();
+interface Job {
+    id: number;
+    title: string;
+    company: string;
+    salary: string;
+    location: string;
+    icon: string;
+}
 
 // Form untuk fitur saran di footer
 const suggestionForm = useForm({
@@ -25,9 +26,9 @@ const submitSuggestion = () => {
 
 // --- LOGIKA MODAL LOWONGAN ---
 const isModalOpen = ref(false);
-const selectedJob = ref<any>(null);
+const selectedJob = ref<Job | null>(null);
 
-const openJobDetail = (job: any) => {
+const openJobDetail = (job: Job) => {
     selectedJob.value = job;
     isModalOpen.value = true;
     // Mencegah scroll pada latar belakang saat modal aktif
@@ -40,154 +41,386 @@ const closeModal = () => {
     document.body.style.overflow = 'auto';
 };
 
+// Pastikan overflow dikembalikan jika komponen di-unmount saat modal terbuka
+onUnmounted(() => {
+    document.body.style.overflow = 'auto';
+});
+
 // Data Dummy untuk Lowongan
-const lowonganTerbaru = [
-    { id: 1, title: 'FRONTEND DEVELOPER (REACT)', company: 'UNIVERSITAS DEHASEN', salary: 'Rp 8-12 Juta', location: 'KOTA BENGKULU', icon: '🎓' },
-    { id: 2, title: 'FRONTEND DEVELOPER (REACT)', company: 'CODE 21', salary: 'Rp 8-12 Juta', location: 'MUKOMUKO', icon: '💎' },
-    { id: 3, title: 'CYBER SECURITY', company: 'DECODE', salary: 'Rp 8-9 Juta', location: 'KOTA BENGKULU', icon: '💻' },
-    { id: 4, title: 'MENTOR BOOTCAMP (AI)', company: 'PHINCON ACADEMY', salary: 'Rp 15-20 Juta', location: 'MANNA', icon: '🤖' },
+const lowonganTerbaru: Job[] = [
+    {
+        id: 1,
+        title: 'FRONTEND DEVELOPER (REACT)',
+        company: 'UNIVERSITAS DEHASEN',
+        salary: 'Rp 8-12 Juta',
+        location: 'KOTA BENGKULU',
+        icon: '🎓',
+    },
+    {
+        id: 2,
+        title: 'FRONTEND DEVELOPER (REACT)',
+        company: 'CODE 21',
+        salary: 'Rp 8-12 Juta',
+        location: 'MUKOMUKO',
+        icon: '💎',
+    },
+    {
+        id: 3,
+        title: 'CYBER SECURITY',
+        company: 'DECODE',
+        salary: 'Rp 8-9 Juta',
+        location: 'KOTA BENGKULU',
+        icon: '💻',
+    },
+    {
+        id: 4,
+        title: 'MENTOR BOOTCAMP (AI)',
+        company: 'PHINCON ACADEMY',
+        salary: 'Rp 15-20 Juta',
+        location: 'MANNA',
+        icon: '🤖',
+    },
 ];
 
 // Data Dummy untuk Mitra
 const mitraTeratas = [
-    { id: 1, name: 'UNIVERSITAS DEHASEN', location: 'Kota Bengkulu', jobs: '15 PEKERJAAN', rating: '4.3 (154)' },
-    { id: 2, name: 'CODE 21', location: 'MUKOMUKO', jobs: '10 PEKERJAAN', rating: '4.3 (154)' },
-    { id: 3, name: 'DE CODE', location: 'KOTA BENGKULU', jobs: '10 PEKERJAAN', rating: '4.3 (154)' },
-    { id: 4, name: 'PHINCON ACADEMY', location: 'MANNA', jobs: '10 PEKERJAAN', rating: '4.3 (154)' },
+    {
+        id: 1,
+        name: 'UNIVERSITAS DEHASEN',
+        location: 'Kota Bengkulu',
+        jobs: '15 PEKERJAAN',
+        rating: '4.3 (154)',
+    },
+    {
+        id: 2,
+        name: 'CODE 21',
+        location: 'MUKOMUKO',
+        jobs: '10 PEKERJAAN',
+        rating: '4.3 (154)',
+    },
+    {
+        id: 3,
+        name: 'DE CODE',
+        location: 'KOTA BENGKULU',
+        jobs: '10 PEKERJAAN',
+        rating: '4.3 (154)',
+    },
+    {
+        id: 4,
+        name: 'PHINCON ACADEMY',
+        location: 'MANNA',
+        jobs: '10 PEKERJAAN',
+        rating: '4.3 (154)',
+    },
 ];
 </script>
 
 <template>
     <Head title="Lokak Begawe - Bengkulu Job Portal" />
-
-    <div class="min-h-screen bg-[#DDEEF3] font-sans text-[#1A313C] overflow-x-hidden">
-        
-        <Navbar />
-
-        <main class="py-8 px-4 md:px-11 max-w-7xl mx-auto">
-            <section class="mb-16 grid grid-cols-1 lg:grid-cols-12 items-center bg-[#598392] p-10 md:p-16 rounded-[40px] shadow-2xl text-white relative overflow-hidden">
-                <div class="lg:col-span-8 z-10">
-                    <h1 class="text-5xl md:text-7xl font-black uppercase italic leading-[0.9] tracking-tighter mb-6">
-                        CARI GAWE<br>DAK BETELE
+    <Navbar />
+    <div
+        class="min-h-screen overflow-x-hidden bg-[#DDEEF3] font-sans text-[#1A313C]"
+    >
+        <main class="mx-auto max-w-7xl px-4 py-8 md:px-11">
+            <section
+                class="relative mb-16 grid grid-cols-1 items-center overflow-hidden rounded-[40px] bg-[#598392] p-10 text-white shadow-2xl md:p-16 lg:grid-cols-12"
+            >
+                <div class="z-10 lg:col-span-8">
+                    <h1
+                        class="mb-6 text-5xl leading-[0.9] font-black tracking-tighter uppercase italic md:text-7xl"
+                    >
+                        CARI GAWE<br />DAK BETELE
                     </h1>
-                    <p class="text-[11px] md:text-xs opacity-70 mb-10 max-w-md leading-relaxed">
-                        Ribuan lowongan dari perusahaan terverifikasi menunggumu. Gabung sekarang dan mulai karir impianmu.
+                    <p
+                        class="mb-10 max-w-md text-[11px] leading-relaxed opacity-70 md:text-xs"
+                    >
+                        Ribuan lowongan dari perusahaan terverifikasi
+                        menunggumu. Gabung sekarang dan mulai karir impianmu.
                     </p>
                     <div class="flex gap-4">
-                        <button class="px-8 py-3 bg-white text-[#598392] rounded-xl font-black text-[10px] uppercase italic shadow-lg">Daftar Sekarang</button>
-                        <button class="px-8 py-3 border-2 border-white/30 rounded-xl font-black text-[10px] uppercase italic">Pelajari Lebih</button>
+                        <button
+                            class="rounded-xl bg-white px-8 py-3 text-[10px] font-black text-[#598392] uppercase italic shadow-lg"
+                        >
+                            Daftar Sekarang
+                        </button>
+                        <button
+                            class="rounded-xl border-2 border-white/30 px-8 py-3 text-[10px] font-black uppercase italic"
+                        >
+                            Pelajari Lebih
+                        </button>
                     </div>
                 </div>
-                <div class="hidden lg:flex lg:col-span-4 justify-center items-center opacity-20">
-                    <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <div
+                    class="hidden items-center justify-center opacity-20 lg:col-span-4 lg:flex"
+                >
+                    <svg
+                        width="200"
+                        height="200"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                    >
+                        <path
+                            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                        />
+                    </svg>
                 </div>
             </section>
 
             <section class="mb-20">
-                <h2 class="text-xl font-black text-[#1A313C] uppercase mb-10 italic">LOWONGAN <span class="text-[#598392]">TERBARU</span></h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div v-for="job in lowonganTerbaru" :key="job.id" 
+                <h2
+                    class="mb-10 text-xl font-black text-[#1A313C] uppercase italic"
+                >
+                    LOWONGAN <span class="text-[#598392]">TERBARU</span>
+                </h2>
+                <div
+                    class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                >
+                    <div
+                        v-for="job in lowonganTerbaru"
+                        :key="job.id"
                         @click="openJobDetail(job)"
-                        class="bg-white p-7 rounded-[35px] shadow-sm hover:shadow-xl transition-all border border-slate-50 relative group cursor-pointer">
-                        <span class="absolute top-6 right-6 px-3 py-1 bg-teal-100 text-teal-800 text-[8px] font-black rounded-full uppercase italic">Baru Saja</span>
-                        <div class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-2xl mb-6">{{ job.icon }}</div>
-                        <h3 class="font-black text-sm mb-1 uppercase leading-tight">{{ job.title }}</h3>
-                        <p class="text-[9px] text-slate-400 font-bold mb-5 uppercase">{{ job.company }}</p>
-                        <div class="flex gap-2 mb-8">
-                            <span class="px-3 py-1 bg-slate-100 text-slate-500 text-[8px] font-black rounded-full uppercase">Full Time</span>
-                            <span class="px-3 py-1 bg-slate-100 text-slate-500 text-[8px] font-black rounded-full uppercase">Magang</span>
+                        class="group relative cursor-pointer rounded-[35px] border border-slate-50 bg-white p-7 shadow-sm transition-all hover:shadow-xl"
+                    >
+                        <span
+                            class="absolute top-6 right-6 rounded-full bg-teal-100 px-3 py-1 text-[8px] font-black text-teal-800 uppercase italic"
+                            >Baru Saja</span
+                        >
+                        <div
+                            class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-2xl"
+                        >
+                            {{ job.icon }}
                         </div>
-                        <div class="flex items-center justify-between text-[10px] border-t border-slate-50 pt-5">
-                            <span class="font-black text-[#598392]">{{ job.salary }}</span>
-                            <span class="text-slate-400 font-bold italic">📍 {{ job.location }}</span>
+                        <h3
+                            class="mb-1 text-sm leading-tight font-black uppercase"
+                        >
+                            {{ job.title }}
+                        </h3>
+                        <p
+                            class="mb-5 text-[9px] font-bold text-slate-400 uppercase"
+                        >
+                            {{ job.company }}
+                        </p>
+                        <div class="mb-8 flex gap-2">
+                            <span
+                                class="rounded-full bg-slate-100 px-3 py-1 text-[8px] font-black text-slate-500 uppercase"
+                                >Full Time</span
+                            >
+                            <span
+                                class="rounded-full bg-slate-100 px-3 py-1 text-[8px] font-black text-slate-500 uppercase"
+                                >Magang</span
+                            >
+                        </div>
+                        <div
+                            class="flex items-center justify-between border-t border-slate-50 pt-5 text-[10px]"
+                        >
+                            <span class="font-black text-[#598392]">{{
+                                job.salary
+                            }}</span>
+                            <span class="font-bold text-slate-400 italic"
+                                >📍 {{ job.location }}</span
+                            >
                         </div>
                     </div>
                 </div>
             </section>
 
             <section class="mb-20">
-                <h2 class="text-xl font-black text-[#1A313C] uppercase mb-10 italic">MITRA <span class="text-[#598392]">TERATAS</span></h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div v-for="mitra in mitraTeratas" :key="mitra.id" class="bg-white p-8 rounded-[35px] shadow-sm text-center border border-slate-50">
-                        <div class="w-20 h-20 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-slate-300">🏢</div>
-                        <h3 class="font-black text-xs mb-1 uppercase tracking-tighter">{{ mitra.name }}</h3>
-                        <p class="text-[9px] text-slate-400 font-bold mb-4 uppercase italic">{{ mitra.location }}</p>
-                        <div class="flex items-center justify-center gap-2 mb-6 text-[10px]">
-                            <span class="text-amber-400">⭐ {{ mitra.rating }}</span>
-                            <span class="px-3 py-1 bg-[#598392] text-white text-[8px] font-black rounded-full uppercase">{{ mitra.jobs }}</span>
+                <h2
+                    class="mb-10 text-xl font-black text-[#1A313C] uppercase italic"
+                >
+                    MITRA <span class="text-[#598392]">TERATAS</span>
+                </h2>
+                <div
+                    class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                >
+                    <div
+                        v-for="mitra in mitraTeratas"
+                        :key="mitra.id"
+                        class="rounded-[35px] border border-slate-50 bg-white p-8 text-center shadow-sm"
+                    >
+                        <div
+                            class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-3xl font-bold text-slate-300"
+                        >
+                            🏢
                         </div>
-                        <button class="text-[9px] font-black uppercase italic text-slate-400 hover:text-[#1A313C] transition">Lihat Detail</button>
+                        <h3
+                            class="mb-1 text-xs font-black tracking-tighter uppercase"
+                        >
+                            {{ mitra.name }}
+                        </h3>
+                        <p
+                            class="mb-4 text-[9px] font-bold text-slate-400 uppercase italic"
+                        >
+                            {{ mitra.location }}
+                        </p>
+                        <div
+                            class="mb-6 flex items-center justify-center gap-2 text-[10px]"
+                        >
+                            <span class="text-amber-400"
+                                >⭐ {{ mitra.rating }}</span
+                            >
+                            <span
+                                class="rounded-full bg-[#598392] px-3 py-1 text-[8px] font-black text-white uppercase"
+                                >{{ mitra.jobs }}</span
+                            >
+                        </div>
+                        <button
+                            class="text-[9px] font-black text-slate-400 uppercase italic transition hover:text-[#1A313C]"
+                        >
+                            Lihat Detail
+                        </button>
                     </div>
                 </div>
             </section>
         </main>
 
-        <div v-if="isModalOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm mt-[60px]" @click="closeModal"></div>
-            
-            <div class="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 z-[70]">
+        <div
+            v-if="isModalOpen"
+            class="fixed inset-0 z-60 flex items-center justify-center p-4"
+        >
+            <div
+                class="absolute inset-0 mt-15 bg-slate-900/60 backdrop-blur-sm"
+                @click="closeModal"
+            ></div>
+
+            <div
+                class="relative z-70 w-full max-w-lg animate-in overflow-hidden rounded-[40px] bg-white shadow-2xl duration-300 fade-in zoom-in"
+            >
                 <div class="p-8 md:p-12">
-                    <div class="flex justify-between items-start mb-8">
-                        <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl">
+                    <div class="mb-8 flex items-start justify-between">
+                        <div
+                            class="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-3xl"
+                        >
                             {{ selectedJob?.icon }}
                         </div>
-                        <button @click="closeModal" class="p-2 hover:bg-slate-100 rounded-full transition text-slate-400">✕</button>
+                        <button
+                            @click="closeModal"
+                            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100"
+                        >
+                            ✕
+                        </button>
                     </div>
-                    
-                    <h2 class="text-xl font-black uppercase italic mb-1">{{ selectedJob?.title }}</h2>
-                    <p class="text-[10px] font-bold text-[#598392] uppercase mb-6">{{ selectedJob?.company }}</p>
-                    
-                    <div class="space-y-4 mb-8">
-                        <div class="flex items-center gap-3 text-[11px] font-bold">
-                            <span class="text-slate-400 w-20 uppercase">Gaji:</span>
-                            <span class="text-[#1A313C]">{{ selectedJob?.salary }}</span>
+
+                    <h2 class="mb-1 text-xl font-black uppercase italic">
+                        {{ selectedJob?.title }}
+                    </h2>
+                    <p
+                        class="mb-6 text-[10px] font-bold text-[#598392] uppercase"
+                    >
+                        {{ selectedJob?.company }}
+                    </p>
+
+                    <div class="mb-8 space-y-4">
+                        <div
+                            class="flex items-center gap-3 text-[11px] font-bold"
+                        >
+                            <span class="w-20 text-slate-400 uppercase"
+                                >Gaji:</span
+                            >
+                            <span class="text-[#1A313C]">{{
+                                selectedJob?.salary
+                            }}</span>
                         </div>
-                        <div class="flex items-center gap-3 text-[11px] font-bold">
-                            <span class="text-slate-400 w-20 uppercase">Lokasi:</span>
-                            <span class="text-[#1A313C]">📍 {{ selectedJob?.location }}</span>
+                        <div
+                            class="flex items-center gap-3 text-[11px] font-bold"
+                        >
+                            <span class="w-20 text-slate-400 uppercase"
+                                >Lokasi:</span
+                            >
+                            <span class="text-[#1A313C]"
+                                >📍 {{ selectedJob?.location }}</span
+                            >
                         </div>
                     </div>
 
-                    <button class="w-full py-4 bg-[#1A313C] text-white rounded-2xl font-black uppercase italic text-[10px] shadow-lg hover:bg-[#598392] transition-all">
+                    <button
+                        class="w-full rounded-2xl bg-[#1A313C] py-4 text-[10px] font-black text-white uppercase italic shadow-lg transition-all hover:bg-[#598392]"
+                    >
                         Lamar Sekarang
                     </button>
                 </div>
             </div>
         </div>
 
-        <footer class="bg-[#598392] text-white py-16 px-11">
-            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <footer class="bg-[#598392] px-11 py-16 text-white">
+            <div
+                class="mx-auto grid max-w-7xl grid-cols-1 gap-10 lg:grid-cols-12"
+            >
                 <div class="lg:col-span-3">
-                    <div class="flex items-center gap-2 mb-6">
-                        <div class="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center font-black text-white italic">L</div>
-                        <span class="font-black text-xl uppercase tracking-tighter">LOKAKBEGAWE</span>
+                    <div class="mb-6 flex items-center gap-2">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700 font-black text-white italic"
+                        >
+                            L
+                        </div>
+                        <span
+                            class="text-xl font-black tracking-tighter uppercase"
+                            >LOKAKBEGAWE</span
+                        >
                     </div>
-                    <p class="text-[10px] opacity-60 font-bold uppercase italic">Ado Lokak, Pela Begawe</p>
+                    <p
+                        class="text-[10px] font-bold uppercase italic opacity-60"
+                    >
+                        Ado Lokak, Pela Begawe
+                    </p>
                 </div>
-                
-                <div class="lg:col-span-3 flex flex-col gap-4 text-[11px] font-bold uppercase italic">
-                    <span class="text-white opacity-40 text-[9px] font-black">TENTANG KAMI</span>
+
+                <div
+                    class="flex flex-col gap-4 text-[11px] font-bold uppercase italic lg:col-span-3"
+                >
+                    <span class="text-[9px] font-black text-white opacity-40"
+                        >TENTANG KAMI</span
+                    >
                     <a href="#" class="hover:underline">Tentang Kami</a>
                     <a href="#" class="hover:underline">Loker</a>
                 </div>
 
-                <div class="lg:col-span-3 flex flex-col gap-4 text-[11px] font-bold uppercase italic">
-                    <span class="text-white opacity-40 text-[9px] font-black">HUBUNGI KAMI</span>
+                <div
+                    class="flex flex-col gap-4 text-[11px] font-bold uppercase italic lg:col-span-3"
+                >
+                    <span class="text-[9px] font-black text-white opacity-40"
+                        >HUBUNGI KAMI</span
+                    >
                     <a href="#" class="hover:underline">Instagram</a>
                     <a href="#" class="hover:underline">WhatsApp</a>
                     <a href="#" class="hover:underline">Email</a>
                 </div>
 
-                <div class="lg:col-span-3 bg-white p-8 rounded-[35px] shadow-2xl">
-                    <h4 class="font-black uppercase text-[10px] mb-4 text-[#1A313C] italic">BERIKAN SARAN</h4>
+                <div
+                    class="rounded-[35px] bg-white p-8 shadow-2xl lg:col-span-3"
+                >
+                    <h4
+                        class="mb-4 text-[10px] font-black text-[#1A313C] uppercase italic"
+                    >
+                        BERIKAN SARAN
+                    </h4>
                     <form @submit.prevent="submitSuggestion" class="space-y-3">
-                        <input v-model="suggestionForm.email" type="email" placeholder="Email kamu..." class="w-full p-4 bg-slate-50 border-none rounded-2xl text-[10px] text-[#1A313C] shadow-inner outline-none">
-                        <textarea v-model="suggestionForm.message" placeholder="Pesan Kamu..." rows="3" class="w-full p-4 bg-slate-50 border-none rounded-2xl text-[10px] text-[#1A313C] shadow-inner outline-none resize-none"></textarea>
-                        <button type="submit" class="w-full py-4 bg-[#1A313C] text-white rounded-2xl text-[10px] font-black uppercase italic shadow-lg">Kirim Saran</button>
+                        <input
+                            v-model="suggestionForm.email"
+                            type="email"
+                            placeholder="Email kamu..."
+                            class="w-full rounded-2xl border-none bg-slate-50 p-4 text-[10px] text-[#1A313C] shadow-inner outline-none"
+                        />
+                        <textarea
+                            v-model="suggestionForm.message"
+                            placeholder="Pesan Kamu..."
+                            rows="3"
+                            class="w-full resize-none rounded-2xl border-none bg-slate-50 p-4 text-[10px] text-[#1A313C] shadow-inner outline-none"
+                        ></textarea>
+                        <button
+                            type="submit"
+                            class="w-full rounded-2xl bg-[#1A313C] py-4 text-[10px] font-black text-white uppercase italic shadow-lg"
+                        >
+                            Kirim Saran
+                        </button>
                     </form>
                 </div>
             </div>
-            <div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 text-center text-[8px] font-black opacity-40 uppercase tracking-[0.3em]">
+            <div
+                class="mx-auto mt-20 max-w-7xl border-t border-white/10 pt-8 text-center text-[8px] font-black tracking-[0.3em] uppercase opacity-40"
+            >
                 © 2026 LOKAK BEGAWE - HAK CIPTA DILINDUNGI UNDANG-UNDANG
             </div>
         </footer>

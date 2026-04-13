@@ -1,8 +1,9 @@
 import '../css/app.css';
 
-import { createApp, h, DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import type { DefineComponent } from 'vue';
+import { createApp, h } from 'vue';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
@@ -16,38 +17,43 @@ createInertiaApp({
     resolve: (name) => {
         const page = resolvePageComponent(
             `./pages/${name}.vue`,
-            import.meta.glob<DefineComponent>('./pages/**/*.vue')
+            import.meta.glob<DefineComponent>('./pages/**/*.vue'),
         );
-        
-page.then((module) => {
-    if (module.default.layout === undefined) {
-        const n = name.toLowerCase();
-        
-        //
-if (name === 'Welcome' || name === 'Lowongan' || name === 'Lowongan/Lowongan' || name === 'Mitra/Carimitra') {
-    console.log('Halaman Aktif:', name);
-} ///
 
-        const isLandingPage = 
-            n === 'welcome' || 
-            n === 'lowongan' || 
-            n === 'lowongan/lowongan' ||
-            n === 'mitra/carimitra' ||  // Nama file kamu: pages/Mitra/Carimitra.vue
-            n.startsWith('lowongan/') || 
-            n.startsWith('mitra/');
+        page.then((module) => {
+            if (module.default.layout === undefined) {
+                const n = name.toLowerCase();
 
-        if (isLandingPage) {
-            module.default.layout = null; 
-        } else if (n.startsWith('auth/')) {
-            module.default.layout = AuthLayout;
-        } else if (n.startsWith('settings/')) {
-            module.default.layout = [AppLayout, SettingsLayout];
-        } else {
-            // Jika masih membandel ada sidebar, pastikan ini null
-            module.default.layout = null; 
-        }
-    }
-});
+                //
+                if (
+                    name === 'Welcome' ||
+                    name === 'Lowongan' ||
+                    name === 'Lowongan/Lowongan' ||
+                    name === 'Mitra/Carimitra'
+                ) {
+                    console.log('Halaman Aktif:', name);
+                } ///
+
+                const isLandingPage =
+                    n === 'welcome' ||
+                    n === 'lowongan' ||
+                    n === 'lowongan/lowongan' ||
+                    n === 'mitra/carimitra' || // Nama file kamu: pages/Mitra/Carimitra.vue
+                    n.startsWith('lowongan/') ||
+                    n.startsWith('mitra/');
+
+                if (isLandingPage) {
+                    module.default.layout = null;
+                } else if (n.startsWith('auth/')) {
+                    module.default.layout = AuthLayout;
+                } else if (n.startsWith('settings/')) {
+                    module.default.layout = [AppLayout, SettingsLayout];
+                } else {
+                    // Jika masih membandel ada sidebar, pastikan ini null
+                    module.default.layout = null;
+                }
+            }
+        });
 
         return page;
     },

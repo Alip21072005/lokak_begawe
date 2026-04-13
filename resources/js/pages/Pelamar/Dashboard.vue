@@ -1,16 +1,9 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { dashboard } from '@/routes';
+import AppLayout from '@/layouts/AppLayout.vue';
 
 defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Dashboard',
-                href: dashboard(),
-            },
-        ],
-    },
+    layout: AppLayout, // Menggunakan AppLayout sebagai persistent layout
 });
 </script>
 
