@@ -3,17 +3,19 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 </script>
 
 <template>
-    <div class="flex items-center gap-3">
-        <AppLogoIcon class="size-8 object-contain" />
+    <div
+        class="flex items-center gap-3 transition-transform hover:scale-[1.02]"
+    >
+        <AppLogoIcon class="size-9 object-contain drop-shadow-md" />
 
-        <div class="flex flex-col">
+        <div class="flex flex-col justify-center">
             <span
-                class="truncate text-lg leading-none font-extrabold tracking-tight text-sidebar-accent"
+                class="truncate text-lg leading-none font-black tracking-tighter text-white uppercase"
             >
-                Lokak Begawe
+                LOKAKBEGAWE
             </span>
             <span
-                class="mt-1 text-[10px] leading-none text-muted-foreground italic"
+                class="mt-1 text-[9px] leading-none font-bold tracking-wide text-slate-400 uppercase italic"
             >
                 Ado Lokak, Pela Begawe
             </span>

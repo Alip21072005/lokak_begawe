@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Navbar from '@/components/navbar.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { ref, onUnmounted, defineAsyncComponent } from 'vue';
+import { ref, onUnmounted } from 'vue';
+import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
 
 interface Job {
     id: number;
@@ -11,18 +11,6 @@ interface Job {
     location: string;
     icon: string;
 }
-
-// Form untuk fitur saran di footer
-const suggestionForm = useForm({
-    email: '',
-    message: '',
-});
-
-const submitSuggestion = () => {
-    console.log('Suggestion submitted:', suggestionForm.data());
-    suggestionForm.reset();
-    alert('Saran berhasil dikirim!');
-};
 
 // --- LOGIKA MODAL LOWONGAN ---
 const isModalOpen = ref(false);
@@ -117,13 +105,15 @@ const mitraTeratas = [
 
 <template>
     <Head title="Lokak Begawe - Bengkulu Job Portal" />
-    <Navbar />
+
     <div
-        class="min-h-screen overflow-x-hidden bg-[#DDEEF3] font-sans text-[#1A313C]"
+        class="min-h-screen overflow-x-hidden bg-lokak-bg font-sans text-lokak-text"
     >
+        <Navbar />
+
         <main class="mx-auto max-w-7xl px-4 py-8 md:px-11">
             <section
-                class="relative mb-16 grid grid-cols-1 items-center overflow-hidden rounded-[40px] bg-[#598392] p-10 text-white shadow-2xl md:p-16 lg:grid-cols-12"
+                class="relative mb-20 grid grid-cols-1 items-center overflow-hidden rounded-[2.5rem] bg-lokak-brand p-10 text-white shadow-2xl shadow-lokak-brand/20 md:p-16 lg:grid-cols-12"
             >
                 <div class="z-10 lg:col-span-8">
                     <h1
@@ -132,30 +122,32 @@ const mitraTeratas = [
                         CARI GAWE<br />DAK BETELE
                     </h1>
                     <p
-                        class="mb-10 max-w-md text-[11px] leading-relaxed opacity-70 md:text-xs"
+                        class="mb-10 max-w-md text-xs leading-relaxed font-medium opacity-80 md:text-sm"
                     >
-                        Ribuan lowongan dari perusahaan terverifikasi
-                        menunggumu. Gabung sekarang dan mulai karir impianmu.
+                        Ribuan lowongan dari perusahaan terverifikasi di
+                        Bengkulu menunggumu. Gabung sekarang dan mulai karir
+                        impianmu.
                     </p>
-                    <div class="flex gap-4">
+                    <div class="flex flex-wrap gap-4">
                         <button
-                            class="rounded-xl bg-white px-8 py-3 text-[10px] font-black text-[#598392] uppercase italic shadow-lg"
+                            class="rounded-xl bg-white px-8 py-3.5 text-xs font-black text-lokak-brand uppercase italic shadow-lg transition-transform hover:-translate-y-1 active:scale-95"
                         >
                             Daftar Sekarang
                         </button>
                         <button
-                            class="rounded-xl border-2 border-white/30 px-8 py-3 text-[10px] font-black uppercase italic"
+                            class="rounded-xl border border-white/30 px-8 py-3.5 text-xs font-black uppercase italic transition-colors hover:bg-white/10 active:scale-95"
                         >
-                            Pelajari Lebih
+                            Pelajari Lebih Lanjut
                         </button>
                     </div>
                 </div>
+
                 <div
                     class="hidden items-center justify-center opacity-20 lg:col-span-4 lg:flex"
                 >
                     <svg
-                        width="200"
-                        height="200"
+                        width="240"
+                        height="240"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -166,14 +158,25 @@ const mitraTeratas = [
                         />
                     </svg>
                 </div>
+
+                <div
+                    class="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/5 blur-3xl"
+                ></div>
+                <div
+                    class="absolute -bottom-20 left-20 h-64 w-64 rounded-full bg-lokak-brand-dark/50 blur-3xl"
+                ></div>
             </section>
 
             <section class="mb-20">
-                <h2
-                    class="mb-10 text-xl font-black text-[#1A313C] uppercase italic"
-                >
-                    LOWONGAN <span class="text-[#598392]">TERBARU</span>
-                </h2>
+                <div class="mb-10 flex flex-col items-start">
+                    <h2
+                        class="text-xl font-black tracking-tight text-lokak-text uppercase italic"
+                    >
+                        LOWONGAN <span class="text-lokak-brand">TERBARU</span>
+                    </h2>
+                    <div class="mt-2 h-1 w-24 rounded-full bg-slate-200"></div>
+                </div>
+
                 <div
                     class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
                 >
@@ -181,41 +184,48 @@ const mitraTeratas = [
                         v-for="job in lowonganTerbaru"
                         :key="job.id"
                         @click="openJobDetail(job)"
-                        class="group relative cursor-pointer rounded-[35px] border border-slate-50 bg-white p-7 shadow-sm transition-all hover:shadow-xl"
+                        class="group relative cursor-pointer rounded-3xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-xl hover:shadow-sky-900/5"
                     >
                         <span
-                            class="absolute top-6 right-6 rounded-full bg-teal-100 px-3 py-1 text-[8px] font-black text-teal-800 uppercase italic"
-                            >Baru Saja</span
+                            class="absolute top-6 right-6 rounded-full bg-sky-50 px-3 py-1 text-[9px] font-black tracking-wider text-lokak-brand uppercase"
                         >
+                            Baru Saja
+                        </span>
+
                         <div
-                            class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-2xl"
+                            class="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-2xl shadow-inner transition-transform group-hover:scale-110"
                         >
                             {{ job.icon }}
                         </div>
+
                         <h3
-                            class="mb-1 text-sm leading-tight font-black uppercase"
+                            class="mb-2 text-sm leading-tight font-black text-lokak-text uppercase transition-colors group-hover:text-lokak-brand"
                         >
                             {{ job.title }}
                         </h3>
                         <p
-                            class="mb-5 text-[9px] font-bold text-slate-400 uppercase"
+                            class="mb-5 text-[10px] font-bold text-lokak-text-muted uppercase"
                         >
                             {{ job.company }}
                         </p>
-                        <div class="mb-8 flex gap-2">
+
+                        <div class="mb-8 flex flex-wrap gap-2">
                             <span
-                                class="rounded-full bg-slate-100 px-3 py-1 text-[8px] font-black text-slate-500 uppercase"
-                                >Full Time</span
+                                class="rounded-lg bg-slate-100 px-3 py-1 text-[9px] font-bold text-slate-500 uppercase"
                             >
+                                Full Time
+                            </span>
                             <span
-                                class="rounded-full bg-slate-100 px-3 py-1 text-[8px] font-black text-slate-500 uppercase"
-                                >Magang</span
+                                class="rounded-lg bg-slate-100 px-3 py-1 text-[9px] font-bold text-slate-500 uppercase"
                             >
+                                Magang
+                            </span>
                         </div>
+
                         <div
-                            class="flex items-center justify-between border-t border-slate-50 pt-5 text-[10px]"
+                            class="flex items-center justify-between border-t border-slate-100 pt-5 text-xs"
                         >
-                            <span class="font-black text-[#598392]">{{
+                            <span class="font-black text-lokak-brand">{{
                                 job.salary
                             }}</span>
                             <span class="font-bold text-slate-400 italic"
@@ -226,50 +236,57 @@ const mitraTeratas = [
                 </div>
             </section>
 
-            <section class="mb-20">
-                <h2
-                    class="mb-10 text-xl font-black text-[#1A313C] uppercase italic"
-                >
-                    MITRA <span class="text-[#598392]">TERATAS</span>
-                </h2>
+            <section class="mb-24">
+                <div class="mb-10 flex flex-col items-start">
+                    <h2
+                        class="text-xl font-black tracking-tight text-lokak-text uppercase italic"
+                    >
+                        MITRA <span class="text-lokak-brand">TERATAS</span>
+                    </h2>
+                    <div class="mt-2 h-1 w-24 rounded-full bg-slate-200"></div>
+                </div>
+
                 <div
                     class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
                 >
                     <div
                         v-for="mitra in mitraTeratas"
                         :key="mitra.id"
-                        class="rounded-[35px] border border-slate-50 bg-white p-8 text-center shadow-sm"
+                        class="group rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm transition-all hover:border-sky-200 hover:shadow-lg"
                     >
                         <div
-                            class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100 text-3xl font-bold text-slate-300"
+                            class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-3xl shadow-inner transition-transform group-hover:scale-110"
                         >
                             🏢
                         </div>
                         <h3
-                            class="mb-1 text-xs font-black tracking-tighter uppercase"
+                            class="mb-1 text-sm font-black tracking-tight text-lokak-text uppercase transition-colors group-hover:text-lokak-brand"
                         >
                             {{ mitra.name }}
                         </h3>
                         <p
-                            class="mb-4 text-[9px] font-bold text-slate-400 uppercase italic"
+                            class="mb-5 text-[10px] font-bold text-lokak-text-muted uppercase"
                         >
                             {{ mitra.location }}
                         </p>
+
                         <div
-                            class="mb-6 flex items-center justify-center gap-2 text-[10px]"
+                            class="mb-6 flex items-center justify-center gap-3 text-[10px]"
                         >
-                            <span class="text-amber-400"
+                            <span class="font-bold text-yellow-500"
                                 >⭐ {{ mitra.rating }}</span
                             >
                             <span
-                                class="rounded-full bg-[#598392] px-3 py-1 text-[8px] font-black text-white uppercase"
-                                >{{ mitra.jobs }}</span
+                                class="rounded-md bg-lokak-brand px-3 py-1 font-bold text-white uppercase shadow-sm"
                             >
+                                {{ mitra.jobs }}
+                            </span>
                         </div>
+
                         <button
-                            class="text-[9px] font-black text-slate-400 uppercase italic transition hover:text-[#1A313C]"
+                            class="text-[10px] font-black text-slate-400 uppercase transition hover:text-lokak-brand"
                         >
-                            Lihat Detail
+                            Lihat Detail →
                         </button>
                     </div>
                 </div>
@@ -278,151 +295,87 @@ const mitraTeratas = [
 
         <div
             v-if="isModalOpen"
-            class="fixed inset-0 z-60 flex items-center justify-center p-4"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4"
         >
             <div
-                class="absolute inset-0 mt-15 bg-slate-900/60 backdrop-blur-sm"
+                class="absolute inset-0 bg-lokak-text/40 backdrop-blur-sm transition-opacity"
                 @click="closeModal"
             ></div>
 
             <div
-                class="relative z-70 w-full max-w-lg animate-in overflow-hidden rounded-[40px] bg-white shadow-2xl duration-300 fade-in zoom-in"
+                class="relative z-10 w-full max-w-lg animate-in overflow-hidden rounded-[2.5rem] bg-white shadow-2xl duration-200 zoom-in-95"
             >
                 <div class="p-8 md:p-12">
                     <div class="mb-8 flex items-start justify-between">
                         <div
-                            class="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-3xl"
+                            class="flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-3xl shadow-inner"
                         >
                             {{ selectedJob?.icon }}
                         </div>
                         <button
                             @click="closeModal"
-                            class="rounded-full p-2 text-slate-400 transition hover:bg-slate-100"
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition-colors hover:bg-slate-100 hover:text-lokak-text"
                         >
-                            ✕
+                            <span class="text-lg font-bold">✕</span>
                         </button>
                     </div>
 
-                    <h2 class="mb-1 text-xl font-black uppercase italic">
+                    <h2
+                        class="mb-2 text-2xl font-black tracking-tight text-lokak-text uppercase"
+                    >
                         {{ selectedJob?.title }}
                     </h2>
                     <p
-                        class="mb-6 text-[10px] font-bold text-[#598392] uppercase"
+                        class="mb-8 text-xs font-bold tracking-wider text-lokak-brand uppercase"
                     >
                         {{ selectedJob?.company }}
                     </p>
 
-                    <div class="mb-8 space-y-4">
-                        <div
-                            class="flex items-center gap-3 text-[11px] font-bold"
-                        >
-                            <span class="w-20 text-slate-400 uppercase"
-                                >Gaji:</span
+                    <div
+                        class="mb-10 space-y-4 rounded-2xl border border-slate-100 bg-slate-50 p-6"
+                    >
+                        <div class="flex items-center gap-3 text-xs font-bold">
+                            <span class="w-20 text-lokak-text-muted uppercase"
+                                >Gaji</span
                             >
-                            <span class="text-[#1A313C]">{{
+                            <span class="text-lokak-text">{{
                                 selectedJob?.salary
                             }}</span>
                         </div>
-                        <div
-                            class="flex items-center gap-3 text-[11px] font-bold"
-                        >
-                            <span class="w-20 text-slate-400 uppercase"
-                                >Lokasi:</span
+                        <div class="h-px w-full bg-slate-200"></div>
+                        <div class="flex items-center gap-3 text-xs font-bold">
+                            <span class="w-20 text-lokak-text-muted uppercase"
+                                >Lokasi</span
                             >
-                            <span class="text-[#1A313C]"
+                            <span class="text-lokak-text"
                                 >📍 {{ selectedJob?.location }}</span
                             >
                         </div>
                     </div>
 
                     <button
-                        class="w-full rounded-2xl bg-[#1A313C] py-4 text-[10px] font-black text-white uppercase italic shadow-lg transition-all hover:bg-[#598392]"
+                        class="w-full rounded-2xl bg-lokak-brand py-4 text-xs font-black tracking-widest text-white uppercase shadow-lg shadow-lokak-brand/20 transition-all hover:bg-lokak-brand-dark active:scale-[0.98]"
                     >
-                        Lamar Sekarang
+                        Lamar Pekerjaan Ini
                     </button>
                 </div>
             </div>
         </div>
-
-        <footer class="bg-[#598392] px-11 py-16 text-white">
-            <div
-                class="mx-auto grid max-w-7xl grid-cols-1 gap-10 lg:grid-cols-12"
-            >
-                <div class="lg:col-span-3">
-                    <div class="mb-6 flex items-center gap-2">
-                        <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700 font-black text-white italic"
-                        >
-                            L
-                        </div>
-                        <span
-                            class="text-xl font-black tracking-tighter uppercase"
-                            >LOKAKBEGAWE</span
-                        >
-                    </div>
-                    <p
-                        class="text-[10px] font-bold uppercase italic opacity-60"
-                    >
-                        Ado Lokak, Pela Begawe
-                    </p>
-                </div>
-
-                <div
-                    class="flex flex-col gap-4 text-[11px] font-bold uppercase italic lg:col-span-3"
-                >
-                    <span class="text-[9px] font-black text-white opacity-40"
-                        >TENTANG KAMI</span
-                    >
-                    <a href="#" class="hover:underline">Tentang Kami</a>
-                    <a href="#" class="hover:underline">Loker</a>
-                </div>
-
-                <div
-                    class="flex flex-col gap-4 text-[11px] font-bold uppercase italic lg:col-span-3"
-                >
-                    <span class="text-[9px] font-black text-white opacity-40"
-                        >HUBUNGI KAMI</span
-                    >
-                    <a href="#" class="hover:underline">Instagram</a>
-                    <a href="#" class="hover:underline">WhatsApp</a>
-                    <a href="#" class="hover:underline">Email</a>
-                </div>
-
-                <div
-                    class="rounded-[35px] bg-white p-8 shadow-2xl lg:col-span-3"
-                >
-                    <h4
-                        class="mb-4 text-[10px] font-black text-[#1A313C] uppercase italic"
-                    >
-                        BERIKAN SARAN
-                    </h4>
-                    <form @submit.prevent="submitSuggestion" class="space-y-3">
-                        <input
-                            v-model="suggestionForm.email"
-                            type="email"
-                            placeholder="Email kamu..."
-                            class="w-full rounded-2xl border-none bg-slate-50 p-4 text-[10px] text-[#1A313C] shadow-inner outline-none"
-                        />
-                        <textarea
-                            v-model="suggestionForm.message"
-                            placeholder="Pesan Kamu..."
-                            rows="3"
-                            class="w-full resize-none rounded-2xl border-none bg-slate-50 p-4 text-[10px] text-[#1A313C] shadow-inner outline-none"
-                        ></textarea>
-                        <button
-                            type="submit"
-                            class="w-full rounded-2xl bg-[#1A313C] py-4 text-[10px] font-black text-white uppercase italic shadow-lg"
-                        >
-                            Kirim Saran
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div
-                class="mx-auto mt-20 max-w-7xl border-t border-white/10 pt-8 text-center text-[8px] font-black tracking-[0.3em] uppercase opacity-40"
-            >
-                © 2026 LOKAK BEGAWE - HAK CIPTA DILINDUNGI UNDANG-UNDANG
-            </div>
-        </footer>
+        <Footer />
     </div>
 </template>
+
+<style scoped>
+/* Menghilangkan ring fokus default browser agar border kustom bekerja baik */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    outline: none !important;
+}
+
+/* Memastikan modal tidak mematahkan layout jika tampilannya panjang */
+.animate-in {
+    animation-duration: 0.2s;
+}
+</style>
