@@ -15,8 +15,11 @@ defineProps<Props>();
 <template>
     <img
         src="/logo.png"
-        alt="Logo"
-        :class="['h-8 w-8 rounded-lg object-cover', className]"
+        alt="Logo Lokak Begawe"
+        :class="[
+            'shrink-0 rounded-xl object-contain transition-all',
+            className || 'h-9 w-9',
+        ]"
         v-bind="$attrs"
     />
 </template>

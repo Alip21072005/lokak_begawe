@@ -8,6 +8,7 @@ import {
     MessageSquare,
     Users,
     Briefcase,
+    Building2,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -35,7 +36,7 @@ const pelamarNavItems: NavItem[] = [
     },
     {
         title: 'Cari Lowongan',
-        href: '#',
+        href: '/lowongan',
         icon: Search,
     },
     {
@@ -94,6 +95,11 @@ const mitraNavItems: NavItem[] = [
         href: '#',
         icon: Users,
     },
+    {
+        title: 'Profil Perusahaan',
+        href: '#',
+        icon: Building2,
+    },
 ];
 
 const activeNavItems = computed(() => {
@@ -110,8 +116,12 @@ const activeNavItems = computed(() => {
 </script>
 
 <template>
-    <Sidebar collapsible="icon" variant="inset">
-        <SidebarHeader>
+    <Sidebar
+        collapsible="icon"
+        variant="inset"
+        class="z-40 border-r-0 shadow-xl"
+    >
+        <SidebarHeader class="border-b border-slate-100 py-4">
             <SidebarMenu>
                 <SidebarMenuItem>
                     <AppLogo />
@@ -119,13 +129,30 @@ const activeNavItems = computed(() => {
             </SidebarMenu>
         </SidebarHeader>
 
-        <SidebarContent>
+        <SidebarContent class="custom-scrollbar pt-4">
             <NavMain :items="activeNavItems" />
         </SidebarContent>
 
-        <SidebarFooter>
+        <SidebarFooter class="border-t border-slate-100 pt-2 pb-4">
             <NavUser />
         </SidebarFooter>
     </Sidebar>
+
     <slot />
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+</style>

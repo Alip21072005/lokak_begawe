@@ -17,6 +17,19 @@
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
+    /* ==================================================
+       Warna Kustom Lokak Begawe
+       
+       ================================================== */
+    --color-lokak-brand: #0369a1; /* Setara dengan sky-700 */
+    --color-lokak-brand-dark: #075985; /* Setara dengan sky-800 */
+    --color-lokak-bg: #f8fafc; /* Setara dengan slate-50 */
+    --color-lokak-text: #0f172a; /* Setara dengan slate-900 */
+    --color-lokak-text-muted: #64748b; /* Setara dengan slate-500 */
+    --color-lokak-footer: #0f172a; /* Setara dengan slate-900 */
+
+    /* ================================================== */
+
     --color-background: var(--background);
     --color-foreground: var(--foreground);
 
@@ -90,8 +103,6 @@
 }
 
 :root {
-    --oren: #f39422;
-    --biru1: #010038;
     --background: #ffffff;
     --foreground: hsl(0 0% 3.9%);
     --card: hsl(0 0% 100%);
@@ -117,15 +128,15 @@
     --chart-4: hsl(43 74% 66%);
     --chart-5: hsl(27 87% 67%);
     --radius: 0.5rem;
-    --sidebar-background: #010038;
-    --sidebar-foreground: #ffffff;
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: #f39422;
-    --sidebar-accent-foreground: #010038;
-    --sidebar-border: #010038;
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    --sidebar-background: #0f172a; /* Gelap elegan (slate-900) */
+    --sidebar-foreground: #f8fafc; /* Teks terang (slate-50) */
+    --sidebar-primary: #0369a1; /* Aksen biru utama (sky-700) */
+    --sidebar-primary-foreground: #ffffff; /* Teks di atas aksen biru */
+    --sidebar-accent: #1e293b; /* Warna latar saat menu di-hover (slate-800) */
+    --sidebar-accent-foreground: #ffffff; /* Warna teks saat menu di-hover */
+    --sidebar-border: #1e293b; /* Garis pembatas gelap samar */
+    --sidebar-ring: #0369a1; /* Warna ring biru */
+    --sidebar: #0f172a;
 }
 
 .dark {
@@ -169,6 +180,6 @@
         @apply border-border outline-ring/50;
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-lokak-bg text-lokak-text; /* Saya ubah default body-nya sekalian! */
     }
 }
