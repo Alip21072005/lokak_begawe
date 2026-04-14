@@ -2,13 +2,13 @@
 import { usePage } from '@inertiajs/vue3';
 import {
     LayoutGrid,
-    Search,
     FileText,
     Bookmark,
     MessageSquare,
     Users,
     Briefcase,
     Building2,
+    Home,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -23,6 +23,14 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import {
+    kelolalowongan,
+    kelolamitra,
+    kelolapelamar,
+    pesanadmin,
+} from '@/routes/admin';
+import { kelolapelamarkerja, pasanglowongan, pesanmitra } from '@/routes/mitra';
+import { lamaran, pesan, tawarankerja } from '@/routes/pelamar';
 import type { NavItem } from '@/types';
 
 const page = usePage();
@@ -30,74 +38,89 @@ const userRole = computed(() => page.props.auth.user?.role);
 
 const pelamarNavItems: NavItem[] = [
     {
+        title: 'Beranda',
+        href: '/',
+        icon: Home,
+    },
+    {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
     {
-        title: 'Cari Lowongan',
-        href: '/lowongan',
-        icon: Search,
-    },
-    {
         title: 'Lamaran Saya',
-        href: '#',
+        href: lamaran(),
         icon: FileText,
     },
     {
-        title: 'Pekerjaan Disimpan',
-        href: '#',
+        title: 'Tawaran Kerja',
+        href: tawarankerja(),
         icon: Bookmark,
     },
     {
         title: 'Pesan',
-        href: '#',
+        href: pesan(),
         icon: MessageSquare,
     },
 ];
 
 const adminNavItems: NavItem[] = [
     {
+        title: 'Beranda',
+        href: '/',
+        icon: Home,
+    },
+    {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
     {
         title: 'Kelola Pelamar',
-        href: '#',
+        href: kelolapelamar(),
         icon: Users,
     },
     {
         title: 'Kelola Mitra',
-        href: '#',
+        href: kelolamitra(),
         icon: Briefcase,
     },
     {
         title: 'Kelola Lowongan',
-        href: '#',
+        href: kelolalowongan(),
+        icon: FileText,
+    },
+    {
+        title: 'Pesan',
+        href: pesanadmin(),
         icon: FileText,
     },
 ];
 
 const mitraNavItems: NavItem[] = [
     {
-        title: 'Dashboard Mitra',
+        title: 'Beranda',
+        href: '/',
+        icon: Home,
+    },
+    {
+        title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
     {
         title: 'Pasang Lowongan',
-        href: '#',
+        href: pasanglowongan(),
         icon: FileText,
     },
     {
         title: 'Kelola Pelamar',
-        href: '#',
+        href: kelolapelamarkerja(),
         icon: Users,
     },
     {
-        title: 'Profil Perusahaan',
-        href: '#',
+        title: 'Pesan',
+        href: pesanmitra(),
         icon: Building2,
     },
 ];

@@ -1,8 +1,18 @@
 <?php
 
+use App\Http\Controllers\Admin\KelolalowonganController;
+use App\Http\Controllers\Admin\KelolamitraController;
+use App\Http\Controllers\Admin\KelolapelamarController;
+use App\Http\Controllers\Admin\PesanadminController;
 use App\Http\Controllers\Auth\RegisterPelamarController;
 use App\Http\Controllers\Auth\RegisterMitraController;
 use App\Http\Controllers\DashboardAdminController;
+use App\Http\Controllers\Mitra\KelolapelamarkerjaController;
+use App\Http\Controllers\Mitra\PasanglowonganController;
+use App\Http\Controllers\Mitra\PesanmitraController;
+use App\Http\Controllers\Pelamar\LamaranController;
+use App\Http\Controllers\Pelamar\PesanController;
+use App\Http\Controllers\Pelamar\TawarankerjaController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Features;
@@ -59,6 +69,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/admin', [DashboardAdminController::class, 'index'])
         ->name('dashboard.admin');
 
+    Route::get('/dashboard/admin/kelolapelamar', [KelolapelamarController::class, 'index'])
+        ->name('admin.kelolapelamar');
+
+    Route::get('/dashboard/admin/kelolalowongan', [KelolalowonganController::class, 'index'])
+        ->name('admin.kelolalowongan');
+
+    Route::get('/dashboard/admin/kelolamitra', [KelolamitraController::class, 'index'])
+        ->name('admin.kelolamitra');
+
+    Route::get('/dashboard/admin/pesanadmin', [PesanadminController::class, 'index'])
+        ->name('admin.pesanadmin');
+
     // --- MITRA ROUTES ---
     Route::get('/dashboard/mitra', function () {
         /** @var \App\Models\User $user */
@@ -72,6 +94,15 @@ Route::middleware(['auth'])->group(function () {
         ]);
     })->name('dashboard.mitra');
 
+    Route::get('/dashboard/mitra/kelolapelamarkerja', [KelolapelamarkerjaController::class, 'index'])
+        ->name('mitra.kelolapelamarkerja');
+
+    Route::get('/dashboard/mitra/pasanglowongan', [PasanglowonganController::class, 'index'])
+        ->name('mitra.pasanglowongan');
+
+    Route::get('/dashboard/mitra/pesanmitra', [PesanmitraController::class, 'index'])
+        ->name('mitra.pesanmitra');
+
     // --- PELAMAR ROUTES ---
     Route::get('/dashboard/pelamar', function () {
         /** @var \App\Models\User $user */
@@ -84,6 +115,15 @@ Route::middleware(['auth'])->group(function () {
             'auth' => ['user' => $user->load('pelamar')]
         ]);
     })->name('dashboard.pelamar');
+
+    Route::get('/dashboard/pelamar/lamaran', [LamaranController::class, 'index'])
+        ->name('pelamar.lamaran');
+
+    Route::get('/dashboard/pelamar/pesan', [PesanController::class, 'index'])
+        ->name('pelamar.pesan');
+
+    Route::get('/dashboard/pelamar/tawarankerja', [TawarankerjaController::class, 'index'])
+        ->name('pelamar.tawarankerja');
 });
 
 
