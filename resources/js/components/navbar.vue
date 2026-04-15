@@ -112,15 +112,9 @@ const isOpen = ref(false);
                     <template v-if="!$page.props.auth.user">
                         <Link
                             href="/login"
-                            class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-[10px] font-black text-lokak-text transition-all hover:bg-slate-50 hover:text-lokak-brand active:scale-95"
-                        >
-                            LOGIN PELAMAR
-                        </Link>
-                        <Link
-                            href="/login"
                             class="rounded-xl bg-lokak-brand px-5 py-2.5 text-[10px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-all hover:bg-lokak-brand-dark active:scale-95"
                         >
-                            LOGIN MITRA
+                            LOGIN
                         </Link>
                     </template>
                     <template v-else>
@@ -218,16 +212,9 @@ const isOpen = ref(false);
                         <Link
                             href="/login"
                             @click="isOpen = false"
-                            class="rounded-xl border border-slate-200 bg-white py-3.5 text-center text-[11px] font-black text-lokak-text transition-colors hover:bg-slate-50 hover:text-lokak-brand"
-                        >
-                            LOGIN PELAMAR
-                        </Link>
-                        <Link
-                            href="/login"
-                            @click="isOpen = false"
                             class="rounded-xl bg-lokak-brand py-3.5 text-center text-[11px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-colors hover:bg-lokak-brand-dark"
                         >
-                            LOGIN MITRA
+                            LOGIN
                         </Link>
                     </template>
                     <template v-else>
