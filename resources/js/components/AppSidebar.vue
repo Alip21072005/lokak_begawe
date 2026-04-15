@@ -3,12 +3,12 @@ import { usePage } from '@inertiajs/vue3';
 import {
     LayoutGrid,
     FileText,
-    Bookmark,
     MessageSquare,
     Users,
     Briefcase,
     Building2,
     Home,
+    FilePlus,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -55,7 +55,7 @@ const pelamarNavItems: NavItem[] = [
     {
         title: 'Tawaran Kerja',
         href: tawarankerja(),
-        icon: Bookmark,
+        icon: Briefcase,
     },
     {
         title: 'Pesan',
@@ -83,17 +83,17 @@ const adminNavItems: NavItem[] = [
     {
         title: 'Kelola Mitra',
         href: kelolamitra(),
-        icon: Briefcase,
+        icon: Building2,
     },
     {
         title: 'Kelola Lowongan',
         href: kelolalowongan(),
-        icon: FileText,
+        icon: Briefcase,
     },
     {
         title: 'Pesan',
         href: pesanadmin(),
-        icon: FileText,
+        icon: MessageSquare,
     },
 ];
 
@@ -111,7 +111,7 @@ const mitraNavItems: NavItem[] = [
     {
         title: 'Pasang Lowongan',
         href: pasanglowongan(),
-        icon: FileText,
+        icon: FilePlus,
     },
     {
         title: 'Kelola Pelamar',
@@ -121,7 +121,7 @@ const mitraNavItems: NavItem[] = [
     {
         title: 'Pesan',
         href: pesanmitra(),
-        icon: Building2,
+        icon: MessageSquare,
     },
 ];
 

@@ -250,27 +250,6 @@ const systemActivities = [
                         </div>
                     </div>
                 </div>
-
-                <div
-                    class="rounded-[2.5rem] bg-slate-900 p-8 text-white shadow-xl shadow-slate-900/20"
-                >
-                    <div
-                        class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10"
-                    >
-                        <Users class="h-5 w-5 text-sky-400" />
-                    </div>
-                    <h3
-                        class="text-sm font-black tracking-tighter uppercase italic"
-                    >
-                        Manajemen User
-                    </h3>
-                    <p
-                        class="mt-2 text-[10px] leading-relaxed font-medium uppercase italic opacity-60"
-                    >
-                        Total 1.200+ pelamar aktif di Bengkulu. Gunakan fitur
-                        filter untuk manajemen database yang lebih akurat.
-                    </p>
-                </div>
             </div>
         </div>
     </div>

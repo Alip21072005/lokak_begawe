@@ -208,25 +208,6 @@ const recentApplications = [
                         <Search class="h-3 w-3" /> JELAJAHI SEKARANG
                     </Link>
                 </div>
-
-                <div
-                    class="rounded-[2.5rem] border border-slate-200 bg-white p-8"
-                >
-                    <div class="mb-4 flex items-center gap-3">
-                        <div class="h-2 w-2 rounded-full bg-lokak-brand"></div>
-                        <h4
-                            class="text-[10px] font-black tracking-widest text-lokak-text uppercase italic"
-                        >
-                            Tips Hari Ini
-                        </h4>
-                    </div>
-                    <p
-                        class="text-[11px] leading-relaxed font-bold text-lokak-text-muted italic"
-                    >
-                        "Pastikan portofolio kamu mencantumkan proyek terbaru di
-                        Bengkulu untuk menarik minat mitra lokal."
-                    </p>
-                </div>
             </div>
         </div>
     </div>
