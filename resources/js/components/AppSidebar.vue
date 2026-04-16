@@ -7,7 +7,6 @@ import {
     Users,
     Briefcase,
     Building2,
-    Home,
     FilePlus,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
@@ -30,18 +29,13 @@ import {
     pesanadmin,
 } from '@/routes/admin';
 import { kelolapelamarkerja, pasanglowongan, pesanmitra } from '@/routes/mitra';
-import { lamaran, pesan, tawarankerja } from '@/routes/pelamar';
+import { lamaran, pesan, lowongankerja } from '@/routes/pelamar';
 import type { NavItem } from '@/types';
 
 const page = usePage();
 const userRole = computed(() => page.props.auth.user?.role);
 
 const pelamarNavItems: NavItem[] = [
-    {
-        title: 'Beranda',
-        href: '/',
-        icon: Home,
-    },
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -53,8 +47,8 @@ const pelamarNavItems: NavItem[] = [
         icon: FileText,
     },
     {
-        title: 'Tawaran Kerja',
-        href: tawarankerja(),
+        title: 'Lowongan Kerja',
+        href: lowongankerja(),
         icon: Briefcase,
     },
     {
@@ -65,11 +59,6 @@ const pelamarNavItems: NavItem[] = [
 ];
 
 const adminNavItems: NavItem[] = [
-    {
-        title: 'Beranda',
-        href: '/',
-        icon: Home,
-    },
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -98,11 +87,6 @@ const adminNavItems: NavItem[] = [
 ];
 
 const mitraNavItems: NavItem[] = [
-    {
-        title: 'Beranda',
-        href: '/',
-        icon: Home,
-    },
     {
         title: 'Dashboard',
         href: dashboard(),

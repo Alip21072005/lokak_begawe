@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import { Head } from '@inertiajs/vue3';
+import {
+    Search,
+    MapPin,
+    Star,
+    ChevronRight,
+    SlidersHorizontal,
+} from 'lucide-vue-next';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
 
@@ -7,7 +15,6 @@ defineProps<{
     canRegister?: boolean;
 }>();
 
-// Data Dummy untuk Mitra (Aura Kota Bengkulu/Provinsi Bengkulu)
 const mitraList = [
     {
         id: 1,
@@ -84,175 +91,197 @@ const mitraList = [
     >
         <Navbar />
 
-        <main class="mx-auto max-w-7xl px-4 py-10 md:px-11">
-            <div
-                class="mb-12 w-full rounded-[2.5rem] bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] sm:p-12"
-            >
-                <div class="mb-10 flex flex-col items-center text-center">
-                    <h2
-                        class="mb-2 text-sm font-bold tracking-[0.2em] text-slate-400 uppercase"
-                    >
-                        Portal Kemitraan
-                    </h2>
+        <main class="mt-12 w-full px-6 py-12 md:px-16 lg:px-24 xl:px-32">
+            <section class="mb-20">
+                <div class="mb-12 flex flex-col items-start space-y-4">
                     <h1
-                        class="text-3xl leading-tight font-black tracking-tight text-lokak-text uppercase italic"
+                        class="text-4xl font-black tracking-tighter text-lokak-text uppercase italic md:text-6xl"
                     >
-                        Cari <span class="text-lokak-brand">Mitra</span>
+                        CARI <span class="text-lokak-brand">MITRA</span>
                     </h1>
+                    <div class="h-2 w-32 rounded-full bg-lokak-brand"></div>
                     <p
-                        class="mt-2 text-xs font-medium tracking-wide text-lokak-text-muted uppercase"
+                        class="max-w-2xl text-xs font-bold tracking-widest text-slate-400 uppercase italic"
                     >
                         Temukan Perusahaan Penyedia Lowongan Kerja Terbaik di
-                        Bengkulu
+                        Provinsi Bengkulu. Kolaborasi bersama mitra terpercaya
+                        untuk karir masa depanmu.
                     </p>
                 </div>
 
-                <section class="mb-12">
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
-                        <input
-                            type="text"
-                            placeholder="Masukan Kata Kunci (contoh: 'Teknologi')"
-                            class="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all outline-none placeholder:text-slate-400 focus:border-lokak-brand focus:bg-white focus:ring-1 focus:ring-lokak-brand"
-                        />
-                        <select
-                            class="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-400 shadow-sm transition-all outline-none focus:border-lokak-brand focus:bg-white focus:ring-1 focus:ring-lokak-brand"
-                        >
-                            <option>Kategori Industri</option>
-                            <option>Teknologi</option>
-                            <option>Pendidikan</option>
-                            <option>Kesehatan</option>
-                        </select>
-                        <input
-                            type="text"
-                            placeholder="Lokasi (contoh: 'Kota Bengkulu')"
-                            class="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all outline-none placeholder:text-slate-400 focus:border-lokak-brand focus:bg-white focus:ring-1 focus:ring-lokak-brand"
-                        />
+                <div
+                    class="rounded-[2.5rem] border border-slate-100 bg-white p-6 shadow-2xl shadow-slate-200/50 md:p-10"
+                >
+                    <div class="grid grid-cols-1 gap-4 lg:grid-cols-4">
+                        <div class="relative">
+                            <Search
+                                class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Kata Kunci (Contoh: Teknologi)"
+                                class="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 pr-4 pl-11 text-xs font-bold transition-all outline-none focus:border-lokak-brand focus:bg-white focus:ring-4 focus:ring-lokak-brand/5"
+                            />
+                        </div>
+                        <div class="relative">
+                            <SlidersHorizontal
+                                class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400"
+                            />
+                            <select
+                                class="h-14 w-full appearance-none rounded-2xl border border-slate-100 bg-slate-50 pr-4 pl-11 text-xs font-bold text-slate-500 transition-all outline-none focus:border-lokak-brand focus:bg-white"
+                            >
+                                <option>Semua Industri</option>
+                                <option>Teknologi</option>
+                                <option>Pendidikan</option>
+                                <option>Kesehatan</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <MapPin
+                                class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400"
+                            />
+                            <input
+                                type="text"
+                                placeholder="Lokasi (Contoh: Mukomuko)"
+                                class="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 pr-4 pl-11 text-xs font-bold transition-all outline-none focus:border-lokak-brand focus:bg-white focus:ring-4 focus:ring-lokak-brand/5"
+                            />
+                        </div>
                         <button
-                            class="flex h-12 items-center justify-center gap-2 rounded-xl bg-lokak-brand text-sm font-black text-white uppercase shadow-lg shadow-lokak-brand/20 transition-all hover:bg-lokak-brand-dark hover:shadow-lokak-brand/30 active:scale-[0.98]"
+                            class="flex h-14 items-center justify-center gap-3 rounded-2xl bg-lokak-brand text-xs font-black text-white uppercase italic shadow-xl shadow-sky-900/20 transition-all hover:-translate-y-1 hover:bg-lokak-brand-dark active:scale-95"
                         >
-                            <span>🔍</span> CARI MITRA
+                            CARI SEKARANG
                         </button>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <section class="mb-10">
-                    <div class="mb-8 flex flex-col items-start">
+            <section class="mb-24">
+                <div class="mb-12 flex items-center justify-between">
+                    <div class="flex flex-col">
                         <h2
-                            class="text-lg font-black tracking-tight text-lokak-text uppercase italic"
+                            class="text-xl font-black tracking-tight text-lokak-text uppercase italic"
                         >
-                            Mitra <span class="text-lokak-brand">Teratas</span>
+                            MITRA <span class="text-lokak-brand">TERATAS</span>
                         </h2>
                         <div
-                            class="mt-1 h-1 w-20 rounded-full bg-slate-200"
+                            class="mt-2 h-1.5 w-16 rounded-full bg-slate-200"
                         ></div>
                     </div>
-
-                    <div
-                        class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4"
+                    <span
+                        class="text-[10px] font-black text-slate-400 uppercase italic"
+                        >Menampilkan 128 Mitra</span
                     >
-                        <div
-                            v-for="mitra in mitraList"
-                            :key="mitra.id"
-                            class="group relative flex flex-col items-center rounded-xl border border-slate-200 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-xl hover:shadow-sky-900/5"
-                        >
-                            <h3
-                                class="mb-0.5 text-xs font-black tracking-tight text-lokak-brand uppercase italic transition-colors group-hover:text-lokak-brand-dark"
-                            >
-                                {{ mitra.name }}
-                            </h3>
-                            <p
-                                class="mb-4 text-xs font-bold text-lokak-text-muted uppercase"
-                            >
-                                {{ mitra.location }}
-                            </p>
-
-                            <div
-                                class="mb-4 flex h-20 w-20 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-3xl shadow-inner transition-transform group-hover:scale-110"
-                            >
-                                {{ mitra.logo }}
-                            </div>
-
-                            <div
-                                class="mt-2 mb-4 flex w-full items-center justify-between"
-                            >
-                                <span class="text-xs font-bold text-yellow-500"
-                                    >⭐ {{ mitra.rating }}</span
-                                >
-                                <span
-                                    class="rounded-md bg-lokak-brand px-3 py-1 text-xs font-bold text-white uppercase shadow-sm"
-                                    >{{ mitra.jobs }}</span
-                                >
-                            </div>
-
-                            <button
-                                class="w-full rounded-xl bg-slate-100 py-2.5 text-xs font-black text-lokak-text uppercase transition hover:bg-slate-200 hover:text-lokak-brand"
-                            >
-                                Lihat Detail
-                            </button>
-                        </div>
-                    </div>
-                </section>
+                </div>
 
                 <div
-                    class="mt-12 flex items-center justify-center gap-2 text-xs font-bold text-slate-500"
+                    class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                 >
-                    <button
-                        class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm transition hover:bg-slate-50 hover:text-lokak-brand"
+                    <div
+                        v-for="mitra in mitraList"
+                        :key="mitra.id"
+                        class="group relative flex flex-col items-center rounded-[2.5rem] border border-slate-100 bg-white p-8 text-center shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-sky-300 hover:shadow-2xl hover:shadow-sky-900/10"
                     >
-                        ←
+                        <div
+                            class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-lokak-brand px-4 py-1 text-[8px] font-black tracking-widest text-white uppercase italic opacity-0 transition-opacity group-hover:opacity-100"
+                        >
+                            Trusted Partner
+                        </div>
+
+                        <div
+                            class="mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-4xl shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
+                        >
+                            {{ mitra.logo }}
+                        </div>
+
+                        <h3
+                            class="mb-2 text-sm font-black text-lokak-text uppercase italic transition-colors group-hover:text-lokak-brand"
+                        >
+                            {{ mitra.name }}
+                        </h3>
+
+                        <p
+                            class="mb-6 flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase"
+                        >
+                            <MapPin class="h-3 w-3" /> {{ mitra.location }}
+                        </p>
+
+                        <div
+                            class="mb-8 flex w-full items-center justify-between gap-2 border-t border-slate-50 pt-6"
+                        >
+                            <div
+                                class="flex items-center gap-1 text-[10px] font-black text-amber-500"
+                            >
+                                <Star class="h-3 w-3 fill-amber-500" />
+                                {{ mitra.rating }}
+                            </div>
+                            <span
+                                class="rounded-xl bg-sky-50 px-3 py-1.5 text-[9px] font-black text-lokak-brand uppercase italic"
+                            >
+                                {{ mitra.jobs }}
+                            </span>
+                        </div>
+
+                        <button
+                            class="group/btn flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-4 text-[10px] font-black text-white uppercase italic transition-all hover:bg-lokak-brand active:scale-95"
+                        >
+                            LIHAT PROFIL
+                            <ChevronRight
+                                class="h-3 w-3 transition-transform group-hover/btn:translate-x-1"
+                            />
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="flex items-center justify-center gap-3">
+                <button
+                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
+                >
+                    ←
+                </button>
+                <div class="flex gap-2">
+                    <button
+                        v-for="n in 3"
+                        :key="n"
+                        :class="
+                            n === 1
+                                ? 'bg-lokak-brand text-white shadow-lg shadow-sky-900/20'
+                                : 'border border-slate-100 bg-white text-slate-400 hover:border-lokak-brand hover:text-lokak-brand'
+                        "
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl text-xs font-black transition-all"
+                    >
+                        {{ n }}
                     </button>
-                    <button
-                        class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-50 hover:text-lokak-brand"
+                    <span
+                        class="flex h-12 w-12 items-center justify-center text-slate-300"
+                        >...</span
                     >
-                        1
-                    </button>
                     <button
-                        class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-50 hover:text-lokak-brand"
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-400 transition-all hover:border-lokak-brand hover:text-lokak-brand"
                     >
-                        2
-                    </button>
-                    <button
-                        class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-50 hover:text-lokak-brand"
-                    >
-                        3
-                    </button>
-                    <button
-                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-lokak-brand text-white shadow-lg shadow-lokak-brand/20"
-                    >
-                        4
-                    </button>
-                    <button
-                        class="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-50 hover:text-lokak-brand"
-                    >
-                        5
-                    </button>
-                    <span class="px-2 text-slate-400">...578</span>
-                    <button
-                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-lokak-brand text-white shadow-lg shadow-lokak-brand/20 transition hover:bg-lokak-brand-dark"
-                    >
-                        →
+                        24
                     </button>
                 </div>
+                <button
+                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
+                >
+                    →
+                </button>
             </div>
         </main>
+
         <Footer />
     </div>
 </template>
 
 <style scoped>
-/* Menghilangkan ring fokus default browser */
-input:focus,
-select:focus,
-textarea:focus,
-button:focus {
+/* Reset Fokus Global */
+*:focus {
     outline: none !important;
 }
 
-/* Memastikan placeholder memiliki warna yang konsisten */
-input::placeholder,
-select::placeholder,
-textarea::placeholder {
-    font-weight: 500;
-    opacity: 0.6;
+/* Transisi Halus Global */
+.transition-all {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>
