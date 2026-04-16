@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3'; // Tambahkan Link di sini
+import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -23,6 +23,12 @@ defineProps<{
     canResetPassword: boolean;
     canRegister: boolean;
 }>();
+
+// Fungsi untuk menangani klik tombol Google
+const loginWithGoogle = () => {
+    // Arahkan langsung ke rute backend Laravel untuk inisiasi OAuth Google
+    window.location.href = '/auth/google/redirect';
+};
 </script>
 
 <template>
@@ -68,10 +74,11 @@ defineProps<{
                 </div>
             </Transition>
 
-            <div class="mb-8 grid gap-3">
+            <div class="mb-8">
                 <Button
+                    @click="loginWithGoogle"
                     variant="outline"
-                    class="h-12 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
+                    class="flex h-12 w-full items-center justify-center rounded-xl border-slate-200 bg-white font-semibold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
                     type="button"
                 >
                     <img
@@ -80,18 +87,6 @@ defineProps<{
                         alt="Google"
                     />
                     Lanjutkan dengan Google
-                </Button>
-                <Button
-                    variant="outline"
-                    class="h-12 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
-                    type="button"
-                >
-                    <img
-                        src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg"
-                        class="mr-3 h-5 w-5"
-                        alt="Facebook"
-                    />
-                    Lanjutkan dengan Facebook
                 </Button>
             </div>
 
@@ -102,8 +97,9 @@ defineProps<{
                 <div class="relative flex justify-center text-[10px] uppercase">
                     <span
                         class="bg-white px-3 font-bold tracking-widest text-slate-400"
-                        >Atau Gunakan Email</span
                     >
+                        Atau Gunakan Email
+                    </span>
                 </div>
             </div>
 
@@ -187,8 +183,9 @@ defineProps<{
                         >
                             <span
                                 class="bg-white px-3 font-bold tracking-widest text-slate-400"
-                                >Belum Punya Akun?</span
                             >
+                                Belum Punya Akun?
+                            </span>
                         </div>
                     </div>
 

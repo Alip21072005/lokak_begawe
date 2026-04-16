@@ -18,6 +18,11 @@ const submit = () => {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
+
+// Fungsi untuk menangani klik tombol Google
+const loginWithGoogle = () => {
+    window.location.href = '/auth/google/redirect';
+};
 </script>
 
 <template>
@@ -45,6 +50,35 @@ const submit = () => {
                 >
                     Temukan pekerjaan impianmu di sini
                 </p>
+            </div>
+
+            <div class="mb-8">
+                <Button
+                    @click="loginWithGoogle"
+                    variant="outline"
+                    class="flex h-12 w-full items-center justify-center rounded-xl border-slate-200 bg-white font-semibold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
+                    type="button"
+                >
+                    <img
+                        src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                        class="mr-3 h-5 w-5"
+                        alt="Google"
+                    />
+                    Daftar dengan Google
+                </Button>
+            </div>
+
+            <div class="relative mb-8">
+                <div class="absolute inset-0 flex items-center">
+                    <span class="w-full border-t border-slate-200"></span>
+                </div>
+                <div class="relative flex justify-center text-[10px] uppercase">
+                    <span
+                        class="bg-white px-3 font-bold tracking-widest text-slate-400"
+                    >
+                        Atau Daftar dengan Email
+                    </span>
+                </div>
             </div>
 
             <form @submit.prevent="submit" class="space-y-5">
@@ -121,7 +155,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <div class="pt-6">
+                <div class="pt-4">
                     <Button
                         type="submit"
                         class="h-14 w-full rounded-2xl bg-sky-700 font-bold tracking-[0.15em] text-white uppercase shadow-lg shadow-sky-700/20 transition-all hover:bg-sky-800 hover:shadow-sky-800/30 active:scale-[0.98]"
@@ -160,8 +194,9 @@ const submit = () => {
                         >
                             <span
                                 class="bg-white px-3 font-bold tracking-widest text-slate-400"
-                                >ATAU</span
                             >
+                                ATAU
+                            </span>
                         </div>
                     </div>
 
@@ -185,5 +220,10 @@ const submit = () => {
 <style scoped>
 input:focus {
     outline: none !important;
+}
+
+input::placeholder {
+    font-weight: 500;
+    opacity: 0.6;
 }
 </style>
