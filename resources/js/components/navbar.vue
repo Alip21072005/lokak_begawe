@@ -1,252 +1,179 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
-// State untuk membuka/menutup menu burger
-const isOpen = ref(false);
+const isMobileMenuOpen = ref(false);
+const isScrolled = ref(false);
+
+// Deteksi scroll untuk efek transparan di desktop
+const handleScroll = () => {
+    isScrolled.value = window.scrollY > 20;
+};
+
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <template>
     <header
-        class="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/90 text-lokak-text shadow-sm backdrop-blur-md transition-all"
+        class="fixed top-0 z-60 w-full transition-all duration-500"
+        :class="[
+            isScrolled
+                ? 'border-b border-white/20 bg-white/40 py-3 shadow-sm backdrop-blur-md'
+                : 'border-b border-slate-100 bg-white py-5',
+        ]"
     >
         <div
-            class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 md:px-11"
+            class="flex w-full items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32"
         >
-            <Link
-                href="/"
-                class="flex shrink-0 items-center gap-3 transition-transform hover:scale-[1.02]"
-            >
+            <Link href="/" class="group flex shrink-0 items-center gap-4">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-lokak-brand font-black text-white italic shadow-inner"
+                    class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-lokak-brand shadow-lg transition-transform group-hover:rotate-6"
                 >
-                    <img src="/Logo.png" alt="" />
+                    <img
+                        src="/Logo.png"
+                        alt="Logo"
+                        class="h-full w-full object-cover"
+                    />
                 </div>
-                <div class="flex flex-col leading-tight">
+                <div class="flex flex-col leading-none">
                     <span
-                        class="text-sm font-black tracking-tighter text-lokak-text uppercase"
+                        class="text-base font-black tracking-tighter text-lokak-text uppercase italic"
                     >
-                        LOKAKBEGAWE
+                        LOKAK<span class="text-lokak-brand">BEGAWE</span>
                     </span>
                     <span
-                        class="text-[9px] font-bold text-lokak-text-muted uppercase italic"
+                        class="mt-1 text-[9px] font-bold tracking-widest text-slate-400 uppercase italic"
                     >
-                        Ado Lokak, Pela Begawe
+                        Bengkulu Job Portal
                     </span>
                 </div>
             </Link>
 
-            <button
-                @click="isOpen = !isOpen"
-                class="z-50 rounded-lg p-2 text-lokak-text transition-colors hover:bg-slate-100 focus:outline-none lg:hidden"
-            >
-                <svg
-                    v-if="!isOpen"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 6h16M4 12h16m-7 6h7"
-                    />
-                </svg>
-                <svg
-                    v-else
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                    />
-                </svg>
-            </button>
-
-            <div
-                class="hidden items-center gap-8 text-[11px] font-extrabold text-slate-500 uppercase lg:flex"
+            <nav
+                class="hidden items-center gap-10 text-[11px] font-black tracking-widest uppercase italic lg:flex"
             >
                 <Link
                     href="/"
-                    class="py-1 transition-colors hover:text-lokak-brand"
-                    :class="{
-                        'border-b-2 border-lokak-brand text-lokak-brand':
-                            $page.url === '/',
-                    }"
+                    class="link-desktop"
+                    :class="{ active: $page.url === '/' }"
+                    >Beranda</Link
                 >
-                    Beranda
-                </Link>
                 <Link
                     href="/lowongan"
-                    class="py-1 transition-colors hover:text-lokak-brand"
-                    :class="{
-                        'border-b-2 border-lokak-brand text-lokak-brand':
-                            $page.url.startsWith('/lowongan'),
-                    }"
+                    class="link-desktop"
+                    :class="{ active: $page.url.startsWith('/lowongan') }"
+                    >Lowongan</Link
                 >
-                    Lowongan
-                </Link>
                 <Link
                     href="/mitra"
-                    class="py-1 transition-colors hover:text-lokak-brand"
-                    :class="{
-                        'border-b-2 border-lokak-brand text-lokak-brand':
-                            $page.url.startsWith('/mitra'),
-                    }"
+                    class="link-desktop"
+                    :class="{ active: $page.url.startsWith('/mitra') }"
+                    >Mitra</Link
                 >
-                    Mitra
-                </Link>
 
                 <div
-                    class="ml-4 flex items-center gap-3 border-l border-slate-200 pl-6"
+                    class="ml-6 flex items-center gap-4 border-l border-slate-200/50 pl-10"
                 >
                     <template v-if="!$page.props.auth.user">
-                        <Link
-                            href="/login"
-                            class="rounded-xl bg-lokak-brand px-5 py-2.5 text-[10px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-all hover:bg-lokak-brand-dark active:scale-95"
+                        <Link href="/login" class="btn-primary-small"
+                            >MASUK</Link
                         >
-                            LOGIN
-                        </Link>
                     </template>
                     <template v-else>
-                        <Link
-                            v-if="$page.props.auth.user.role === 'admin'"
-                            href="/dashboard/admin"
-                            class="rounded-xl bg-lokak-brand px-5 py-2.5 text-[10px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-all hover:bg-lokak-brand-dark active:scale-95"
+                        <Link href="/dashboard" class="btn-primary-small"
+                            >DASHBOARD</Link
                         >
-                            DASHBOARD ADMIN
-                        </Link>
-
-                        <Link
-                            v-else-if="$page.props.auth.user.role === 'pelamar'"
-                            href="/dashboard/pelamar"
-                            class="rounded-xl bg-lokak-brand px-5 py-2.5 text-[10px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-all hover:bg-lokak-brand-dark active:scale-95"
-                        >
-                            DASHBOARD PELAMAR
-                        </Link>
-
-                        <Link
-                            v-else-if="$page.props.auth.user.role === 'mitra'"
-                            href="/dashboard/mitra"
-                            class="rounded-xl bg-lokak-brand px-5 py-2.5 text-[10px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-all hover:bg-lokak-brand-dark active:scale-95"
-                        >
-                            DASHBOARD MITRA
-                        </Link>
                     </template>
-
-                    <button
-                        class="ml-2 rounded-full p-2 text-lg text-yellow-500 transition-colors hover:bg-slate-100"
-                    >
-                        🔔
-                    </button>
+                    <button class="icon-btn-custom">🔔</button>
                 </div>
+            </nav>
+
+            <div class="flex items-center gap-3 lg:hidden">
+                <button class="icon-btn-custom h-10 w-10 text-lg">🔔</button>
+                <button
+                    @click="isMobileMenuOpen = true"
+                    class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md active:scale-95"
+                >
+                    ☰
+                </button>
             </div>
         </div>
-
-        <transition
-            enter-active-class="transition duration-200 ease-out"
-            enter-from-class="transform -translate-y-4 opacity-0"
-            enter-to-class="transform translate-y-0 opacity-100"
-            leave-active-class="transition duration-150 ease-in"
-            leave-from-class="transform translate-y-0 opacity-100"
-            leave-to-class="transform -translate-y-4 opacity-0"
-        >
-            <div
-                v-show="isOpen"
-                class="absolute w-full border-t border-slate-100 bg-white shadow-xl lg:hidden"
-            >
-                <nav
-                    class="flex flex-col gap-2 p-6 text-xs font-extrabold text-slate-500 uppercase"
-                >
-                    <Link
-                        href="/"
-                        @click="isOpen = false"
-                        class="rounded-xl px-4 py-3 transition-colors"
-                        :class="{
-                            'bg-sky-50 text-lokak-brand': $page.url === '/',
-                            'hover:bg-slate-50 hover:text-lokak-brand':
-                                $page.url !== '/',
-                        }"
-                    >
-                        Beranda
-                    </Link>
-                    <Link
-                        href="/lowongan"
-                        @click="isOpen = false"
-                        class="rounded-xl px-4 py-3 transition-colors"
-                        :class="{
-                            'bg-sky-50 text-lokak-brand':
-                                $page.url.startsWith('/lowongan'),
-                            'hover:bg-slate-50 hover:text-lokak-brand':
-                                !$page.url.startsWith('/lowongan'),
-                        }"
-                    >
-                        Lowongan
-                    </Link>
-                    <Link
-                        href="/mitra"
-                        @click="isOpen = false"
-                        class="rounded-xl px-4 py-3 transition-colors"
-                        :class="{
-                            'bg-sky-50 text-lokak-brand':
-                                $page.url.startsWith('/mitra'),
-                            'hover:bg-slate-50 hover:text-lokak-brand':
-                                !$page.url.startsWith('/mitra'),
-                        }"
-                    >
-                        Mitra
-                    </Link>
-
-                    <hr class="my-4 border-slate-100" />
-
-                    <template v-if="!$page.props.auth.user">
-                        <Link
-                            href="/login"
-                            @click="isOpen = false"
-                            class="rounded-xl bg-lokak-brand py-3.5 text-center text-[11px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-colors hover:bg-lokak-brand-dark"
-                        >
-                            LOGIN
-                        </Link>
-                    </template>
-                    <template v-else>
-                        <Link
-                            v-if="$page.props.auth.user.role === 'admin'"
-                            href="/dashboard/admin"
-                            @click="isOpen = false"
-                            class="rounded-xl bg-lokak-brand py-3.5 text-center text-[11px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-colors hover:bg-lokak-brand-dark"
-                        >
-                            DASHBOARD ADMIN
-                        </Link>
-
-                        <Link
-                            v-else-if="$page.props.auth.user.role === 'pelamar'"
-                            href="/dashboard/pelamar"
-                            @click="isOpen = false"
-                            class="rounded-xl bg-lokak-brand py-3.5 text-center text-[11px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-colors hover:bg-lokak-brand-dark"
-                        >
-                            DASHBOARD PELAMAR
-                        </Link>
-
-                        <Link
-                            v-else-if="$page.props.auth.user.role === 'mitra'"
-                            href="/dashboard/mitra"
-                            @click="isOpen = false"
-                            class="rounded-xl bg-lokak-brand py-3.5 text-center text-[11px] font-black text-white italic shadow-lg shadow-lokak-brand/20 transition-colors hover:bg-lokak-brand-dark"
-                        >
-                            DASHBOARD MITRA
-                        </Link>
-                    </template>
-                </nav>
-            </div>
-        </transition>
     </header>
+
+    <Teleport to="body">
+        <Transition name="fade">
+            <div
+                v-if="isMobileMenuOpen"
+                @click="isMobileMenuOpen = false"
+                class="fixed inset-0 z-100 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+            ></div>
+        </Transition>
+
+        <Transition name="slide">
+            <div
+                v-if="isMobileMenuOpen"
+                class="fixed top-0 right-0 z-101 h-full w-70 bg-white shadow-2xl lg:hidden"
+            >
+                <div class="flex h-full flex-col">
+                    <div
+                        class="flex items-center justify-between border-b border-slate-100 p-6"
+                    >
+                        <span class="font-black text-lokak-text italic"
+                            >MENU</span
+                        >
+                        <button
+                            @click="isMobileMenuOpen = false"
+                            class="text-xl text-slate-400"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col gap-1 p-6">
+                        <Link
+                            href="/"
+                            @click="isMobileMenuOpen = false"
+                            class="rounded-xl px-4 py-3 font-bold text-slate-700 uppercase italic hover:bg-slate-50"
+                            >Beranda</Link
+                        >
+                        <Link
+                            href="/lowongan"
+                            @click="isMobileMenuOpen = false"
+                            class="rounded-xl px-4 py-3 font-bold text-slate-700 uppercase italic hover:bg-slate-50"
+                            >Lowongan</Link
+                        >
+                        <Link
+                            href="/mitra"
+                            @click="isMobileMenuOpen = false"
+                            class="rounded-xl px-4 py-3 font-bold text-slate-700 uppercase italic hover:bg-slate-50"
+                            >Mitra</Link
+                        >
+                    </div>
+
+                    <div class="mt-auto border-t border-slate-100 p-6">
+                        <template v-if="!$page.props.auth.user">
+                            <Link
+                                href="/login"
+                                class="flex w-full justify-center rounded-xl bg-lokak-brand py-4 font-bold text-white shadow-lg shadow-lokak-brand/20"
+                                >MASUK</Link
+                            >
+                        </template>
+                        <template v-else>
+                            <Link
+                                href="/dashboard"
+                                class="flex w-full justify-center rounded-xl bg-lokak-brand py-4 font-bold text-white"
+                                >DASHBOARD</Link
+                            >
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </Transition>
+    </Teleport>
 </template>

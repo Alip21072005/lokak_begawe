@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
-class TawarankerjaController extends Controller
+class LowongankerjaController extends Controller
 {
     public function index()
     {
@@ -16,11 +16,11 @@ class TawarankerjaController extends Controller
 
 
 
-        return Inertia::render('Pelamar/Tawarankerja', [
+        return Inertia::render('Pelamar/Lowongankerja', [
             'auth' => [
                 'user' => $user->load('pelamar')
             ],
-            'tawaranKerja' => []
+            'lowonganKerja' => []
         ]);
     }
 }

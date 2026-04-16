@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-
 @import 'tw-animate-css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -8,62 +7,47 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Font */
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 
+    /* Radius */
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
 
     /* ==================================================
-       Warna Kustom Lokak Begawe
-       
+       Warna Kustom Lokak Begawe (Theme Variables)
        ================================================== */
-    --color-lokak-brand: #0369a1; /* Setara dengan sky-700 */
-    --color-lokak-brand-dark: #075985; /* Setara dengan sky-800 */
-    --color-lokak-bg: #f8fafc; /* Setara dengan slate-50 */
-    --color-lokak-text: #0f172a; /* Setara dengan slate-900 */
-    --color-lokak-text-muted: #64748b; /* Setara dengan slate-500 */
-    --color-lokak-footer: #0f172a; /* Setara dengan slate-900 */
+    --color-lokak-brand: #0369a1; /* sky-700 */
+    --color-lokak-brand-dark: #075985; /* sky-800 */
+    --color-lokak-bg: #f8fafc; /* slate-50 */
+    --color-lokak-text: #0f172a; /* slate-900 */
+    --color-lokak-text-muted: #64748b; /* slate-500 */
+    --color-lokak-footer: #0f172a; /* slate-900 */
 
-    /* ================================================== */
-
+    /* Shadcn/UI & Sidebar Compatibility Colors */
     --color-background: var(--background);
     --color-foreground: var(--foreground);
-
     --color-card: var(--card);
     --color-card-foreground: var(--card-foreground);
-
     --color-popover: var(--popover);
     --color-popover-foreground: var(--popover-foreground);
-
     --color-primary: var(--primary);
     --color-primary-foreground: var(--primary-foreground);
-
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
-
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
-
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
-
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
-
     --color-border: var(--border);
     --color-input: var(--input);
     --color-ring: var(--ring);
-
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-
     --color-sidebar: var(--sidebar-background);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar-primary: var(--sidebar-primary);
@@ -74,14 +58,9 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
+/* ==================================================
+   Base Styles
+   ================================================== */
 @layer base {
     *,
     ::after,
@@ -90,18 +69,64 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
-}
 
-@layer utilities {
-    body,
-    html {
-        --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-            'Noto Color Emoji';
+    body {
+        @apply bg-lokak-bg text-lokak-text antialiased;
+        font-family: var(--font-sans);
+    }
+
+    * {
+        @apply border-border outline-ring/50;
     }
 }
 
+/* ==================================================
+   Custom Components (Navbar & UI Lokak)
+   ================================================== */
+@layer components {
+    /* Navbar Desktop Links */
+    .link-desktop {
+        @apply font-bold text-slate-500 transition-colors duration-300 hover:text-lokak-brand;
+    }
+
+    .link-desktop.active {
+        @apply text-lokak-brand;
+    }
+
+    /* Primary Button Style */
+    .btn-primary-small {
+        @apply rounded-2xl bg-lokak-brand px-7 py-3.5 text-[10px] font-black tracking-widest text-white uppercase italic shadow-xl transition-all duration-300 hover:bg-lokak-brand-dark hover:shadow-lokak-brand/20 active:scale-95;
+    }
+
+    /* Icon Button (Notif/Hamburger) */
+    .icon-btn-custom {
+        @apply flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-xl transition-all duration-300 hover:scale-105 hover:bg-slate-100 active:scale-95;
+    }
+
+    /* --- Animasi Sidebar (Slide dari Kanan) --- */
+    .slide-enter-active,
+    .slide-leave-active {
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .slide-enter-from,
+    .slide-leave-to {
+        transform: translateX(100%);
+    }
+
+    /* --- Animasi Backdrop (Fade In/Out) --- */
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: opacity 0.3s ease;
+    }
+    .fade-enter-from,
+    .fade-leave-to {
+        opacity: 0;
+    }
+}
+
+/* ==================================================
+   Root Variables (Shadcn/UI & Sidebar Colors)
+   ================================================== */
 :root {
     --background: #ffffff;
     --foreground: hsl(0 0% 3.9%);
@@ -113,8 +138,8 @@
     --primary-foreground: hsl(0, 0%, 100%);
     --secondary: hsl(0 0% 92.1%);
     --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0, 0%, 100%);
-    --muted-foreground: hsl(0, 0%, 100%);
+    --muted: hsl(210 40% 96.1%);
+    --muted-foreground: hsl(215.4 16.3% 46.9%);
     --accent: hsl(0 0% 96.1%);
     --accent-foreground: hsl(0 0% 9%);
     --destructive: hsl(0 84.2% 60.2%);
@@ -122,23 +147,20 @@
     --border: hsl(0 0% 92.8%);
     --input: hsl(0 0% 89.8%);
     --ring: hsl(0 0% 3.9%);
-    --chart-1: hsl(12 76% 61%);
-    --chart-2: hsl(173 58% 39%);
-    --chart-3: hsl(197 37% 24%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(27 87% 67%);
-    --radius: 0.5rem;
-    --sidebar-background: #0f172a; /* Gelap elegan (slate-900) */
-    --sidebar-foreground: #f8fafc; /* Teks terang (slate-50) */
-    --sidebar-primary: #0369a1; /* Aksen biru utama (sky-700) */
-    --sidebar-primary-foreground: #ffffff; /* Teks di atas aksen biru */
-    --sidebar-accent: #1e293b; /* Warna latar saat menu di-hover (slate-800) */
-    --sidebar-accent-foreground: #ffffff; /* Warna teks saat menu di-hover */
-    --sidebar-border: #1e293b; /* Garis pembatas gelap samar */
-    --sidebar-ring: #0369a1; /* Warna ring biru */
-    --sidebar: #0f172a;
+    --radius: 0.75rem;
+
+    /* Sidebar Theme */
+    --sidebar-background: #0f172a;
+    --sidebar-foreground: #f8fafc;
+    --sidebar-primary: #0369a1;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #1e293b;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #1e293b;
+    --sidebar-ring: #0369a1;
 }
 
+/* Dark Mode Variables */
 .dark {
     --background: hsl(0 0% 3.9%);
     --foreground: hsl(0 0% 98%);
@@ -159,27 +181,4 @@
     --border: hsl(0 0% 14.9%);
     --input: hsl(0 0% 14.9%);
     --ring: hsl(0 0% 83.1%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
-}
-
-@layer base {
-    * {
-        @apply border-border outline-ring/50;
-    }
-    body {
-        @apply bg-lokak-bg text-lokak-text; /* Saya ubah default body-nya sekalian! */
-    }
 }
