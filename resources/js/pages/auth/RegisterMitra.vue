@@ -139,7 +139,7 @@ const submit = () => {
                     </div>
                 </div>
 
-                <div class="pt-6">
+                <div class="pt-4">
                     <Button
                         type="submit"
                         class="h-14 w-full rounded-2xl bg-sky-700 font-bold tracking-[0.15em] text-white uppercase shadow-lg shadow-sky-700/20 transition-all hover:bg-sky-800 hover:shadow-sky-800/30 active:scale-[0.98]"
@@ -180,8 +180,9 @@ const submit = () => {
                         >
                             <span
                                 class="bg-white px-3 font-bold tracking-widest text-slate-400"
-                                >ATAU</span
                             >
+                                ATAU
+                            </span>
                         </div>
                     </div>
 
@@ -203,7 +204,14 @@ const submit = () => {
 </template>
 
 <style scoped>
+/* Menghilangkan ring fokus default browser */
 input:focus {
     outline: none !important;
+}
+
+/* Memastikan placeholder memiliki warna yang konsisten */
+input::placeholder {
+    font-weight: 500;
+    opacity: 0.6;
 }
 </style>
