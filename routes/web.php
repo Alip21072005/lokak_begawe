@@ -21,6 +21,9 @@ use App\Http\Controllers\Pelamar\LamaranController;
 use App\Http\Controllers\Pelamar\PesanController;
 use App\Http\Controllers\Pelamar\LowongankerjaController;
 
+// Import Controller Google Auth yang baru ditambahkan
+use App\Http\Controllers\Auth\GoogleController;
+
 // ==========================================
 // 1. PUBLIC ROUTES
 // ==========================================
@@ -44,6 +47,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/register/mitra', fn() => inertia('auth/RegisterMitra'))->name('register.mitra');
     Route::post('/register/pelamar', [RegisterPelamarController::class, 'store'])->name('register.pelamar.post');
     Route::post('/register/mitra', [RegisterMitraController::class, 'store'])->name('register.mitra.post');
+
+    // --- GOOGLE AUTH ROUTES ---
+    Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
+    Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
 });
 
 // ==========================================
