@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-// Import Controller (Pastikan nama controller sesuai dengan file kamu)
+// Import Controller
 use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\Admin\KelolapelamarController;
 use App\Http\Controllers\Admin\KelolalowonganController;
@@ -28,8 +28,13 @@ Route::inertia('/', 'Welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('welcome');
 
+// Rute Halaman List Lowongan
 Route::inertia('/lowongan', 'Lowongan')->name('lowongan');
+
 Route::inertia('/mitra', 'Mitra')->name('mitra');
+
+Route::inertia('/detail/detaillowongan', 'Detail/Detaillowongan')->name('detail.detaillowongan');
+
 
 // ==========================================
 // 2. GUEST ROUTES (Hanya untuk yang BELUM Login)
@@ -47,16 +52,15 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth'])->group(function () {
 
     // --- DASHBOARD REDIRECTOR ---
-    // Mengarahkan user ke dashboard masing-masing sesuai Role
     Route::get('/dashboard', function () {
         $user = Auth::user();
         $role = $user->role instanceof \UnitEnum ? $user->role->value : $user->role;
 
         return match ($role) {
-            'admin'   => redirect()->route('dashboard.admin'),
-            'mitra'   => redirect()->route('dashboard.mitra'),
+            'admin' => redirect()->route('dashboard.admin'),
+            'mitra' => redirect()->route('dashboard.mitra'),
             'pelamar' => redirect()->route('dashboard.pelamar'),
-            default   => redirect('/'),
+            default => redirect('/'),
         };
     })->name('dashboard');
 
@@ -67,7 +71,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/admin/kelolamitra', [KelolamitraController::class, 'index'])->name('admin.kelolamitra');
     Route::get('/dashboard/admin/pesanadmin', [PesanadminController::class, 'index'])->name('admin.pesanadmin');
 
-    // --- MITRA (Fix Eager Loading) ---
+    // --- MITRA ---
     Route::get('/dashboard/mitra', function () {
         $user = User::with('mitra')->find(Auth::id());
         return inertia('Mitra/Dashboard', ['auth' => ['user' => $user]]);
@@ -76,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/mitra/pasanglowongan', [PasanglowonganController::class, 'index'])->name('mitra.pasanglowongan');
     Route::get('/dashboard/mitra/pesanmitra', [PesanmitraController::class, 'index'])->name('mitra.pesanmitra');
 
-    // --- PELAMAR (Fix Eager Loading) ---
+    // --- PELAMAR ---
     Route::get('/dashboard/pelamar', function () {
         $user = User::with('pelamar')->find(Auth::id());
         return inertia('Pelamar/Dashboard', ['auth' => ['user' => $user]]);
@@ -84,6 +88,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/pelamar/lamaran', [LamaranController::class, 'index'])->name('pelamar.lamaran');
     Route::get('/dashboard/pelamar/pesan', [PesanController::class, 'index'])->name('pelamar.pesan');
     Route::get('/dashboard/pelamar/lowongankerja', [LowongankerjaController::class, 'index'])->name('pelamar.lowongankerja');
+
+
 });
 
 require __DIR__ . '/settings.php';

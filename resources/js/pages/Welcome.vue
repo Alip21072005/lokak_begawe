@@ -113,7 +113,7 @@ const mitraTeratas = [
             >
                 <div class="z-10 lg:col-span-8">
                     <h1
-                        class="mb-10 text-6xl leading-[0.8] font-black tracking-tighter uppercase italic md:text-8xl xl:text-9xl"
+                        class="mb-10 text-6xl leading-[0.8] font-black tracking-tighter uppercase italic md:text-8xl xl:text-7xl"
                     >
                         CARI GAWE<br />DAK BETELE
                     </h1>

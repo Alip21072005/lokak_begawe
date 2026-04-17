@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 import {
     Search,
     MapPin,
@@ -10,6 +10,9 @@ import {
 } from 'lucide-vue-next';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+
+// Solusi supaya TypeScript tidak protes soal variabel global 'route'
+declare const route: any;
 
 const searchForm = useForm({
     keyword: '',
@@ -161,7 +164,7 @@ const lowongan = [
                     class="job-grid grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                 >
                     <div
-                        v-for="job in [...lowongan, ...lowongan]"
+                        v-for="job in lowongan"
                         :key="job.id"
                         class="group relative flex flex-col rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-sky-300 hover:shadow-2xl hover:shadow-sky-900/10"
                     >
@@ -216,15 +219,16 @@ const lowongan = [
                             >
                         </div>
 
-                        <button
-                            class="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-4 text-[10px] font-black text-white uppercase italic transition-all hover:bg-lokak-brand active:scale-95"
+                        <Link
+                            href= "/detail/detaillowongan"
+                            class="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0f172a] py-4 text-[10px] font-black text-white uppercase italic transition-all hover:bg-lokak-brand active:scale-95"
                         >
                             LIHAT DETAIL <ChevronRight class="h-3 w-3" />
-                        </button>
+                        </Link>
+
                     </div>
                 </div>
             </section>
-
             <div class="mt-12 flex items-center justify-center gap-3">
                 <button
                     class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"

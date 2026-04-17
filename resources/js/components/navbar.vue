@@ -21,7 +21,7 @@ onUnmounted(() => {
 
 <template>
     <header
-        class="fixed top-0 z-60 w-full transition-all duration-500"
+        class="fixed top-0 z-50 w-full transition-all duration-500"
         :class="[
             isScrolled
                 ? 'border-b border-white/20 bg-white/40 py-3 shadow-sm backdrop-blur-md'
@@ -43,12 +43,12 @@ onUnmounted(() => {
                 </div>
                 <div class="flex flex-col leading-none">
                     <span
-                        class="text-base font-black tracking-tighter text-lokak-text uppercase italic"
+                        class="text-lg font-black tracking-tighter text-lokak-text uppercase italic"
                     >
                         LOKAK<span class="text-lokak-brand">BEGAWE</span>
                     </span>
                     <span
-                        class="mt-1 text-[9px] font-bold tracking-widest text-slate-400 uppercase italic"
+                        class="mt-1 text-[11px] font-bold tracking-widest text-slate-400 uppercase italic"
                     >
                         Bengkulu Job Portal
                     </span>
@@ -56,7 +56,7 @@ onUnmounted(() => {
             </Link>
 
             <nav
-                class="hidden items-center gap-10 text-[11px] font-black tracking-widest uppercase italic lg:flex"
+                class="hidden items-center gap-10 text-sm font-black tracking-widest uppercase italic lg:flex"
             >
                 <Link
                     href="/"
@@ -81,12 +81,12 @@ onUnmounted(() => {
                     class="ml-6 flex items-center gap-4 border-l border-slate-200/50 pl-10"
                 >
                     <template v-if="!$page.props.auth.user">
-                        <Link href="/login" class="btn-primary-small"
+                        <Link href="/login" class="btn-primary-small text-xs"
                             >MASUK</Link
                         >
                     </template>
                     <template v-else>
-                        <Link href="/dashboard" class="btn-primary-small"
+                        <Link href="/dashboard" class="btn-primary-small text-xs"
                             >DASHBOARD</Link
                         >
                     </template>
@@ -111,47 +111,47 @@ onUnmounted(() => {
             <div
                 v-if="isMobileMenuOpen"
                 @click="isMobileMenuOpen = false"
-                class="fixed inset-0 z-100 bg-slate-900/40 backdrop-blur-sm lg:hidden"
+                class="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm lg:hidden"
             ></div>
         </Transition>
 
         <Transition name="slide">
             <div
                 v-if="isMobileMenuOpen"
-                class="fixed top-0 right-0 z-101 h-full w-70 bg-white shadow-2xl lg:hidden"
+                class="fixed top-0 right-0 z-[101] h-full w-72 bg-white shadow-2xl lg:hidden"
             >
                 <div class="flex h-full flex-col">
                     <div
                         class="flex items-center justify-between border-b border-slate-100 p-6"
                     >
-                        <span class="font-black text-lokak-text italic"
+                        <span class="text-lg font-black text-lokak-text italic"
                             >MENU</span
                         >
                         <button
                             @click="isMobileMenuOpen = false"
-                            class="text-xl text-slate-400"
+                            class="text-2xl text-slate-400"
                         >
                             ✕
                         </button>
                     </div>
 
-                    <div class="flex flex-col gap-1 p-6">
+                    <div class="flex flex-col gap-2 p-6">
                         <Link
                             href="/"
                             @click="isMobileMenuOpen = false"
-                            class="rounded-xl px-4 py-3 font-bold text-slate-700 uppercase italic hover:bg-slate-50"
+                            class="rounded-xl px-4 py-3 text-base font-bold text-slate-700 uppercase italic hover:bg-slate-50"
                             >Beranda</Link
                         >
                         <Link
                             href="/lowongan"
                             @click="isMobileMenuOpen = false"
-                            class="rounded-xl px-4 py-3 font-bold text-slate-700 uppercase italic hover:bg-slate-50"
+                            class="rounded-xl px-4 py-3 text-base font-bold text-slate-700 uppercase italic hover:bg-slate-50"
                             >Lowongan</Link
                         >
                         <Link
                             href="/mitra"
                             @click="isMobileMenuOpen = false"
-                            class="rounded-xl px-4 py-3 font-bold text-slate-700 uppercase italic hover:bg-slate-50"
+                            class="rounded-xl px-4 py-3 text-base font-bold text-slate-700 uppercase italic hover:bg-slate-50"
                             >Mitra</Link
                         >
                     </div>
@@ -160,14 +160,14 @@ onUnmounted(() => {
                         <template v-if="!$page.props.auth.user">
                             <Link
                                 href="/login"
-                                class="flex w-full justify-center rounded-xl bg-lokak-brand py-4 font-bold text-white shadow-lg shadow-lokak-brand/20"
+                                class="flex w-full justify-center rounded-xl bg-lokak-brand py-4 text-sm font-bold text-white shadow-lg shadow-lokak-brand/20"
                                 >MASUK</Link
                             >
                         </template>
                         <template v-else>
                             <Link
                                 href="/dashboard"
-                                class="flex w-full justify-center rounded-xl bg-lokak-brand py-4 font-bold text-white"
+                                class="flex w-full justify-center rounded-xl bg-lokak-brand py-4 text-sm font-bold text-white"
                                 >DASHBOARD</Link
                             >
                         </template>
@@ -177,3 +177,12 @@ onUnmounted(() => {
         </Transition>
     </Teleport>
 </template>
+
+<style scoped>
+/* Tambahkan transisi biar smooth */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease-out; }
+.slide-enter-from, .slide-leave-to { transform: translateX(100%); }
+</style>
