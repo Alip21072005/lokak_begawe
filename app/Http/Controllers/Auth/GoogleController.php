@@ -55,7 +55,6 @@ class GoogleController extends Controller
             // Arahkan ke endpoint redirector yang akan mengecek role dan masuk ke dashboard masing-masing
             return redirect()->route('dashboard');
         } catch (\Exception $e) {
-            // Blok catch kembali normal (dd dihapus). 
 
             return redirect('/login')->with('error', 'Gagal login menggunakan Google. Silakan coba lagi.');
         }
