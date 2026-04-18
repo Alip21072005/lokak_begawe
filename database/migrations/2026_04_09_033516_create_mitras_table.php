@@ -18,17 +18,17 @@ return new class extends Migration
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignUuid('lokasi_id')->constrained('lokasis')->onDelete('cascade');
             $table->foreignUuid('kategori_id')->constrained('kategoris')->onDelete('cascade');
-
+            $table->enum('status_mitra', ['pending', 'verified', 'rejected'])->default('pending');
             $table->string('nama_mitra');
             $table->string('logo_mitra')->nullable();
             $table->string('banner_mitra')->nullable();
             $table->string('email_mitra');
             $table->string('website_mitra')->nullable();
-            $table->text('deksipsi_mitra');
+            $table->text('deskripsi_mitra');
             $table->text('alamat_mitra');
             $table->string('nohp_mitra');
             $table->string('dokumen_mitra')->nullable();
-            $table->boolean('status_mitra')->default(false);
+
 
             $table->timestamps();
         });

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import {
     Users,
     Briefcase,
@@ -8,84 +8,122 @@ import {
     Check,
     X,
     Eye,
-    BellRing,
-    Settings,
+    Clock,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import Swal from 'sweetalert2';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
 const props = defineProps<{
-    counts?: {
+    auth: any;
+    counts: {
         pelamar: number;
         mitra: number;
         lowongan: number;
     };
+    mitraPending: any[];
+    mitraVerified: any[];
 }>();
-
 defineOptions({
     layout: AppLayout,
 });
 
-// Statistik yang diperluas untuk Admin
+// --- STATE MANAGEMENT ---
+const selectedMitra = ref<any>(null);
+const isModalOpen = ref(false);
+const currentTime = ref(new Date().toLocaleTimeString('id-ID'));
+let timer: any;
+
+onMounted(() => {
+    timer = setInterval(() => {
+        currentTime.value = new Date().toLocaleTimeString('id-ID');
+    }, 1000);
+});
+onUnmounted(() => clearInterval(timer));
+
+// --- FUNCTIONS ---
+const openDetail = (mitra: any) => {
+    selectedMitra.value = mitra;
+    isModalOpen.value = true;
+};
+
+const updateStatus = (id: string, status: string, name: string) => {
+    const isVerify = status === 'verified';
+
+    Swal.fire({
+        title: isVerify ? 'Setujui Mitra?' : 'Tolak Mitra?',
+        text: `Apakah kamu yakin ingin memproses ${name}?`,
+        icon: isVerify ? 'question' : 'warning',
+        showCancelButton: true,
+        confirmButtonColor: isVerify ? '#0369a1' : '#e11d48',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: isVerify ? 'Ya, Setujui!' : 'Ya, Tolak',
+        cancelButtonText: 'Batal',
+        reverseButtons: true,
+        background: '#ffffff',
+        customClass: {
+            popup: 'rounded-[2rem]',
+            confirmButton:
+                'rounded-xl font-bold uppercase tracking-widest text-xs px-6 py-3',
+            cancelButton:
+                'rounded-xl font-bold uppercase tracking-widest text-xs px-6 py-3',
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // URL langsung diarahkan tanpa Ziggy route()
+            router.patch(
+                `/dashboard/admin/mitra/${id}/status`,
+                {
+                    status: status,
+                },
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        isModalOpen.value = false;
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: `Status ${name} telah diperbarui.`,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            background: '#ffffff',
+                            customClass: {
+                                popup: 'rounded-[2rem]',
+                            },
+                        });
+                    },
+                },
+            );
+        }
+    });
+};
+
 const stats = computed(() => [
     {
         name: 'Total Pelamar',
-        value: props.counts?.pelamar?.toLocaleString('id-ID') ?? 0,
-        description: 'User terdaftar',
+        value: props.counts?.pelamar ?? 0,
         icon: Users,
         color: 'text-lokak-brand',
     },
     {
-        name: 'Mitra Terverifikasi',
-        value: props.counts?.mitra?.toLocaleString('id-ID') ?? 0,
-        description: 'Perusahaan aktif',
+        name: 'Mitra Aktif',
+        value: props.counts?.mitra ?? 0,
         icon: ShieldCheck,
         color: 'text-emerald-500',
     },
     {
         name: 'Total Lowongan',
-        value: props.counts?.lowongan?.toLocaleString('id-ID') ?? 0,
-        description: 'Loker tayang',
+        value: props.counts?.lowongan ?? 0,
         icon: Briefcase,
         color: 'text-indigo-500',
     },
     {
-        name: 'Menunggu Verifikasi',
-        value: '14', // Dummy data untuk admin
-        description: 'Mitra baru',
+        name: 'Antrean Verifikasi',
+        value: props.mitraPending?.length ?? 0,
         icon: AlertCircle,
         color: 'text-amber-500',
     },
 ]);
-
-// Data Dummy Antrean Verifikasi Mitra
-const pendingMitra = [
-    {
-        id: 1,
-        name: 'PT. Bengkulu Sejahtera',
-        sector: 'IT & Telco',
-        date: '1 jam yang lalu',
-    },
-    {
-        id: 2,
-        name: 'CV. Maju Jaya Mukomuko',
-        sector: 'Konstruksi',
-        date: '3 jam yang lalu',
-    },
-    {
-        id: 3,
-        name: 'Koperasi Manna Makmur',
-        sector: 'Perdagangan',
-        date: 'Kemarin',
-    },
-];
-
-// Data Dummy Aktivitas Sistem
-const systemActivities = [
-    { id: 1, msg: 'User baru "Rian" mendaftar', time: '10m ago' },
-    { id: 2, msg: 'Mitra "Code 21" memasang loker', time: '25m ago' },
-    { id: 3, msg: 'Admin "Alip" mengubah pengaturan', time: '1h ago' },
-];
 </script>
 
 <template>
@@ -101,26 +139,12 @@ const systemActivities = [
                 >
                     ADMIN <span class="text-lokak-brand">CONTROL</span>
                 </h1>
-                <div class="mt-2 h-1.5 w-24 rounded-full bg-slate-200"></div>
-                <p
-                    class="mt-4 text-[11px] font-bold tracking-widest text-lokak-text-muted uppercase italic"
+                <div
+                    class="mt-2 flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase italic"
                 >
-                    Pusat kendali operasional dan verifikasi platform Lokak
-                    Begawe.
-                </p>
-            </div>
-
-            <div class="flex gap-3">
-                <button
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition-all hover:text-lokak-brand hover:shadow-md"
-                >
-                    <BellRing class="h-5 w-5" />
-                </button>
-                <button
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition-all hover:text-lokak-brand hover:shadow-md"
-                >
-                    <Settings class="h-5 w-5" />
-                </button>
+                    <div class="h-1.5 w-24 rounded-full bg-slate-200"></div>
+                    <Clock class="h-3.5 w-3.5" /> {{ currentTime }} WIB
+                </div>
             </div>
         </div>
 
@@ -128,31 +152,29 @@ const systemActivities = [
             <div
                 v-for="stat in stats"
                 :key="stat.name"
-                class="group relative overflow-hidden rounded-4xl border border-slate-200 bg-white p-7 shadow-sm transition-all hover:border-sky-200 hover:shadow-xl hover:shadow-sky-900/5"
+                class="group rounded-4xl border border-slate-200 bg-white p-7 shadow-sm transition-all hover:border-sky-200 hover:shadow-xl"
             >
-                <div class="relative z-10 flex flex-col">
-                    <p
-                        class="text-[9px] font-black tracking-widest text-lokak-text-muted uppercase italic"
+                <p
+                    class="text-[9px] font-black tracking-widest text-slate-400 uppercase italic"
+                >
+                    {{ stat.name }}
+                </p>
+                <p class="mt-1 text-3xl font-black text-lokak-text">
+                    {{ stat.value }}
+                </p>
+                <div class="mt-4 flex items-center gap-2">
+                    <div
+                        :class="[
+                            stat.color,
+                            'flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50 transition-colors group-hover:bg-lokak-brand group-hover:text-white',
+                        ]"
                     >
-                        {{ stat.name }}
-                    </p>
-                    <p class="mt-1 text-3xl font-black text-lokak-text">
-                        {{ stat.value }}
-                    </p>
-                    <div class="mt-3 flex items-center gap-2">
-                        <div
-                            :class="[
-                                stat.color,
-                                'flex h-8 w-8 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 transition-all group-hover:bg-lokak-brand group-hover:text-white',
-                            ]"
-                        >
-                            <component :is="stat.icon" class="h-4 w-4" />
-                        </div>
-                        <span
-                            class="text-[9px] font-bold text-slate-400 uppercase italic"
-                            >{{ stat.description }}</span
-                        >
+                        <component :is="stat.icon" class="h-4 w-4" />
                     </div>
+                    <span
+                        class="text-[9px] font-bold text-slate-300 uppercase italic"
+                        >Update Real-time</span
+                    >
                 </div>
             </div>
         </div>
@@ -160,59 +182,84 @@ const systemActivities = [
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <div class="lg:col-span-8">
                 <div
-                    class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+                    class="min-h-112.5 rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
                 >
                     <div class="mb-8 flex items-center justify-between">
                         <h2
                             class="text-lg font-black tracking-tight text-lokak-text uppercase italic"
                         >
-                            Verifikasi
-                            <span class="text-lokak-brand">Mitra Baru</span>
+                            Daftar <span class="text-lokak-brand">Antrean</span>
                         </h2>
-                        <span
-                            class="rounded-full bg-amber-100 px-3 py-1 text-[9px] font-black text-amber-700 uppercase"
-                            >3 Urgent</span
-                        >
                     </div>
 
                     <div class="space-y-4">
                         <div
-                            v-for="mitra in pendingMitra"
+                            v-if="mitraPending.length === 0"
+                            class="flex flex-col items-center justify-center py-20"
+                        >
+                            <ShieldCheck
+                                class="mb-4 h-16 w-16 text-slate-100"
+                            />
+                            <p
+                                class="text-xs font-black tracking-widest text-slate-300 uppercase italic"
+                            >
+                                Belum ada mitra baru
+                            </p>
+                        </div>
+
+                        <div
+                            v-for="mitra in mitraPending"
                             :key="mitra.id"
-                            class="flex items-center justify-between rounded-2xl border border-slate-50 bg-slate-50 p-5 transition-all hover:border-slate-200 hover:bg-white hover:shadow-md"
+                            class="flex items-center justify-between rounded-3xl border border-slate-50 bg-slate-50 p-5 transition-all hover:border-slate-200 hover:bg-white hover:shadow-md"
                         >
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-white font-black text-lokak-brand shadow-sm"
+                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white font-black text-lokak-brand uppercase italic shadow-sm"
                                 >
-                                    {{ mitra.name.charAt(0) }}
+                                    {{ mitra.nama_mitra?.charAt(0) }}
                                 </div>
                                 <div>
                                     <h3
                                         class="text-xs font-black text-lokak-text uppercase"
                                     >
-                                        {{ mitra.name }}
+                                        {{ mitra.nama_mitra }}
                                     </h3>
                                     <p
-                                        class="text-[9px] font-bold text-lokak-text-muted uppercase"
+                                        class="text-[9px] font-bold text-slate-400 uppercase italic"
                                     >
-                                        {{ mitra.sector }} • {{ mitra.date }}
+                                        {{ mitra.kategori?.nama_kategori }} •
+                                        {{ mitra.lokasi?.nama_lokasi }}
                                     </p>
                                 </div>
                             </div>
                             <div class="flex gap-2">
                                 <button
-                                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
+                                    @click="openDetail(mitra)"
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition-colors hover:text-lokak-brand"
                                 >
                                     <Eye class="h-4 w-4" />
                                 </button>
                                 <button
-                                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 transition-all hover:bg-emerald-600"
+                                    @click="
+                                        updateStatus(
+                                            mitra.id,
+                                            'verified',
+                                            mitra.nama_mitra,
+                                        )
+                                    "
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600"
                                 >
                                     <Check class="h-4 w-4" />
                                 </button>
                                 <button
-                                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-100 bg-white text-rose-500 transition-all hover:bg-rose-50"
+                                    @click="
+                                        updateStatus(
+                                            mitra.id,
+                                            'rejected',
+                                            mitra.nama_mitra,
+                                        )
+                                    "
+                                    class="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 bg-white text-rose-500 transition-all hover:bg-rose-50"
                                 >
                                     <X class="h-4 w-4" />
                                 </button>
@@ -224,39 +271,99 @@ const systemActivities = [
 
             <div class="space-y-6 lg:col-span-4">
                 <div
-                    class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+                    class="rounded-[2.5rem] bg-slate-900 p-8 text-white shadow-xl"
                 >
                     <h4
-                        class="mb-6 text-[10px] font-black tracking-widest text-lokak-text uppercase italic"
+                        class="mb-6 text-[10px] font-black uppercase italic opacity-50"
                     >
-                        Aktivitas Sistem
+                        Akses Cepat
                     </h4>
-                    <div class="space-y-6">
-                        <div
-                            v-for="act in systemActivities"
-                            :key="act.id"
-                            class="flex items-start gap-3 border-l-2 border-slate-100 pl-4 transition-all hover:border-lokak-brand"
-                        >
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[11px] leading-tight font-bold text-lokak-text"
-                                    >{{ act.msg }}</span
-                                >
-                                <span
-                                    class="mt-1 text-[9px] font-black text-slate-300 uppercase italic"
-                                    >{{ act.time }}</span
-                                >
-                            </div>
-                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+        v-if="isModalOpen && selectedMitra"
+        class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+    >
+        <div
+            class="w-full max-w-lg animate-in overflow-hidden rounded-[3rem] bg-white shadow-2xl duration-300 zoom-in"
+        >
+            <div class="flex h-32 justify-end bg-lokak-brand p-6">
+                <button
+                    @click="isModalOpen = false"
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/40"
+                >
+                    <X class="h-5 w-5" />
+                </button>
+            </div>
+            <div class="px-10 pb-10">
+                <div
+                    class="-mt-12 mb-6 flex h-24 w-24 items-center justify-center rounded-3xl border-4 border-white bg-white text-3xl font-black text-lokak-brand uppercase italic shadow-xl"
+                >
+                    {{ selectedMitra.nama_mitra?.charAt(0) }}
+                </div>
+                <h2
+                    class="text-2xl font-black text-lokak-text uppercase italic"
+                >
+                    {{ selectedMitra.nama_mitra }}
+                </h2>
+                <div
+                    class="mt-6 space-y-4 rounded-3xl border border-slate-100 bg-slate-50 p-6"
+                >
+                    <div
+                        class="flex justify-between text-[10px] font-black uppercase italic"
+                    >
+                        <span class="text-slate-400">Email Mitra</span>
+                        <span class="text-lokak-text">{{
+                            selectedMitra.email_mitra
+                        }}</span>
                     </div>
+                    <div
+                        class="flex justify-between text-[10px] font-black uppercase italic"
+                    >
+                        <span class="text-slate-400">WhatsApp</span>
+                        <span class="text-lokak-text">{{
+                            selectedMitra.nohp_mitra
+                        }}</span>
+                    </div>
+                    <p
+                        class="border-t border-slate-200 pt-4 text-[10px] leading-relaxed font-bold text-slate-500 italic"
+                    >
+                        {{
+                            selectedMitra.deksipsi_mitra ??
+                            'Tidak ada deskripsi.'
+                        }}
+                    </p>
+                </div>
+                <div class="mt-8 flex gap-4">
+                    <button
+                        @click="
+                            updateStatus(
+                                selectedMitra.id,
+                                'verified',
+                                selectedMitra.nama_mitra,
+                            )
+                        "
+                        class="flex-1 rounded-2xl bg-emerald-500 py-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-600"
+                    >
+                        Setujui
+                    </button>
+                    <button
+                        @click="
+                            updateStatus(
+                                selectedMitra.id,
+                                'rejected',
+                                selectedMitra.nama_mitra,
+                            )
+                        "
+                        class="flex-1 rounded-2xl bg-rose-500 py-4 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-rose-500/20 transition-all hover:bg-rose-600"
+                    >
+                        Tolak
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </template>
-
-<style scoped>
-.group {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-</style>

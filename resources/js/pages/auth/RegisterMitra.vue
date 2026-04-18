@@ -21,12 +21,12 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    company_name: '',
+    nama_mitra: '', // Berubah dari company_name
     nohp_mitra: '',
     lokasi_id: '',
     kategori_id: '',
     alamat_mitra: '',
-    deksipsi_mitra: '',
+    deskripsi_mitra: '', // Berubah dari deksipsi_mitra
     logo_mitra: null as File | null,
     banner_mitra: null as File | null,
 });
@@ -48,16 +48,34 @@ const handleBannerUpload = (e: Event) => {
 };
 
 const nextStep = () => {
-    if (
-        form.name &&
-        form.email &&
-        form.password &&
-        form.password === form.password_confirmation
-    ) {
-        currentStep.value = 2;
-    } else {
-        alert('Mohon lengkapi data akun dan pastikan password sesuai.');
+    form.clearErrors();
+
+    if (!form.name || !form.email || !form.password) {
+        if (!form.name) {
+            form.setError('name', 'Nama penanggung jawab wajib diisi.');
+        }
+
+        if (!form.email) {
+            form.setError('email', 'Email akun wajib diisi.');
+        }
+
+        if (!form.password) {
+            form.setError('password', 'Password wajib diisi.');
+        }
+
+        return;
     }
+
+    if (form.password !== form.password_confirmation) {
+        form.setError(
+            'password_confirmation',
+            'Konfirmasi password tidak sesuai.',
+        );
+
+        return;
+    }
+
+    currentStep.value = 2;
 };
 
 const prevStep = () => {
@@ -122,8 +140,6 @@ const submit = () => {
                         <Input
                             id="name"
                             v-model="form.name"
-                            required
-                            autofocus
                             placeholder="Masukkan nama lengkap"
                             class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                         />
@@ -140,15 +156,16 @@ const submit = () => {
                             id="email"
                             type="email"
                             v-model="form.email"
-                            required
                             placeholder="hrd@perusahaan.com"
                             class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                         />
                         <InputError :message="form.errors.email" />
                     </div>
 
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div class="grid gap-2">
+                    <div
+                        class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2"
+                    >
+                        <div class="flex flex-col gap-2">
                             <Label
                                 for="password"
                                 class="text-xs font-bold tracking-wider text-slate-700 uppercase"
@@ -156,9 +173,9 @@ const submit = () => {
                             >
                             <div class="relative flex items-center">
                                 <Input
+                                    id="password"
                                     :type="showPassword ? 'text' : 'password'"
                                     v-model="form.password"
-                                    required
                                     placeholder="••••••••"
                                     class="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-4 pr-12 text-sm font-medium shadow-sm transition-all focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                                 />
@@ -209,10 +226,13 @@ const submit = () => {
                                     </svg>
                                 </button>
                             </div>
-                            <InputError :message="form.errors.password" />
+                            <InputError
+                                :message="form.errors.password"
+                                class="mt-1"
+                            />
                         </div>
 
-                        <div class="grid gap-2">
+                        <div class="flex flex-col gap-2">
                             <Label
                                 for="password_confirmation"
                                 class="text-xs font-bold tracking-wider text-slate-700 uppercase"
@@ -220,13 +240,13 @@ const submit = () => {
                             >
                             <div class="relative flex items-center">
                                 <Input
+                                    id="password_confirmation"
                                     :type="
                                         showPasswordConfirm
                                             ? 'text'
                                             : 'password'
                                     "
                                     v-model="form.password_confirmation"
-                                    required
                                     placeholder="••••••••"
                                     @keydown.enter.prevent="nextStep"
                                     class="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-4 pr-12 text-sm font-medium shadow-sm transition-all focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
@@ -281,6 +301,17 @@ const submit = () => {
                                     </svg>
                                 </button>
                             </div>
+                            <div
+                                v-if="
+                                    !form.errors.password_confirmation &&
+                                    form.errors.password
+                                "
+                                class="mt-1 h-5"
+                            ></div>
+                            <InputError
+                                :message="form.errors.password_confirmation"
+                                class="mt-1"
+                            />
                         </div>
                     </div>
 
@@ -301,29 +332,29 @@ const submit = () => {
                 >
                     <div class="grid gap-2">
                         <Label
-                            for="company_name"
+                            for="nama_mitra"
                             class="text-xs font-bold tracking-wider text-slate-700 uppercase"
                             >Nama Perusahaan</Label
                         >
                         <Input
-                            id="company_name"
-                            v-model="form.company_name"
+                            id="nama_mitra"
+                            v-model="form.nama_mitra"
                             placeholder="Contoh: PT. Maju Bersama"
                             class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                         />
-                        <InputError :message="form.errors.company_name" />
+                        <InputError :message="form.errors.nama_mitra" />
                     </div>
 
                     <div class="grid gap-2">
                         <Label
                             for="nohp_mitra"
                             class="text-xs font-bold tracking-wider text-slate-700 uppercase"
-                            >Nomor Telepon / WhatsApp</Label
+                            >Nomor Telepon / WhatsApp Perusahaan</Label
                         >
                         <Input
                             id="nohp_mitra"
                             v-model="form.nohp_mitra"
-                            placeholder="08123456789"
+                            placeholder="Contoh: 08123456789"
                             class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                         />
                         <InputError :message="form.errors.nohp_mitra" />
@@ -340,7 +371,7 @@ const submit = () => {
                                 <select
                                     id="lokasi_id"
                                     v-model="form.lokasi_id"
-                                    class="h-12 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[1.25rem_1.25rem] bg-position-[right_1rem_center] bg-no-repeat px-4 pr-10 text-sm font-medium shadow-sm transition-all outline-none focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                                    class="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[1.25rem_1.25rem] bg-position-[right_1rem_center] bg-no-repeat px-4 pr-10 text-sm font-medium shadow-sm transition-all outline-none focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                                 >
                                     <option value="" disabled>
                                         Pilih Lokasi
@@ -367,7 +398,7 @@ const submit = () => {
                                 <select
                                     id="kategori_id"
                                     v-model="form.kategori_id"
-                                    class="h-12 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[1.25rem_1.25rem] bg-position-[right_1rem_center] bg-no-repeat px-4 pr-10 text-sm font-medium shadow-sm transition-all outline-none focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                                    class="h-12 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2394a3b8%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-size-[1.25rem_1.25rem] bg-position-[right_1rem_center] bg-no-repeat px-4 pr-10 text-sm font-medium shadow-sm transition-all outline-none focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                                 >
                                     <option value="" disabled>
                                         Pilih Bidang
@@ -389,7 +420,7 @@ const submit = () => {
                         <Label
                             for="alamat_mitra"
                             class="text-xs font-bold tracking-wider text-slate-700 uppercase"
-                            >Alamat Lengkap</Label
+                            >Alamat Lengkap Perusahaan</Label
                         >
                         <textarea
                             id="alamat_mitra"
@@ -437,18 +468,18 @@ const submit = () => {
 
                     <div class="grid gap-2">
                         <Label
-                            for="deksipsi_mitra"
+                            for="deskripsi_mitra"
                             class="text-xs font-bold tracking-wider text-slate-700 uppercase"
                             >Deskripsi Perusahaan</Label
                         >
                         <textarea
-                            id="deksipsi_mitra"
-                            v-model="form.deksipsi_mitra"
+                            id="deskripsi_mitra"
+                            v-model="form.deskripsi_mitra"
                             rows="4"
-                            placeholder="Ceritakan singkat tentang perusahaan Anda..."
+                            placeholder="Ceritakan singkat profil perusahaan Anda..."
                             class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium shadow-sm transition-all outline-none focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                         ></textarea>
-                        <InputError :message="form.errors.deksipsi_mitra" />
+                        <InputError :message="form.errors.deskripsi_mitra" />
                     </div>
 
                     <div class="flex gap-3 pt-4">
