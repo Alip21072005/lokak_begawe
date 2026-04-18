@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3'; // Pastikan Link diimport
 import { ref, onUnmounted } from 'vue';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
@@ -109,13 +109,16 @@ const mitraTeratas = [
 
         <main class="w-full px-6 py-12 md:px-16 lg:px-24 xl:px-32">
             <section
-                class="relative mb-28 grid grid-cols-1 items-center overflow-hidden rounded-[3.5rem] bg-lokak-brand p-12 text-white shadow-2xl shadow-sky-900/20 md:p-24 lg:grid-cols-12"
+                class="relative mb-28 flex min-h-[500px] flex-col items-stretch overflow-hidden rounded-[3.5rem] bg-lokak-brand text-white shadow-2xl shadow-sky-900/20 lg:flex-row"
             >
-                <div class="z-10 lg:col-span-8">
+                <div
+                    class="relative z-20 flex w-full flex-col justify-center p-12 md:p-20 lg:w-3/5"
+                >
                     <h1
-                        class="mb-10 text-6xl leading-[0.8] font-black tracking-tighter uppercase italic md:text-8xl xl:text-9xl"
+                        class="mb-10 text-6xl leading-[0.8] font-black tracking-tighter uppercase italic md:text-8xl xl:text-7xl"
                     >
-                        CARI GAWE<br />DAK BETELE
+                        CARI GAWE<br />
+                        DAK BETELE
                     </h1>
                     <p
                         class="mb-14 max-w-2xl text-base leading-relaxed font-medium text-sky-50 md:text-xl"
@@ -138,27 +141,27 @@ const mitraTeratas = [
                 </div>
 
                 <div
-                    class="hidden items-center justify-end opacity-20 lg:col-span-4 lg:flex"
+                    class="relative min-h-[300px] w-full lg:min-h-full lg:w-2/5"
                 >
-                    <svg
-                        width="360"
-                        height="360"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="0.5"
-                    >
-                        <path
-                            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                        />
-                    </svg>
+                    <div
+                        class="absolute inset-0 z-10 hidden bg-gradient-to-r from-lokak-brand via-transparent to-transparent lg:block"
+                    ></div>
+                    <div
+                        class="absolute inset-0 z-10 bg-gradient-to-t from-lokak-brand via-transparent to-transparent lg:hidden"
+                    ></div>
+
+                    <img
+                        src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&q=80"
+                        alt="Loker Bengkulu"
+                        class="absolute inset-0 h-full w-full object-cover brightness-75 grayscale-[20%] lg:brightness-100"
+                    />
                 </div>
 
                 <div
-                    class="absolute -top-20 -right-20 h-96 w-96 rounded-full bg-white/10 blur-[120px]"
+                    class="absolute -top-20 -right-20 z-0 h-96 w-96 rounded-full bg-white/10 blur-[120px]"
                 ></div>
                 <div
-                    class="absolute -bottom-20 left-20 h-96 w-96 rounded-full bg-sky-900/40 blur-[120px]"
+                    class="absolute -bottom-20 left-20 z-0 h-96 w-96 rounded-full bg-sky-900/40 blur-[120px]"
                 ></div>
             </section>
 
@@ -352,7 +355,7 @@ const mitraTeratas = [
                     </div>
                 </div>
                 <button
-                    class="w-full rounded-4xl bg-lokak-brand py-8 text-base font-black text-white uppercase italic shadow-2xl shadow-sky-900/30 transition-all hover:-translate-y-1 hover:bg-lokak-brand-dark active:scale-95"
+                    class="w-full rounded-4xl bg-lokak-brand py-8 text-base font-black text-white uppercase italic shadow-2xl shadow-sky-900/30 transition-all hover:-translate-y-1 hover:brightness-110 active:scale-95"
                 >
                     Lamar Pekerjaan Sekarang
                 </button>
@@ -364,12 +367,10 @@ const mitraTeratas = [
 </template>
 
 <style scoped>
-/* Reset State */
 *:focus {
     outline: none !important;
 }
 
-/* Transisi Halus Global */
 .transition-all {
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
