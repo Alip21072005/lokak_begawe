@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { Mail, ArrowLeft } from 'lucide-vue-next'; // Tambah ikon biar lebih interaktif
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
-import { email } from '@/routes/password';
+import { email as routeEmail } from '@/routes/password';
+
+// --- DEFINISI RUTE (TS SAFE) ---
+const routeLogin = login();
+const routeEmailForm = routeEmail.form();
 
 defineOptions({
     layout: {
@@ -23,30 +27,36 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Lupa Kata Sandi" />
+    <Head title="Pemulihan Akun - Lokak Begawe" />
 
     <div
-        class="flex min-h-screen w-full items-center justify-center bg-slate-50 p-4 sm:p-6"
+        class="flex min-h-screen w-full items-center justify-center bg-slate-50 p-4 py-10 text-slate-900 sm:p-6"
     >
         <div
-            class="w-full max-w-xl rounded-[2.5rem] bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] sm:p-12"
+            class="w-full max-w-xl rounded-[2.5rem] border border-slate-100/50 bg-white p-8 shadow-[0_20px_50px_rgba(0,0,0,0.05)] sm:p-12"
         >
             <div class="mb-10 flex flex-col items-center text-center">
-                <h2
-                    class="mb-2 text-sm font-bold tracking-[0.2em] text-slate-400 uppercase"
+                <div
+                    class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-50 text-sky-700 shadow-sm"
                 >
-                    Pemulihan Akun
+                    <Mail class="h-6 w-6" />
+                </div>
+                <h2
+                    class="mb-2 text-[10px] font-black tracking-[0.3em] text-slate-300 uppercase italic"
+                >
+                    PEMULIHAN AKSES
                 </h2>
                 <h1
-                    class="text-3xl leading-tight font-black tracking-tight text-slate-900 uppercase italic"
+                    class="text-3xl leading-tight font-black tracking-tighter text-slate-900 uppercase italic md:text-4xl"
                 >
-                    Lupa <span class="text-sky-700">Sandi?</span>
+                    LUPA <span class="text-sky-700">SANDI?</span>
                 </h1>
+                <div class="mt-4 h-1.5 w-24 rounded-full bg-slate-100"></div>
                 <p
-                    class="mt-2 text-xs font-medium tracking-wide text-slate-500 uppercase"
+                    class="mt-4 text-[10px] leading-relaxed font-bold tracking-widest text-slate-400 uppercase italic"
                 >
-                    Jangan khawatir, masukkan email Anda untuk menerima tautan
-                    pemulihan
+                    Jangan khawatir, masukkan email Anda <br />
+                    untuk menerima tautan pemulihan otomatis.
                 </p>
             </div>
 
@@ -60,33 +70,33 @@ defineProps<{
             >
                 <div
                     v-if="status"
-                    class="mb-6 rounded-xl border border-green-100 bg-green-50 p-4 text-center text-sm font-semibold text-green-700"
+                    class="mb-8 rounded-2xl border border-emerald-100 bg-emerald-50 px-6 py-4 text-center text-[11px] font-black tracking-widest text-emerald-700 uppercase italic"
                 >
                     {{ status }}
                 </div>
             </Transition>
 
             <Form
-                v-bind="email.form()"
+                v-bind="routeEmailForm"
                 v-slot="{ errors, processing }"
-                class="space-y-5"
+                class="space-y-6"
             >
-                <div class="grid gap-5">
-                    <div class="grid gap-2">
+                <div class="space-y-6">
+                    <div class="space-y-2">
                         <Label
                             for="email"
-                            class="text-xs font-bold tracking-wider text-slate-700 uppercase"
+                            class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase italic"
+                            >Alamat Email Terdaftar</Label
                         >
-                            Alamat Email
-                        </Label>
                         <Input
                             id="email"
                             type="email"
                             name="email"
                             autocomplete="off"
+                            required
                             autofocus
-                            placeholder="contoh@email.com"
-                            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-4 text-sm font-medium shadow-sm transition-all placeholder:text-slate-400 focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                            placeholder="nama@email.com"
+                            class="h-12 rounded-xl border-slate-200 bg-slate-50 px-5 font-bold shadow-sm transition-all focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                         />
                         <InputError :message="errors.email" />
                     </div>
@@ -94,61 +104,63 @@ defineProps<{
                     <div class="pt-4">
                         <Button
                             type="submit"
-                            class="h-14 w-full rounded-2xl bg-sky-700 font-bold tracking-[0.15em] text-white uppercase shadow-lg shadow-sky-700/20 transition-all hover:bg-sky-800 hover:shadow-sky-800/30 active:scale-[0.98]"
                             :disabled="processing"
-                            data-test="email-password-reset-link-button"
+                            class="h-14 w-full rounded-2xl bg-sky-700 text-[11px] font-black tracking-[0.2em] text-white uppercase italic shadow-xl shadow-sky-900/20 transition-all hover:scale-[1.02] hover:bg-sky-800 active:scale-[0.98] disabled:opacity-50"
                         >
-                            <Spinner
-                                v-if="processing"
-                                class="mr-2 h-5 w-5 text-white"
-                            />
-                            <span v-if="!processing">Kirim Tautan Reset</span>
-                            <span v-else>Memproses...</span>
+                            <Spinner v-if="processing" class="mr-3 h-4 w-4" />
+                            {{
+                                processing
+                                    ? 'MENGIRIM TAUTAN...'
+                                    : 'KIRIM TAUTAN RESET'
+                            }}
                         </Button>
                     </div>
                 </div>
             </Form>
 
-            <div class="space-y-5 pt-8 text-center">
-                <div class="relative py-2">
+            <div
+                class="mt-10 flex flex-col items-center space-y-6 border-t border-slate-50 pt-10 text-center"
+            >
+                <div class="relative w-full">
                     <div class="absolute inset-0 flex items-center">
-                        <span class="w-full border-t border-slate-200"></span>
+                        <span class="w-full border-t border-slate-100"></span>
                     </div>
                     <div
                         class="relative flex justify-center text-[10px] uppercase"
                     >
                         <span
-                            class="bg-white px-3 font-bold tracking-widest text-slate-400"
-                            >Atau</span
+                            class="bg-white px-6 font-black tracking-[0.3em] text-slate-300 italic"
                         >
+                            KEMBALI KE GERBANG
+                        </span>
                     </div>
                 </div>
 
-                <p
-                    class="text-xs font-semibold tracking-wide text-slate-500 uppercase"
+                <Link
+                    :href="routeLogin"
+                    class="group flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-500 uppercase italic transition-all hover:text-sky-700"
                 >
-                    Kembali ke halaman
-                    <TextLink
-                        :href="login()"
-                        class="ml-1 text-sky-700 transition-all hover:text-sky-800 hover:underline hover:underline-offset-4"
-                    >
-                        Masuk
-                    </TextLink>
-                </p>
+                    <ArrowLeft
+                        class="h-3 w-3 transition-transform group-hover:-translate-x-1"
+                    />
+                    Ingat Kata Sandi? Masuk Disini
+                </Link>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-/* Menghilangkan ring fokus default browser */
 input:focus {
     outline: none !important;
 }
 
-/* Memastikan placeholder memiliki warna yang konsisten */
 input::placeholder {
-    font-weight: 500;
-    opacity: 0.6;
+    font-weight: 700;
+    font-style: italic;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    opacity: 0.3;
 }
 </style>

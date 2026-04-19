@@ -1,5 +1,6 @@
+<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import {
     Search,
     Clock,
@@ -8,43 +9,93 @@ import {
     ThumbsUp,
     ThumbsDown,
     AlertCircle,
+    Trash2,
 } from 'lucide-vue-next';
+import Swal from 'sweetalert2';
+import { ref, watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
-defineOptions({
-    layout: AppLayout,
+const props = defineProps<{
+    auth: any;
+    jobs: any[];
+    filters: { search: string };
+}>();
+
+defineOptions({ layout: AppLayout });
+
+const search = ref(props.filters.search);
+
+watch(search, (value) => {
+    router.get(
+        '/dashboard/admin/kelolalowongan',
+        { search: value },
+        {
+            preserveState: true,
+            replace: true,
+        },
+    );
 });
 
-// Data Dummy Lowongan yang diajukan Mitra
-const pendingJobs = [
-    {
-        id: 1,
-        title: 'Fullstack Developer (Laravel & Vue)',
-        mitra: 'PT. Bengkulu Teknologi',
-        dateSubmitted: '14 April 2026',
-        salary: 'Rp 7.000.000 - 10.000.000',
-        status: 'Pending',
-        statusStyle: 'bg-amber-100 text-amber-700 border-amber-200',
-    },
-    {
-        id: 2,
-        title: 'Social Media Specialist',
-        mitra: 'Cafe Digital Rejang Lebong',
-        dateSubmitted: '13 April 2026',
-        salary: 'Rp 3.000.000',
-        status: 'Pending',
-        statusStyle: 'bg-amber-100 text-amber-700 border-amber-200',
-    },
-    {
-        id: 3,
-        title: 'Admin Gudang',
-        mitra: 'CV. Mukomuko Makmur',
-        dateSubmitted: '12 April 2026',
-        salary: 'Rp 3.500.000',
-        status: 'Ditolak',
-        statusStyle: 'bg-rose-100 text-rose-700 border-rose-200',
-    },
-];
+// FUNGSI MODERASI DENGAN POP-UP
+const confirmAction = (id: string, title: string, status: string) => {
+    const isApprove = status === 'verified';
+
+    Swal.fire({
+        title: isApprove ? 'Setujui Lowongan?' : 'Tolak Lowongan?',
+        text: `Lowongan "${title}" akan ditandai sebagai ${status === 'verified' ? 'Tayang' : 'Ditolak'}.`,
+        icon: isApprove ? 'question' : 'warning',
+        showCancelButton: true,
+        confirmButtonColor: isApprove ? '#10b981' : '#f43f5e',
+        confirmButtonText: isApprove ? 'Ya, Setujui' : 'Ya, Tolak',
+        customClass: { popup: 'rounded-[2.5rem]' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.patch(
+                `/dashboard/admin/kelolalowongan/${id}/status`,
+                { status },
+                {
+                    preserveScroll: true,
+                    onSuccess: () =>
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            icon: 'success',
+                            customClass: { popup: 'rounded-[2.5rem]' },
+                        }),
+                },
+            );
+        }
+    });
+};
+
+const confirmDelete = (id: string, title: string) => {
+    Swal.fire({
+        title: 'Hapus Lowongan?',
+        text: `Data lowongan "${title}" akan dihapus permanen.`,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#e11d48',
+        confirmButtonText: 'Ya, Hapus',
+        customClass: { popup: 'rounded-[2.5rem]' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(`/dashboard/admin/kelolalowongan/${id}`, {
+                preserveScroll: true,
+            });
+        }
+    });
+};
+
+const getStatusStyle = (status: string) => {
+    if (status === 'verified') {
+        return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    }
+
+    if (status === 'rejected') {
+        return 'bg-rose-100 text-rose-700 border-rose-200';
+    }
+
+    return 'bg-amber-100 text-amber-700 border-amber-200';
+};
 </script>
 
 <template>
@@ -56,17 +107,11 @@ const pendingJobs = [
         >
             <div>
                 <h1
-                    class="text-3xl font-black tracking-tighter text-lokak-text uppercase italic md:text-4xl"
+                    class="text-3xl font-black tracking-tighter text-slate-900 uppercase italic md:text-4xl"
                 >
-                    VERIFIKASI <span class="text-lokak-brand">LOWONGAN</span>
+                    VERIFIKASI <span class="text-sky-700">LOWONGAN</span>
                 </h1>
                 <div class="mt-2 h-1.5 w-24 rounded-full bg-slate-200"></div>
-                <p
-                    class="mt-4 text-[11px] font-bold tracking-widest text-lokak-text-muted uppercase italic"
-                >
-                    Tinjau dan setujui lowongan kerja yang diajukan oleh mitra
-                    perusahaan.
-                </p>
             </div>
 
             <div class="flex items-center gap-3">
@@ -75,9 +120,10 @@ const pendingJobs = [
                         class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
                     />
                     <input
+                        v-model="search"
                         type="text"
                         placeholder="Cari loker atau mitra..."
-                        class="h-11 w-full rounded-xl border border-slate-200 bg-white pr-4 pl-10 text-xs font-bold outline-none focus:ring-2 focus:ring-lokak-brand/20"
+                        class="h-11 w-full rounded-xl border border-slate-200 bg-white pr-4 pl-10 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20"
                     />
                 </div>
             </div>
@@ -123,35 +169,46 @@ const pendingJobs = [
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50">
+                        <tr v-if="jobs.length === 0">
+                            <td
+                                colspan="5"
+                                class="py-20 text-center text-[10px] font-black text-slate-300 uppercase italic"
+                            >
+                                Tidak ada pengajuan lowongan
+                            </td>
+                        </tr>
                         <tr
-                            v-for="job in pendingJobs"
+                            v-for="job in jobs"
                             :key="job.id"
                             class="group transition-colors hover:bg-slate-50/50"
                         >
                             <td class="px-4 py-6">
                                 <div class="flex items-center gap-4">
                                     <div
-                                        class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-lokak-brand shadow-inner transition-all group-hover:bg-white"
+                                        class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-sky-700 uppercase shadow-inner group-hover:bg-white"
                                     >
-                                        <Building2 class="h-5 w-5" />
+                                        {{
+                                            job.mitra?.nama_mitra?.charAt(0) ||
+                                            'L'
+                                        }}
                                     </div>
                                     <div class="flex flex-col">
                                         <span
-                                            class="text-sm font-black text-lokak-text uppercase transition-colors group-hover:text-lokak-brand"
-                                            >{{ job.title }}</span
+                                            class="text-sm font-black text-slate-900 uppercase transition-colors group-hover:text-sky-700"
+                                            >{{ job.judul_lowongan }}</span
                                         >
                                         <span
                                             class="text-[10px] font-bold text-slate-400 uppercase italic"
-                                            >{{ job.mitra }}</span
+                                            >{{ job.mitra?.nama_mitra }}</span
                                         >
                                     </div>
                                 </div>
                             </td>
 
                             <td
-                                class="px-4 py-6 text-[11px] font-black text-lokak-text uppercase"
+                                class="px-4 py-6 text-[11px] font-black text-slate-700 uppercase"
                             >
-                                {{ job.salary }}
+                                {{ job.gaji_lowongan }}
                             </td>
 
                             <td class="px-4 py-6">
@@ -159,40 +216,76 @@ const pendingJobs = [
                                     class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic"
                                 >
                                     <Clock class="h-4 w-4" />
-                                    {{ job.dateSubmitted }}
+                                    {{
+                                        new Date(
+                                            job.created_at,
+                                        ).toLocaleDateString('id-ID', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        })
+                                    }}
                                 </div>
                             </td>
 
                             <td class="px-4 py-6">
                                 <span
                                     :class="[
-                                        job.statusStyle,
+                                        getStatusStyle(job.status_lowongan),
                                         'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[9px] font-black tracking-widest uppercase italic',
                                     ]"
                                 >
-                                    {{ job.status }}
+                                    {{
+                                        job.status_lowongan === 'verified'
+                                            ? 'Tayang'
+                                            : job.status_lowongan === 'rejected'
+                                              ? 'Ditolak'
+                                              : 'Pending'
+                                    }}
                                 </span>
                             </td>
 
                             <td class="px-4 py-6 text-right">
                                 <div class="flex justify-end gap-2">
                                     <button
-                                        class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
-                                        title="Lihat Detail"
+                                        class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-400 shadow-sm hover:border-sky-700 hover:text-sky-700"
                                     >
                                         <Eye class="h-4 w-4" />
                                     </button>
                                     <button
+                                        @click="
+                                            confirmAction(
+                                                job.id,
+                                                job.judul_lowongan,
+                                                'verified',
+                                            )
+                                        "
                                         class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 transition-all hover:bg-emerald-600"
-                                        title="Setujui"
                                     >
                                         <ThumbsUp class="h-4 w-4" />
                                     </button>
                                     <button
+                                        @click="
+                                            confirmAction(
+                                                job.id,
+                                                job.judul_lowongan,
+                                                'rejected',
+                                            )
+                                        "
                                         class="flex h-9 w-9 items-center justify-center rounded-xl border border-rose-100 bg-white text-rose-500 shadow-sm transition-all hover:bg-rose-50"
-                                        title="Tolak"
                                     >
                                         <ThumbsDown class="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        @click="
+                                            confirmDelete(
+                                                job.id,
+                                                job.judul_lowongan,
+                                            )
+                                        "
+                                        class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-300 transition-all hover:text-rose-600"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
                                     </button>
                                 </div>
                             </td>
@@ -203,9 +296,3 @@ const pendingJobs = [
         </div>
     </div>
 </template>
-
-<style scoped>
-tr {
-    transition: all 0.2s ease;
-}
-</style>

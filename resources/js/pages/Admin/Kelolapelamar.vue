@@ -1,57 +1,89 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import {
     Search,
-    Filter,
-    User,
+    User as UserIcon,
     CheckCircle2,
     Mail,
     Phone,
     Eye,
     ShieldAlert,
+    Trash2,
 } from 'lucide-vue-next';
+import Swal from 'sweetalert2';
+import { ref, watch } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 
-defineOptions({
-    layout: AppLayout,
+const props = defineProps<{
+    auth: any;
+    users: any[];
+    filters: { search: string };
+    stats: { total: number; active: number };
+}>();
+
+defineOptions({ layout: AppLayout });
+
+// --- PENCARIAN REAL-TIME ---
+const search = ref(props.filters.search);
+watch(search, (value) => {
+    router.get(
+        '/dashboard/admin/kelolapelamar',
+        { search: value },
+        { preserveState: true, replace: true },
+    );
 });
 
-// Data Dummy Daftar Pelamar
-const pelamarList = [
-    {
-        id: 1,
-        name: 'Alip Maulana',
-        email: 'alip@example.com',
-        phone: '0812-3456-7890',
-        university: 'Universitas Dehasen',
-        status: 'Aktif',
-        statusStyle: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-        applicationsCount: 12,
-        avatar: 'AM',
-    },
-    {
-        id: 2,
-        name: 'Budi Setiawan',
-        email: 'budi@example.com',
-        phone: '0821-9988-7766',
-        university: 'Universitas Bengkulu',
-        status: 'Terblokir',
-        statusStyle: 'bg-rose-100 text-rose-700 border-rose-200',
-        applicationsCount: 2,
-        avatar: 'BS',
-    },
-    {
-        id: 3,
-        name: 'Siti Aminah',
-        email: 'siti@example.com',
-        phone: '0853-1122-3344',
-        university: 'IAIN Bengkulu',
-        status: 'Aktif',
-        statusStyle: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-        applicationsCount: 8,
-        avatar: 'SA',
-    },
-];
+// --- AKSI DENGAN KONFIRMASI ---
+
+const confirmBlock = (id: string, name: string) => {
+    Swal.fire({
+        title: 'Blokir Akun?',
+        text: `Pelamar ${name} tidak akan bisa masuk ke sistem.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        confirmButtonText: 'Ya, Blokir',
+        customClass: { popup: 'rounded-[2.5rem]' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.patch(
+                `/dashboard/admin/blokir-akun-user/${id}`,
+                {},
+                {
+                    onSuccess: () =>
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            icon: 'success',
+                            customClass: { popup: 'rounded-[2.5rem]' },
+                        }),
+                },
+            );
+        }
+    });
+};
+
+const confirmDelete = (id: string, name: string) => {
+    Swal.fire({
+        title: 'Hapus Permanen?',
+        text: `Seluruh data ${name} akan hilang selamanya!`,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#e11d48',
+        confirmButtonText: 'Ya, Hapus',
+        customClass: { popup: 'rounded-[2.5rem]' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(`/dashboard/admin/hapus-akun-user/${id}`, {
+                onSuccess: () =>
+                    Swal.fire({
+                        title: 'Terhapus!',
+                        icon: 'success',
+                        customClass: { popup: 'rounded-[2.5rem]' },
+                    }),
+            });
+        }
+    });
+};
 </script>
 
 <template>
@@ -68,12 +100,6 @@ const pelamarList = [
                     KELOLA <span class="text-lokak-brand">PELAMAR</span>
                 </h1>
                 <div class="mt-2 h-1.5 w-24 rounded-full bg-slate-200"></div>
-                <p
-                    class="mt-4 text-[11px] font-bold tracking-widest text-lokak-text-muted uppercase italic"
-                >
-                    Manajemen database pencari kerja dan pemantauan aktivitas
-                    user.
-                </p>
             </div>
 
             <div class="flex items-center gap-3">
@@ -82,16 +108,12 @@ const pelamarList = [
                         class="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
                     />
                     <input
+                        v-model="search"
                         type="text"
                         placeholder="Cari nama atau email..."
                         class="h-11 w-full rounded-xl border border-slate-200 bg-white pr-4 pl-10 text-xs font-bold outline-none focus:ring-2 focus:ring-lokak-brand/20"
                     />
                 </div>
-                <button
-                    class="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-lokak-brand"
-                >
-                    <Filter class="h-5 w-5" />
-                </button>
             </div>
         </div>
 
@@ -113,7 +135,7 @@ const pelamarList = [
                     </thead>
                     <tbody class="divide-y divide-slate-50">
                         <tr
-                            v-for="user in pelamarList"
+                            v-for="user in users"
                             :key="user.id"
                             class="group transition-colors hover:bg-slate-50/50"
                         >
@@ -167,19 +189,25 @@ const pelamarList = [
                             <td class="px-4 py-6">
                                 <span
                                     :class="[
-                                        user.statusStyle,
+                                        user.status === 'blocked'
+                                            ? 'border-rose-200 bg-rose-100 text-rose-700'
+                                            : 'border-emerald-200 bg-emerald-100 text-emerald-700',
                                         'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[9px] font-black tracking-wider uppercase italic',
                                     ]"
                                 >
                                     <div
-                                        v-if="user.status === 'Aktif'"
-                                        class="h-1.5 w-1.5 rounded-full bg-emerald-500"
+                                        :class="[
+                                            user.status === 'blocked'
+                                                ? 'bg-rose-500'
+                                                : 'bg-emerald-500',
+                                            'h-1.5 w-1.5 rounded-full',
+                                        ]"
                                     ></div>
-                                    <div
-                                        v-else
-                                        class="h-1.5 w-1.5 rounded-full bg-rose-500"
-                                    ></div>
-                                    {{ user.status }}
+                                    {{
+                                        user.status === 'blocked'
+                                            ? 'Terblokir'
+                                            : 'Aktif'
+                                    }}
                                 </span>
                             </td>
 
@@ -191,9 +219,20 @@ const pelamarList = [
                                         <Eye class="h-4 w-4" />
                                     </button>
                                     <button
-                                        class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:border-rose-100 hover:text-rose-500"
+                                        @click="
+                                            confirmBlock(user.id, user.name)
+                                        "
+                                        class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:border-orange-100 hover:text-orange-500"
                                     >
                                         <ShieldAlert class="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        @click="
+                                            confirmDelete(user.id, user.name)
+                                        "
+                                        class="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:border-rose-100 hover:text-rose-500"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
                                     </button>
                                 </div>
                             </td>
@@ -210,7 +249,7 @@ const pelamarList = [
                 <div
                     class="flex h-14 w-14 items-center justify-center rounded-2xl border border-sky-100 bg-sky-50 text-lokak-brand shadow-inner"
                 >
-                    <User class="h-7 w-7" />
+                    <UserIcon class="h-7 w-7" />
                 </div>
                 <div>
                     <h4
@@ -219,7 +258,7 @@ const pelamarList = [
                         Total Pelamar Terdaftar
                     </h4>
                     <p class="mt-1 text-2xl font-black text-lokak-text">
-                        1.240
+                        {{ stats.total }}
                         <span
                             class="ml-1 text-[10px] font-bold text-slate-400 uppercase"
                             >Orang</span
@@ -240,10 +279,10 @@ const pelamarList = [
                     <h4
                         class="text-xs font-black tracking-widest uppercase italic opacity-60"
                     >
-                        User Aktif Bulan Ini
+                        Pelamar Baru Bulan Ini
                     </h4>
                     <p class="mt-1 text-2xl font-black">
-                        856
+                        {{ stats.active }}
                         <span
                             class="ml-1 text-[10px] font-bold uppercase opacity-40"
                             >User</span
@@ -254,9 +293,3 @@ const pelamarList = [
         </div>
     </div>
 </template>
-
-<style scoped>
-tr {
-    transition: all 0.2s ease;
-}
-</style>

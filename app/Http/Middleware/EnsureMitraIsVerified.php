@@ -4,23 +4,31 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class EnsureMitraIsVerified
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
-    public function handle($request, $next)
+    public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::user();
-        if ($user && $user->role === 'mitra' && $user->mitra->status_mitra !== 'verified') {
-            // Jika belum verified, paksa balik ke dashboard mitra dengan pesan error
-            return redirect()->route('dashboard.mitra')->with('error', 'Akun belum diverifikasi admin.');
+        $mitra = $user->mitra;
+
+        if ($user && $user->role->value === 'mitra') {
+            if ($mitra && $mitra->status_mitra === 'verified') {
+                return $next($request);
+            }
+
+            // Tentukan pesan berdasarkan status
+            $message = 'Akses Ditolak. Akun Anda sedang dalam proses verifikasi oleh Admin.';
+            if ($mitra && $mitra->status_mitra === 'rejected') {
+                $message = 'Akses Ditolak. Maaf, pendaftaran mitra Anda ditolak. Silakan hubungi admin untuk informasi lebih lanjut.';
+            }
+
+            // Redirect ke dashboard dengan flash message 'error'
+            return redirect()->route('mitra.dashboard')->with('error', $message);
         }
-        return $next($request);
+
+        return redirect('/');
     }
 }

@@ -12,7 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('lamarans', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->uuid('id')->primary(); // ID Lamaran itu sendiri
+
+            // KOLOM WAJIB: Ini yang dicari Laravel tadi
+            $table->foreignUuid('pelamar_id')->constrained('pelamars', 'pelamar_id')->onDelete('cascade');
+
+            // Relasi ke lowongan
+            $table->foreignUuid('lowongan_id')->constrained('lowongans')->onDelete('cascade');
+
+            $table->string('status')->default('pending'); // pending, accepted, rejected
             $table->timestamps();
         });
     }
