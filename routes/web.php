@@ -27,7 +27,9 @@ Route::inertia('/', 'Welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('welcome');
 
+// Rute Halaman List Lowongan
 Route::inertia('/lowongan', 'Lowongan')->name('lowongan');
+
 Route::inertia('/mitra', 'Mitra')->name('mitra');
 
 // --- GUEST ROUTES ---
