@@ -21,7 +21,7 @@ import {
     SidebarMenu,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, welcome } from '@/routes';
 import {
     kelolalowongan,
     kelolamitra,
@@ -31,6 +31,8 @@ import {
 import { kelolapelamarkerja, pasanglowongan, pesanmitra } from '@/routes/mitra';
 import { lamaran, pesan, lowongankerja } from '@/routes/pelamar';
 import type { NavItem } from '@/types';
+import Lowongan from '@/pages/Lowongan.vue';
+import Welcome from '@/pages/Welcome.vue';
 
 const page = usePage();
 const userRole = computed(() => page.props.auth.user?.role);

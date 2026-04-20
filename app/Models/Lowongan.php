@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lowongan extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $table = 'lowongans'; // Harus jamak sesuai migrasi
+    protected $table = 'lowongans';
     protected $primaryKey = 'id';
     protected $keyType = 'string';
     public $incrementing = false;
 
+    // CEK AREA INI (Baris 19-29 biasanya di sini)
     protected $fillable = [
         'mitra_id',
         'lokasi_id',
@@ -26,20 +28,20 @@ class Lowongan extends Model
         'gaji_max',
         'status_lowongan',
         'tanggal_expired',
-    ];
+    ]; // Pastikan ada tutup kurung kotak dan titik koma di sini!
 
     public function mitra(): BelongsTo
     {
         return $this->belongsTo(Mitra::class, 'mitra_id');
     }
 
-    public function lamaran(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(Lamaran::class, 'lowongan_id');
-    }
-
     public function lokasi(): BelongsTo
     {
         return $this->belongsTo(Lokasi::class, 'lokasi_id');
+    }
+
+    public function lamaran(): HasMany
+    {
+        return $this->hasMany(Lamaran::class, 'lowongan_id');
     }
 }
