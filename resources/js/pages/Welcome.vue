@@ -1,22 +1,19 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'; // Pastikan Link diimport
+import { Head, Link } from '@inertiajs/vue3';
 import { ref, onUnmounted } from 'vue';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
 
-interface Job {
-    id: number;
-    title: string;
-    company: string;
-    salary: string;
-    location: string;
-    icon: string;
-}
+// Definisi props dari Controller
+const props = defineProps<{
+    lowonganTerbaru: Array<any>;
+    mitraTeratas: Array<any>;
+}>();
 
 const isModalOpen = ref(false);
-const selectedJob = ref<Job | null>(null);
+const selectedJob = ref<any>(null);
 
-const openJobDetail = (job: Job) => {
+const openJobDetail = (job: any) => {
     selectedJob.value = job;
     isModalOpen.value = true;
     document.body.style.overflow = 'hidden';
@@ -32,83 +29,25 @@ onUnmounted(() => {
     document.body.style.overflow = 'auto';
 });
 
-const lowonganTerbaru: Job[] = [
-    {
-        id: 1,
-        title: 'FRONTEND DEVELOPER (REACT)',
-        company: 'UNIVERSITAS DEHASEN',
-        salary: 'Rp 8-12 Juta',
-        location: 'KOTA BENGKULU',
-        icon: '🎓',
-    },
-    {
-        id: 2,
-        title: 'FRONTEND DEVELOPER (REACT)',
-        company: 'CODE 21',
-        salary: 'Rp 8-12 Juta',
-        location: 'MUKOMUKO',
-        icon: '💎',
-    },
-    {
-        id: 3,
-        title: 'CYBER SECURITY',
-        company: 'DECODE',
-        salary: 'Rp 8-9 Juta',
-        location: 'KOTA BENGKULU',
-        icon: '💻',
-    },
-    {
-        id: 4,
-        title: 'MENTOR BOOTCAMP (AI)',
-        company: 'PHINCON ACADEMY',
-        salary: 'Rp 15-20 Juta',
-        location: 'MANNA',
-        icon: '🤖',
-    },
-];
-
-const mitraTeratas = [
-    {
-        id: 1,
-        name: 'UNIVERSITAS DEHASEN',
-        location: 'Kota Bengkulu',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-    },
-    {
-        id: 2,
-        name: 'CODE 21',
-        location: 'MUKOMUKO',
-        jobs: '10 PEKERJAAN',
-        rating: '4.3 (154)',
-    },
-    {
-        id: 3,
-        name: 'DE CODE',
-        location: 'KOTA BENGKULU',
-        jobs: '10 PEKERJAAN',
-        rating: '4.3 (154)',
-    },
-    {
-        id: 4,
-        name: 'PHINCON ACADEMY',
-        location: 'MANNA',
-        jobs: '10 PEKERJAAN',
-        rating: '4.3 (154)',
-    },
-];
+// Helper untuk format rupiah
+const formatRupiah = (value: any) => {
+    if (!value) return 'Bersaing';
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+    }).format(value);
+};
 </script>
 
 <template>
-    <Head title="Lokak Begawe - Bengkulu Job Portal" />
+    <Head title="Lokak Begawe - Portal Lowongan Kerja Bengkulu" />
 
-    <div
-        class="mt-12 min-h-screen overflow-x-hidden bg-lokak-bg font-sans text-lokak-text selection:bg-lokak-brand selection:text-white"
-    >
+    <div class="mt-12 min-h-screen overflow-x-hidden bg-lokak-bg font-sans text-lokak-text">
         <Navbar />
 
         <main class="w-full px-6 py-12 md:px-16 lg:px-24 xl:px-32">
-            <section
+              <section
                 class="relative mb-28 flex min-h-[500px] flex-col items-stretch overflow-hidden rounded-[3.5rem] bg-lokak-brand text-white shadow-2xl shadow-sky-900/20 lg:flex-row"
             >
                 <div
@@ -167,197 +106,95 @@ const mitraTeratas = [
 
             <section class="mb-32">
                 <div class="mb-14 flex items-end justify-between">
-                    <div class="flex flex-col">
-                        <h2
-                            class="text-3xl font-black tracking-tight text-lokak-text uppercase italic"
-                        >
-                            LOWONGAN
-                            <span class="text-lokak-brand">TERBARU</span>
+                    <div>
+                        <h2 class="text-3xl font-black text-lokak-text uppercase italic">
+                            LOWONGAN <span class="text-lokak-brand">TERBARU</span>
                         </h2>
-                        <div
-                            class="mt-4 h-2 w-32 rounded-full bg-lokak-brand"
-                        ></div>
+                        <div class="mt-4 h-2 w-32 rounded-full bg-lokak-brand"></div>
                     </div>
-                    <Link
-                        href="/lowongan"
-                        class="hidden text-xs font-black tracking-widest text-slate-400 uppercase italic hover:text-lokak-brand md:block"
-                    >
-                        Lihat Semua Loker →
+                    <Link href="/lowongan" class="hidden font-black text-slate-400 uppercase italic hover:text-lokak-brand md:block">
+                        Lihat Semua →
                     </Link>
                 </div>
 
-                <div
-                    class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                >
-                    <div
-                        v-for="job in lowonganTerbaru"
-                        :key="job.id"
+                <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+                    <div 
+                        v-for="job in props.lowonganTerbaru" 
+                        :key="job.id" 
                         @click="openJobDetail(job)"
-                        class="group relative cursor-pointer rounded-[3rem] border border-slate-100 bg-white p-10 shadow-sm transition-all duration-500 hover:-translate-y-3 hover:border-sky-200 hover:shadow-2xl hover:shadow-sky-900/10"
+                        class="group relative cursor-pointer rounded-[3rem] border border-slate-100 bg-white p-10 shadow-sm transition-all hover:-translate-y-3 hover:shadow-2xl"
                     >
-                        <span
-                            class="absolute top-10 right-10 rounded-full bg-sky-50 px-4 py-1.5 text-[10px] font-black tracking-wider text-lokak-brand uppercase italic"
-                        >
-                            Baru
-                        </span>
-                        <div
-                            class="mb-10 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50 text-4xl shadow-inner transition-transform group-hover:scale-110 group-hover:rotate-6"
-                        >
-                            {{ job.icon }}
+                        <div class="mb-10 flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50 text-4xl">
+                            💼
                         </div>
-                        <h3
-                            class="mb-3 text-lg leading-tight font-black text-lokak-text uppercase italic group-hover:text-lokak-brand"
-                        >
-                            {{ job.title }}
+                        <h3 class="mb-3 text-lg font-black text-lokak-text uppercase italic group-hover:text-lokak-brand">
+                            {{ job.judul_lowongan }}
                         </h3>
-                        <p
-                            class="mb-8 text-xs font-bold text-slate-400 uppercase italic"
-                        >
-                            {{ job.company }}
+                        <p class="mb-8 text-xs font-bold text-slate-400 uppercase italic">
+                            {{ job.mitra?.nama_mitra }}
                         </p>
-                        <div class="mb-12 flex gap-3">
-                            <span
-                                class="rounded-xl bg-slate-100 px-4 py-2 text-[10px] font-bold text-slate-500 uppercase italic"
-                                >Full Time</span
-                            >
-                        </div>
-                        <div
-                            class="flex items-center justify-between border-t border-slate-50 pt-8"
-                        >
-                            <span
-                                class="text-base font-black text-lokak-brand italic"
-                                >{{ job.salary }}</span
-                            >
-                            <span
-                                class="text-[10px] font-bold text-slate-400 uppercase italic"
-                                >📍 {{ job.location }}</span
-                            >
+                        <div class="flex items-center justify-between border-t border-slate-50 pt-8">
+                            <span class="text-sm font-black text-lokak-brand italic">
+                                {{ formatRupiah(job.gaji_min) }}
+                            </span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase italic">
+                                📍 {{ job.lokasi?.nama_lokasi || 'Bengkulu' }}
+                            </span>
                         </div>
                     </div>
                 </div>
             </section>
 
             <section class="mb-40">
-                <div class="mb-14 flex flex-col items-start">
-                    <h2
-                        class="text-3xl font-black tracking-tight text-lokak-text uppercase italic"
-                    >
+                <div class="mb-14">
+                    <h2 class="text-3xl font-black text-lokak-text uppercase italic">
                         MITRA <span class="text-lokak-brand">TERATAS</span>
                     </h2>
-                    <div
-                        class="mt-4 h-2 w-32 rounded-full bg-lokak-brand"
-                    ></div>
+                    <div class="mt-4 h-2 w-32 rounded-full bg-lokak-brand"></div>
                 </div>
 
-                <div
-                    class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4"
-                >
-                    <div
-                        v-for="mitra in mitraTeratas"
-                        :key="mitra.id"
-                        class="group rounded-[3rem] border border-slate-100 bg-white p-12 text-center shadow-sm transition-all duration-500 hover:-translate-y-3 hover:border-sky-200 hover:shadow-2xl"
-                    >
-                        <div
-                            class="mx-auto mb-10 flex h-28 w-28 items-center justify-center rounded-full border border-slate-50 bg-slate-50 text-5xl shadow-inner transition-transform duration-500 group-hover:scale-110"
-                        >
+                <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
+                    <div v-for="mitra in props.mitraTeratas" :key="mitra.id" class="group rounded-[3rem] border border-slate-100 bg-white p-12 text-center transition-all hover:-translate-y-3 shadow-sm hover:shadow-2xl">
+                        <div class="mx-auto mb-10 flex h-28 w-28 items-center justify-center rounded-full bg-slate-50 text-5xl">
                             🏢
                         </div>
-                        <h3
-                            class="mb-2 text-lg font-black text-lokak-text uppercase italic transition-colors group-hover:text-lokak-brand"
-                        >
-                            {{ mitra.name }}
+                        <h3 class="mb-2 text-lg font-black text-lokak-text uppercase italic group-hover:text-lokak-brand">
+                            {{ mitra.nama_mitra }}
                         </h3>
-                        <p
-                            class="mb-8 text-xs font-bold tracking-wide text-slate-400 uppercase italic"
-                        >
-                            {{ mitra.location }}
-                        </p>
-                        <div
-                            class="mb-10 flex items-center justify-center gap-5"
-                        >
-                            <span
-                                class="text-xs font-black tracking-tighter text-amber-500 italic"
-                                >⭐ {{ mitra.rating }}</span
-                            >
-                            <span
-                                class="rounded-2xl bg-lokak-brand px-5 py-2 text-[10px] font-black text-white uppercase italic shadow-lg shadow-sky-900/20"
-                            >
-                                {{ mitra.jobs }}
+                        <div class="mb-10 flex items-center justify-center gap-4">
+                            <span class="text-xs font-black text-amber-500 italic">⭐ 4.8</span>
+                            <span class="rounded-2xl bg-lokak-brand px-4 py-2 text-[10px] font-black text-white uppercase italic">
+                                {{ mitra.lowongan_count }} LOKER
                             </span>
                         </div>
-                        <button
-                            class="text-[11px] font-black tracking-[0.2em] text-slate-400 uppercase italic transition-colors hover:text-lokak-brand"
-                        >
-                            Lihat Profil →
-                        </button>
                     </div>
                 </div>
             </section>
         </main>
 
-        <div
-            v-if="isModalOpen"
-            class="fixed inset-0 z-100 flex items-center justify-center p-6"
-        >
-            <div
-                class="absolute inset-0 bg-lokak-text/60 backdrop-blur-xl transition-opacity"
-                @click="closeModal"
-            ></div>
-            <div
-                class="relative z-10 w-full max-w-2xl animate-in rounded-[4rem] bg-white p-12 shadow-2xl duration-300 zoom-in-95 md:p-20"
-            >
-                <div class="mb-12 flex items-start justify-between">
-                    <div
-                        class="flex h-24 w-24 items-center justify-center rounded-4xl border border-slate-100 bg-slate-50 text-5xl shadow-inner"
-                    >
-                        {{ selectedJob?.icon }}
-                    </div>
-                    <button
-                        @click="closeModal"
-                        class="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all hover:bg-rose-50 hover:text-rose-500"
-                    >
-                        <span class="text-2xl font-bold">✕</span>
-                    </button>
+        <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+            <div class="absolute inset-0 bg-lokak-text/60 backdrop-blur-md" @click="closeModal"></div>
+            <div class="relative z-10 w-full max-w-2xl rounded-[4rem] bg-white p-12 shadow-2xl animate-in">
+                <div class="mb-12 flex justify-between">
+                    <div class="text-5xl">💼</div>
+                    <button @click="closeModal" class="h-12 w-12 rounded-full bg-slate-100 font-bold hover:bg-rose-500 hover:text-white">✕</button>
                 </div>
-                <h2
-                    class="mb-4 text-4xl leading-tight font-black text-lokak-text uppercase italic"
-                >
-                    {{ selectedJob?.title }}
-                </h2>
-                <p
-                    class="mb-12 text-base font-black tracking-widest text-lokak-brand uppercase italic"
-                >
-                    {{ selectedJob?.company }}
-                </p>
-                <div
-                    class="mb-14 space-y-6 rounded-[2.5rem] border border-slate-50 bg-slate-50 p-10"
-                >
-                    <div
-                        class="flex items-center justify-between text-xs font-black uppercase italic"
-                    >
-                        <span class="tracking-widest text-slate-400"
-                            >Gaji Bulanan</span
-                        >
-                        <span class="text-lokak-text">{{
-                            selectedJob?.salary
-                        }}</span>
+                <h2 class="mb-4 text-4xl font-black text-lokak-text uppercase italic">{{ selectedJob?.judul_lowongan }}</h2>
+                <p class="mb-12 text-xl font-black text-lokak-brand uppercase italic">{{ selectedJob?.mitra?.nama_mitra }}</p>
+                
+                <div class="mb-14 space-y-4 rounded-3xl bg-slate-50 p-8">
+                    <div class="flex justify-between font-black italic">
+                        <span class="text-slate-400">GAJI MINIMAL</span>
+                        <span>{{ formatRupiah(selectedJob?.gaji_min) }}</span>
                     </div>
-                    <div class="h-px w-full bg-slate-200"></div>
-                    <div
-                        class="flex items-center justify-between text-xs font-black uppercase italic"
-                    >
-                        <span class="tracking-widest text-slate-400"
-                            >Lokasi Kerja</span
-                        >
-                        <span class="text-lokak-text"
-                            >📍 {{ selectedJob?.location }}</span
-                        >
+                    <div class="flex justify-between font-black italic">
+                        <span class="text-slate-400">LOKASI</span>
+                        <span>📍 {{ selectedJob?.lokasi?.nama_lokasi }}</span>
                     </div>
                 </div>
-                <button
-                    class="w-full rounded-4xl bg-lokak-brand py-8 text-base font-black text-white uppercase italic shadow-2xl shadow-sky-900/30 transition-all hover:-translate-y-1 hover:brightness-110 active:scale-95"
-                >
-                    Lamar Pekerjaan Sekarang
+                
+                <button class="w-full rounded-full bg-lokak-brand py-6 text-xl font-black text-white uppercase italic shadow-lg hover:brightness-110">
+                    Lamar Sekarang
                 </button>
             </div>
         </div>
@@ -367,26 +204,6 @@ const mitraTeratas = [
 </template>
 
 <style scoped>
-*:focus {
-    outline: none !important;
-}
-
-.transition-all {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.animate-in {
-    animation: zoomIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes zoomIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
+.animate-in { animation: zoomIn 0.3s ease-out; }
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 </style>
