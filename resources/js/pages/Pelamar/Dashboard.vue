@@ -6,13 +6,27 @@ import {
     Calendar,
     Bookmark,
     Search,
+    MapPin,
+    Building2,
 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
+
+// 1. Definisikan Props yang dikirim dari web.php
+const props = defineProps<{
+    auth: {
+        user: {
+            name: string;
+            pelamar: any;
+        };
+    };
+    mitraVerified: any[]; // Data mitra dari logic poin 4 kemarin
+}>();
 
 defineOptions({
     layout: AppLayout,
 });
 
+// 2. Statistik (Bisa dibuat dinamis nanti saat tabel lamaran sudah ada)
 const stats = [
     {
         name: 'Lamaran Terkirim',
@@ -52,14 +66,6 @@ const recentApplications = [
         status: 'Interview',
         statusColor: 'bg-emerald-100 text-emerald-700',
     },
-    {
-        id: 3,
-        position: 'Cyber Security',
-        company: 'De Code BKL',
-        date: '08 April 2026',
-        status: 'Ditolak',
-        statusColor: 'bg-rose-100 text-rose-700',
-    },
 ];
 </script>
 
@@ -74,7 +80,10 @@ const recentApplications = [
                 <h1
                     class="text-3xl font-black tracking-tighter text-lokak-text uppercase italic md:text-4xl"
                 >
-                    HALO, <span class="text-lokak-brand">ALIP MAULANA</span>
+                    HALO,
+                    <span class="text-lokak-brand">{{
+                        props.auth.user.name
+                    }}</span>
                 </h1>
                 <div class="mt-2 h-1.5 w-24 rounded-full bg-slate-200"></div>
                 <p
@@ -130,7 +139,7 @@ const recentApplications = [
         </div>
 
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div class="lg:col-span-8">
+            <div class="space-y-8 lg:col-span-8">
                 <div
                     class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
                 >
@@ -144,9 +153,8 @@ const recentApplications = [
                         <Link
                             href="#"
                             class="text-[10px] font-black text-lokak-brand uppercase italic hover:underline"
+                            >Lihat Semua →</Link
                         >
-                            Lihat Semua →
-                        </Link>
                     </div>
 
                     <div class="space-y-4">
@@ -179,10 +187,77 @@ const recentApplications = [
                                     app.statusColor,
                                     'rounded-lg px-3 py-1 text-[8px] font-black tracking-widest uppercase italic',
                                 ]"
+                                >{{ app.status }}</span
                             >
-                                {{ app.status }}
-                            </span>
                         </div>
+                    </div>
+                </div>
+
+                <div
+                    class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+                >
+                    <div class="mb-8 flex items-center justify-between">
+                        <h2
+                            class="text-lg font-black tracking-tight text-lokak-text uppercase italic"
+                        >
+                            Mitra
+                            <span class="text-emerald-500">Terverifikasi</span>
+                        </h2>
+                    </div>
+
+                    <div
+                        v-if="mitraVerified.length > 0"
+                        class="grid grid-cols-1 gap-4 sm:grid-cols-2"
+                    >
+                        <div
+                            v-for="mitra in mitraVerified"
+                            :key="mitra.id"
+                            class="flex flex-col rounded-3xl border border-slate-100 bg-white p-5 transition-all hover:shadow-lg"
+                        >
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 text-xl shadow-inner"
+                                >
+                                    <Building2 class="h-6 w-6 text-slate-400" />
+                                </div>
+                                <div>
+                                    <h4
+                                        class="text-xs font-black text-lokak-text uppercase"
+                                    >
+                                        {{ mitra.nama_mitra }}
+                                    </h4>
+                                    <div
+                                        class="flex items-center gap-1 text-[9px] font-bold text-lokak-text-muted uppercase"
+                                    >
+                                        <MapPin class="h-3 w-3" />
+                                        {{
+                                            mitra.lokasi?.nama_lokasi ??
+                                            'Bengkulu'
+                                        }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="mt-4 flex items-center justify-between border-t border-slate-50 pt-4"
+                            >
+                                <span
+                                    class="text-[9px] font-black text-emerald-500 uppercase italic"
+                                    >Terverifikasi Admin</span
+                                >
+                                <a
+                                    href="#"
+                                    class="text-[9px] font-black text-lokak-brand uppercase hover:underline"
+                                    >Profil →</a
+                                >
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        v-else
+                        class="py-10 text-center text-[11px] font-bold text-slate-400 uppercase italic"
+                    >
+                        Belum ada perusahaan terverifikasi.
                     </div>
                 </div>
             </div>
@@ -199,10 +274,10 @@ const recentApplications = [
                     <p
                         class="mt-2 text-[10px] font-medium tracking-wide uppercase opacity-80"
                     >
-                        Ada 150+ lowongan baru di Bengkulu hari ini.
+                        Ada lowongan baru di Bengkulu hari ini.
                     </p>
                     <Link
-                        href="/lowongan"
+                        href="#"
                         class="mt-6 flex items-center justify-center gap-2 rounded-xl bg-white py-3 text-[10px] font-black text-lokak-brand uppercase italic shadow-lg transition hover:bg-slate-50 active:scale-95"
                     >
                         <Search class="h-3 w-3" /> JELAJAHI SEKARANG
@@ -214,7 +289,6 @@ const recentApplications = [
 </template>
 
 <style scoped>
-/* Animasi halus */
 .group {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

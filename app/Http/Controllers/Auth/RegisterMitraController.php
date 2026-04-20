@@ -16,7 +16,6 @@ use Inertia\Inertia;
 
 class RegisterMitraController extends Controller
 {
-    // FUNGSI INI YANG SEMPAT HILANG
     public function create()
     {
         $lokasis = Lokasi::orderBy('nama_lokasi', 'asc')->get();
@@ -34,14 +33,28 @@ class RegisterMitraController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|confirmed|min:8',
-            'company_name' => 'required|string|max:255',
+            'nama_mitra' => 'required|string|max:255', // Sudah disesuaikan
             'nohp_mitra' => 'required|string|max:20',
             'lokasi_id' => 'required|exists:lokasis,id',
             'kategori_id' => 'required|exists:kategoris,id',
             'alamat_mitra' => 'required|string',
-            'deksipsi_mitra' => 'required|string', // Pastikan baris ini ada
+            'deskripsi_mitra' => 'required|string', // Sudah disesuaikan
             'logo_mitra' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
             'banner_mitra' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
+        ], [
+            'name.required' => 'Nama lengkap penanggung jawab wajib diisi.',
+            'email.required' => 'Email akun tidak boleh kosong.',
+            'email.unique' => 'Email ini sudah terdaftar, silakan gunakan email lain.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.min' => 'Password minimal harus 8 karakter.',
+            'nama_mitra.required' => 'Nama perusahaan wajib diisi.', // Sudah disesuaikan
+            'nohp_mitra.required' => 'Nomor telepon perusahaan wajib diisi.',
+            'lokasi_id.required' => 'Silakan pilih lokasi perusahaan Anda.',
+            'kategori_id.required' => 'Silakan pilih bidang industri perusahaan.',
+            'alamat_mitra.required' => 'Alamat lengkap wajib diisi.',
+            'deskripsi_mitra.required' => 'Deskripsi perusahaan jangan dikosongkan.', // Sudah disesuaikan
+            'logo_mitra.image' => 'File logo harus berupa gambar.',
+            'banner_mitra.max' => 'Ukuran banner maksimal adalah 5MB.',
         ]);
 
         DB::beginTransaction();
@@ -66,9 +79,9 @@ class RegisterMitraController extends Controller
 
             Mitra::create([
                 'user_id' => $user->id,
-                'nama_mitra' => $request->company_name,
+                'nama_mitra' => $request->nama_mitra, // Mengambil data yang benar
                 'email_mitra' => $request->email,
-                'deksipsi_mitra' => $request->deksipsi_mitra, // Fix typo di sini
+                'deskripsi_mitra' => $request->deskripsi_mitra, // INI BIANG KEROKNYA, sekarang sudah benar!
                 'alamat_mitra' => $request->alamat_mitra,
                 'nohp_mitra' => $request->nohp_mitra,
                 'lokasi_id' => $request->lokasi_id,
@@ -84,7 +97,8 @@ class RegisterMitraController extends Controller
             return redirect()->route('dashboard');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Registrasi gagal, silakan coba lagi.']);
+            // Lemparkan error aslinya agar ketahuan jika masih ada yang salah
+            throw $e;
         }
     }
 }

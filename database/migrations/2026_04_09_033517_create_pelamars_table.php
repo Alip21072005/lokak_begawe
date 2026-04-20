@@ -12,18 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pelamars', function (Blueprint $table) {
-            // Gunakan pelamar_id sebagai primary key UUID
             $table->uuid('pelamar_id')->primary();
 
-            // Relasi ke tabel Users
+            // HANYA INI YANG BENAR: Relasi ke tabel Induk (User) dan Lokasi utama
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
-
-            // Relasi ke tabel master lainnya (Cukup satu baris per relasi)
             $table->foreignUuid('lokasi_id')->constrained('lokasis')->onDelete('cascade');
-            $table->foreignUuid('pendidikan_id')->constrained('pendidikans')->onDelete('cascade');
-            $table->foreignUuid('pengalaman_id')->constrained('pengalamans')->onDelete('cascade');
-            $table->foreignUuid('lamaran_id')->constrained('lamarans')->onDelete('cascade');
-            $table->foreignUuid('skill_id')->constrained('skills')->onDelete('cascade');
+
 
             $table->string('nama_pelamar');
             $table->string('email_pelamar');

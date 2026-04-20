@@ -1,252 +1,507 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
+import {
+    Chart as ChartJS,
+    Title,
+    Tooltip,
+    Legend,
+    LineElement,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    ArcElement,
+} from 'chart.js';
+import type { ChartOptions } from 'chart.js';
 import {
     Users,
     Briefcase,
     ShieldCheck,
     AlertCircle,
     Check,
-    X,
-    Eye,
-    BellRing,
-    Settings,
+    Clock,
+    Trash2,
+    Ban,
+    TrendingUp,
+    PieChart,
 } from 'lucide-vue-next';
-import { computed } from 'vue';
+import Swal from 'sweetalert2';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { Line, Doughnut } from 'vue-chartjs';
 import AppLayout from '@/layouts/AppLayout.vue';
 
-const props = defineProps<{
-    counts?: {
-        pelamar: number;
-        mitra: number;
-        lowongan: number;
-    };
-}>();
+ChartJS.register(
+    Title,
+    Tooltip,
+    Legend,
+    LineElement,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    ArcElement,
+);
 
-defineOptions({
-    layout: AppLayout,
+interface Props {
+    auth: any;
+    counts: { pelamar: number; mitra: number; lowongan: number };
+    mitraPending: any[];
+    pelamarTerbaru: any[];
+    registrationTrend: { labels: string[]; pelamar: number[]; mitra: number[] };
+    industryStats: { name: string; count: number }[];
+    activityLogs: { desc: string; time: string }[];
+    latestJobs: any[];
+}
+
+const props = defineProps<Props>();
+defineOptions({ layout: AppLayout });
+
+const currentTime = ref(new Date().toLocaleTimeString('id-ID'));
+let timer: any;
+onMounted(() => {
+    timer = setInterval(() => {
+        currentTime.value = new Date().toLocaleTimeString('id-ID');
+    }, 1000);
 });
+onUnmounted(() => clearInterval(timer));
 
-// Statistik yang diperluas untuk Admin
-const stats = computed(() => [
-    {
-        name: 'Total Pelamar',
-        value: props.counts?.pelamar?.toLocaleString('id-ID') ?? 0,
-        description: 'User terdaftar',
-        icon: Users,
-        color: 'text-lokak-brand',
-    },
-    {
-        name: 'Mitra Terverifikasi',
-        value: props.counts?.mitra?.toLocaleString('id-ID') ?? 0,
-        description: 'Perusahaan aktif',
-        icon: ShieldCheck,
-        color: 'text-emerald-500',
-    },
-    {
-        name: 'Total Lowongan',
-        value: props.counts?.lowongan?.toLocaleString('id-ID') ?? 0,
-        description: 'Loker tayang',
-        icon: Briefcase,
-        color: 'text-indigo-500',
-    },
-    {
-        name: 'Menunggu Verifikasi',
-        value: '14', // Dummy data untuk admin
-        description: 'Mitra baru',
-        icon: AlertCircle,
-        color: 'text-amber-500',
-    },
-]);
-
-// Data Dummy Antrean Verifikasi Mitra
-const pendingMitra = [
-    {
-        id: 1,
-        name: 'PT. Bengkulu Sejahtera',
-        sector: 'IT & Telco',
-        date: '1 jam yang lalu',
-    },
-    {
-        id: 2,
-        name: 'CV. Maju Jaya Mukomuko',
-        sector: 'Konstruksi',
-        date: '3 jam yang lalu',
-    },
-    {
-        id: 3,
-        name: 'Koperasi Manna Makmur',
-        sector: 'Perdagangan',
-        date: 'Kemarin',
-    },
+// --- WARNA KONTRAS TINGGI ---
+const chartColors = [
+    '#3b82f6', // Biru Utama
+    '#f97316', // Orange Terang
+    '#10b981', // Hijau Emerald
+    '#ef4444', // Merah Rose
+    '#8b5cf6', // Ungu Vivid
+    '#ec4899', // Pink Cerah
+    '#06b6d4', // Cyan/Aqua
+    '#f59e0b', // Amber/Kuning Gelap
+    '#6366f1', // Indigo (Beda dengan Biru)
+    '#84cc16', // Lime (Hijau Muda Kekuningan)
+    '#14b8a6', // Teal (Hijau Kebiruan)
+    '#d946ef', // Fuchsia (Ungu Kemerahan)
+    '#fb7185', // Rose (Merah Muda Pastel)
+    '#059669', // Hijau Gelap
+    '#7c3aed', // Violet Deep
+    '#475569', // Slate/Abu-abu Gelap (Pengganti Hitam agar lebih modern)
 ];
 
-// Data Dummy Aktivitas Sistem
-const systemActivities = [
-    { id: 1, msg: 'User baru "Rian" mendaftar', time: '10m ago' },
-    { id: 2, msg: 'Mitra "Code 21" memasang loker', time: '25m ago' },
-    { id: 3, msg: 'Admin "Alip" mengubah pengaturan', time: '1h ago' },
-];
+// --- KONFIGURASI GRAFIK ---
+
+const commonOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: true,
+            position: 'bottom',
+            labels: {
+                usePointStyle: true,
+                font: { size: 10, weight: 'bold' as const },
+            },
+        },
+    },
+};
+
+const doughnutOptions: ChartOptions<'doughnut'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '75%', // Membuat ring lebih tipis agar elegan
+    plugins: {
+        legend: {
+            display: false, // MATIKAN LEGENDA BAWAAN AGAR TIDAK BERANTAKAN
+        },
+        tooltip: {
+            backgroundColor: '#1e293b',
+            padding: 12,
+            titleFont: { size: 12, weight: 'bold' as const },
+            bodyFont: { size: 12 },
+            cornerRadius: 12,
+        },
+    },
+};
+
+const lineData = computed(() => ({
+    labels: props.registrationTrend.labels,
+    datasets: [
+        {
+            label: 'Pelamar',
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            data: props.registrationTrend.pelamar,
+            tension: 0.4,
+            borderWidth: 4,
+            fill: true,
+        },
+        {
+            label: 'Mitra',
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.1)',
+            data: props.registrationTrend.mitra,
+            tension: 0.4,
+            borderWidth: 4,
+            fill: true,
+        },
+    ],
+}));
+
+const pieData = computed(() => ({
+    labels: props.industryStats.map((i) => i.name),
+    datasets: [
+        {
+            backgroundColor: chartColors,
+            data: props.industryStats.map((i) => i.count),
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            hoverOffset: 15,
+        },
+    ],
+}));
+
+// --- AKSI ---
+
+const confirmVerifyMitra = (id: string, name: string) => {
+    Swal.fire({
+        title: 'Verifikasi Mitra?',
+        text: `Mitra ${name} akan diizinkan untuk memasang lowongan kerja.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'Ya, Verifikasi!',
+        cancelButtonText: 'Batal',
+        customClass: { popup: 'rounded-[2.5rem]' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.patch(
+                `/dashboard/admin/mitra/${id}/status`,
+                { status: 'verified' },
+                { preserveScroll: true },
+            );
+        }
+    });
+};
+
+const confirmBlockPelamar = (id: string, name: string) => {
+    Swal.fire({
+        title: 'Blokir Akun?',
+        text: `Pelamar ${name} tidak akan bisa masuk sementara waktu.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#f59e0b',
+        confirmButtonText: 'Ya, Blokir',
+        customClass: { popup: 'rounded-[2.5rem]' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.patch(
+                `/dashboard/admin/blokir-akun-user/${id}`,
+                {},
+                { preserveScroll: true },
+            );
+        }
+    });
+};
+
+const confirmDeletePelamar = (id: string, name: string) => {
+    Swal.fire({
+        title: 'Hapus Permanen?',
+        text: `Data akun ${name} akan dihapus selamanya!`,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#e11d48',
+        confirmButtonText: 'Ya, Hapus Data',
+        customClass: { popup: 'rounded-[2.5rem]' },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(`/dashboard/admin/hapus-akun-user/${id}`, {
+                preserveScroll: true,
+            });
+        }
+    });
+};
 </script>
 
 <template>
     <Head title="Dashboard Admin" />
 
-    <div class="space-y-8 p-6 lg:p-10">
+    <div class="min-h-screen space-y-8 bg-slate-50/50 p-6 lg:p-10">
         <div
-            class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between"
+            class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
         >
             <div>
                 <h1
-                    class="text-3xl font-black tracking-tighter text-lokak-text uppercase italic md:text-4xl"
+                    class="text-3xl font-black tracking-tighter text-slate-900 uppercase italic"
                 >
-                    ADMIN <span class="text-lokak-brand">CONTROL</span>
+                    ADMIN <span class="text-sky-700">DASHBOARD</span>
                 </h1>
-                <div class="mt-2 h-1.5 w-24 rounded-full bg-slate-200"></div>
                 <p
-                    class="mt-4 text-[11px] font-bold tracking-widest text-lokak-text-muted uppercase italic"
+                    class="mt-1 flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic"
                 >
-                    Pusat kendali operasional dan verifikasi platform Lokak
-                    Begawe.
+                    <Clock class="h-3 w-3" /> {{ currentTime }} WIB • SECURE
+                    SESSION
                 </p>
-            </div>
-
-            <div class="flex gap-3">
-                <button
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition-all hover:text-lokak-brand hover:shadow-md"
-                >
-                    <BellRing class="h-5 w-5" />
-                </button>
-                <button
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-400 transition-all hover:text-lokak-brand hover:shadow-md"
-                >
-                    <Settings class="h-5 w-5" />
-                </button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <div
-                v-for="stat in stats"
-                :key="stat.name"
-                class="group relative overflow-hidden rounded-4xl border border-slate-200 bg-white p-7 shadow-sm transition-all hover:border-sky-200 hover:shadow-xl hover:shadow-sky-900/5"
+                v-for="s in [
+                    {
+                        n: 'Pelamar',
+                        v: counts.pelamar,
+                        i: Users,
+                        c: 'text-sky-600',
+                        b: 'bg-sky-50',
+                    },
+                    {
+                        n: 'Mitra Aktif',
+                        v: counts.mitra,
+                        i: ShieldCheck,
+                        c: 'text-emerald-600',
+                        b: 'bg-emerald-50',
+                    },
+                    {
+                        n: 'Lowongan',
+                        v: counts.lowongan,
+                        i: Briefcase,
+                        c: 'text-indigo-600',
+                        b: 'bg-indigo-50',
+                    },
+                    {
+                        n: 'Antrean',
+                        v: mitraPending.length,
+                        i: AlertCircle,
+                        c: 'text-amber-600',
+                        b: 'bg-amber-50',
+                    },
+                ]"
+                :key="s.n"
+                class="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
             >
-                <div class="relative z-10 flex flex-col">
-                    <p
-                        class="text-[9px] font-black tracking-widest text-lokak-text-muted uppercase italic"
+                <div :class="[s.b, 'mb-4 w-fit rounded-2xl p-3']">
+                    <component :is="s.i" :class="[s.c, 'h-5 w-5']" />
+                </div>
+                <p
+                    class="text-[9px] font-black tracking-widest text-slate-400 uppercase"
+                >
+                    {{ s.n }}
+                </p>
+                <h2 class="mt-1 text-3xl font-black text-slate-900">
+                    {{ s.v }}
+                </h2>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <div
+                class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm lg:col-span-7"
+            >
+                <div class="mb-8 flex items-center gap-3">
+                    <TrendingUp class="h-5 w-5 text-sky-700" />
+                    <h2
+                        class="text-sm font-black text-slate-900 uppercase italic"
                     >
-                        {{ stat.name }}
-                    </p>
-                    <p class="mt-1 text-3xl font-black text-lokak-text">
-                        {{ stat.value }}
-                    </p>
-                    <div class="mt-3 flex items-center gap-2">
+                        Tren Pendaftaran
+                    </h2>
+                </div>
+                <div class="h-80">
+                    <Line :data="lineData" :options="commonOptions" />
+                </div>
+            </div>
+
+            <div
+                class="flex flex-col rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm lg:col-span-5"
+            >
+                <div class="mb-8 flex items-center gap-3">
+                    <PieChart class="h-5 w-5 text-emerald-600" />
+                    <h2
+                        class="text-sm font-black text-slate-900 uppercase italic"
+                    >
+                        Sebaran Industri
+                    </h2>
+                </div>
+
+                <div class="flex flex-1 flex-col justify-center gap-6">
+                    <div class="relative h-56">
+                        <Doughnut :data="pieData" :options="doughnutOptions" />
+                    </div>
+
+                    <div
+                        class="mt-4 grid max-h-32 grid-cols-2 gap-x-4 gap-y-2 overflow-y-auto px-2"
+                    >
                         <div
-                            :class="[
-                                stat.color,
-                                'flex h-8 w-8 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 transition-all group-hover:bg-lokak-brand group-hover:text-white',
-                            ]"
+                            v-for="(item, index) in industryStats"
+                            :key="index"
+                            class="flex items-center gap-2"
                         >
-                            <component :is="stat.icon" class="h-4 w-4" />
+                            <div
+                                class="h-2.5 w-2.5 shrink-0 rounded-full"
+                                :style="{
+                                    backgroundColor:
+                                        chartColors[index % chartColors.length],
+                                }"
+                            ></div>
+                            <span
+                                class="truncate text-[10px] font-bold text-slate-600 uppercase"
+                                :title="item.name"
+                            >
+                                {{ item.name }}
+                            </span>
+                            <span
+                                class="ml-auto text-[10px] font-black text-slate-400"
+                                >{{ item.count }}</span
+                            >
                         </div>
-                        <span
-                            class="text-[9px] font-bold text-slate-400 uppercase italic"
-                            >{{ stat.description }}</span
-                        >
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div class="lg:col-span-8">
-                <div
-                    class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div
+                class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+            >
+                <h2
+                    class="mb-8 text-sm font-black text-slate-900 uppercase italic"
                 >
-                    <div class="mb-8 flex items-center justify-between">
-                        <h2
-                            class="text-lg font-black tracking-tight text-lokak-text uppercase italic"
-                        >
-                            Verifikasi
-                            <span class="text-lokak-brand">Mitra Baru</span>
-                        </h2>
-                        <span
-                            class="rounded-full bg-amber-100 px-3 py-1 text-[9px] font-black text-amber-700 uppercase"
-                            >3 Urgent</span
-                        >
-                    </div>
-
-                    <div class="space-y-4">
-                        <div
-                            v-for="mitra in pendingMitra"
-                            :key="mitra.id"
-                            class="flex items-center justify-between rounded-2xl border border-slate-50 bg-slate-50 p-5 transition-all hover:border-slate-200 hover:bg-white hover:shadow-md"
-                        >
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-white font-black text-lokak-brand shadow-sm"
-                                >
-                                    {{ mitra.name.charAt(0) }}
-                                </div>
-                                <div>
-                                    <h3
-                                        class="text-xs font-black text-lokak-text uppercase"
-                                    >
-                                        {{ mitra.name }}
-                                    </h3>
-                                    <p
-                                        class="text-[9px] font-bold text-lokak-text-muted uppercase"
-                                    >
-                                        {{ mitra.sector }} • {{ mitra.date }}
-                                    </p>
-                                </div>
+                    Lowongan Terbaru
+                </h2>
+                <div class="space-y-4">
+                    <div
+                        v-for="j in latestJobs"
+                        :key="j.id"
+                        class="flex items-center justify-between rounded-3xl border border-transparent bg-slate-50 p-4 transition-all hover:border-slate-100"
+                    >
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-xl bg-white font-black text-indigo-600 uppercase italic shadow-sm"
+                            >
+                                {{ j.mitra?.nama_mitra?.charAt(0) }}
                             </div>
-                            <div class="flex gap-2">
-                                <button
-                                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-400 shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
+                            <div>
+                                <h4
+                                    class="text-xs font-black text-slate-900 uppercase"
                                 >
-                                    <Eye class="h-4 w-4" />
-                                </button>
-                                <button
-                                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-white shadow-lg shadow-emerald-900/20 transition-all hover:bg-emerald-600"
+                                    {{ j.judul_lowongan }}
+                                </h4>
+                                <p
+                                    class="mt-0.5 text-[9px] font-bold text-slate-400 italic"
                                 >
-                                    <Check class="h-4 w-4" />
-                                </button>
-                                <button
-                                    class="flex h-8 w-8 items-center justify-center rounded-lg border border-rose-100 bg-white text-rose-500 transition-all hover:bg-rose-50"
-                                >
-                                    <X class="h-4 w-4" />
-                                </button>
+                                    {{ j.mitra?.nama_mitra }}
+                                </p>
                             </div>
                         </div>
+                        <span class="text-[9px] font-black text-slate-300">{{
+                            new Date(j.created_at).toLocaleDateString()
+                        }}</span>
                     </div>
                 </div>
             </div>
 
-            <div class="space-y-6 lg:col-span-4">
-                <div
-                    class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+            <div
+                class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+            >
+                <h2
+                    class="mb-8 text-sm font-black text-slate-900 uppercase italic"
                 >
-                    <h4
-                        class="mb-6 text-[10px] font-black tracking-widest text-lokak-text uppercase italic"
+                    Log Aktivitas
+                </h2>
+                <div
+                    class="relative space-y-6 before:absolute before:left-3 before:h-full before:w-0.5 before:bg-slate-100"
+                >
+                    <div
+                        v-for="(log, idx) in activityLogs"
+                        :key="idx"
+                        class="relative pl-8"
                     >
-                        Aktivitas Sistem
-                    </h4>
-                    <div class="space-y-6">
                         <div
-                            v-for="act in systemActivities"
-                            :key="act.id"
-                            class="flex items-start gap-3 border-l-2 border-slate-100 pl-4 transition-all hover:border-lokak-brand"
+                            class="absolute top-1 left-1.5 h-3 w-3 rounded-full border-2 border-white bg-sky-700"
+                        ></div>
+                        <p
+                            class="text-[9px] font-bold text-slate-400 uppercase italic"
                         >
-                            <div class="flex flex-col">
-                                <span
-                                    class="text-[11px] leading-tight font-bold text-lokak-text"
-                                    >{{ act.msg }}</span
-                                >
-                                <span
-                                    class="mt-1 text-[9px] font-black text-slate-300 uppercase italic"
-                                    >{{ act.time }}</span
-                                >
+                            {{ log.time }}
+                        </p>
+                        <p
+                            class="mt-1 text-[10px] leading-tight font-black text-slate-700 uppercase"
+                        >
+                            {{ log.desc }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div
+                class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+            >
+                <h2
+                    class="mb-8 text-sm font-black text-slate-900 uppercase italic"
+                >
+                    Verifikasi Mitra
+                </h2>
+                <div class="space-y-4">
+                    <div
+                        v-if="mitraPending.length === 0"
+                        class="py-10 text-center text-[10px] font-black text-slate-300 uppercase italic"
+                    >
+                        Tidak ada antrean
+                    </div>
+                    <div
+                        v-for="m in mitraPending"
+                        :key="m.id"
+                        class="flex items-center justify-between rounded-3xl bg-amber-50 p-4"
+                    >
+                        <span
+                            class="text-xs font-black text-slate-700 uppercase italic"
+                            >{{ m.nama_mitra }}</span
+                        >
+                        <button
+                            @click="confirmVerifyMitra(m.id, m.nama_mitra)"
+                            class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white"
+                        >
+                            <Check class="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm"
+            >
+                <h2
+                    class="mb-8 text-sm font-black text-slate-900 uppercase italic"
+                >
+                    Pelamar Terbaru
+                </h2>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div
+                        v-for="p in pelamarTerbaru"
+                        :key="p.id"
+                        class="flex items-center justify-between rounded-3xl border border-transparent bg-slate-50 p-4 transition-all hover:border-slate-200 hover:bg-white"
+                    >
+                        <div class="flex items-center gap-3">
+                            <div
+                                class="flex h-9 w-9 items-center justify-center rounded-xl bg-white font-black text-sky-700 uppercase italic shadow-sm"
+                            >
+                                {{ p.name.charAt(0) }}
                             </div>
+                            <span
+                                class="text-[10px] font-black text-slate-800 uppercase"
+                                >{{ p.name }}</span
+                            >
+                        </div>
+                        <div class="flex gap-2">
+                            <button
+                                @click="confirmBlockPelamar(p.id, p.name)"
+                                class="text-orange-500 transition-transform hover:scale-110"
+                            >
+                                <Ban class="h-4 w-4" />
+                            </button>
+                            <button
+                                @click="confirmDeletePelamar(p.id, p.name)"
+                                class="text-rose-500 transition-transform hover:scale-110"
+                            >
+                                <Trash2 class="h-4 w-4" />
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -254,9 +509,3 @@ const systemActivities = [
         </div>
     </div>
 </template>
-
-<style scoped>
-.group {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-</style>
