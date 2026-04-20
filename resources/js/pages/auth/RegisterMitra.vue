@@ -154,6 +154,7 @@ const submit = () => {
                             v-model="form.name"
                             placeholder="Masukkan nama lengkap"
                             class="h-12 rounded-xl border-slate-200 bg-slate-50 px-5 font-bold focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                            @keydown.enter.prevent="nextStep"
                         />
                         <InputError :message="form.errors.name" />
                     </div>
@@ -170,6 +171,7 @@ const submit = () => {
                             v-model="form.email"
                             placeholder="hrd@perusahaan.com"
                             class="h-12 rounded-xl border-slate-200 bg-slate-50 px-5 font-bold focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                            @keydown.enter.prevent="nextStep"
                         />
                         <InputError :message="form.errors.email" />
                     </div>
@@ -186,16 +188,15 @@ const submit = () => {
                                     v-model="form.password"
                                     placeholder="••••••••"
                                     class="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-5 pr-12 font-bold focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                                    @keydown.enter.prevent="nextStep"
                                 />
                                 <button
                                     type="button"
                                     @click="showPassword = !showPassword"
                                     class="absolute right-4 text-slate-400 hover:text-sky-700"
                                 >
-                                    <Eye
-                                        v-if="!showPassword"
-                                        class="h-4 w-4"
-                                    /><EyeOff v-else class="h-4 w-4" />
+                                    <Eye v-if="!showPassword" class="h-4 w-4" />
+                                    <EyeOff v-else class="h-4 w-4" />
                                 </button>
                             </div>
                         </div>
@@ -204,14 +205,33 @@ const submit = () => {
                                 class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase italic"
                                 >Konfirmasi</Label
                             >
-                            <Input
-                                :type="
-                                    showPasswordConfirm ? 'text' : 'password'
-                                "
-                                v-model="form.password_confirmation"
-                                placeholder="••••••••"
-                                class="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-5 font-bold focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
-                            />
+                            <div class="relative flex items-center">
+                                <Input
+                                    :type="
+                                        showPasswordConfirm
+                                            ? 'text'
+                                            : 'password'
+                                    "
+                                    v-model="form.password_confirmation"
+                                    placeholder="••••••••"
+                                    class="h-12 w-full rounded-xl border-slate-200 bg-slate-50 px-5 pr-12 font-bold focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                                    @keydown.enter.prevent="nextStep"
+                                />
+                                <button
+                                    type="button"
+                                    @click="
+                                        showPasswordConfirm =
+                                            !showPasswordConfirm
+                                    "
+                                    class="absolute right-4 text-slate-400 hover:text-sky-700"
+                                >
+                                    <Eye
+                                        v-if="!showPasswordConfirm"
+                                        class="h-4 w-4"
+                                    />
+                                    <EyeOff v-else class="h-4 w-4" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <InputError :message="form.errors.password" />
@@ -306,6 +326,20 @@ const submit = () => {
                             rows="2"
                             class="w-full rounded-xl border-slate-200 bg-slate-50 p-4 text-sm font-bold outline-none focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
                         ></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label
+                            class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase italic"
+                            >Deskripsi Perusahaan</Label
+                        >
+                        <textarea
+                            v-model="form.deskripsi_mitra"
+                            rows="3"
+                            placeholder="Ceritakan singkat tentang perusahaan Anda..."
+                            class="w-full rounded-xl border-slate-200 bg-slate-50 p-4 text-sm font-bold outline-none focus:border-sky-600 focus:bg-white focus:ring-1 focus:ring-sky-600"
+                        ></textarea>
+                        <InputError :message="form.errors.deskripsi_mitra" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
