@@ -109,7 +109,7 @@ const mitraTeratas = [
 
         <main class="w-full px-6 py-12 md:px-16 lg:px-24 xl:px-32">
             <section
-                class="relative mb-28 flex min-h-[500px] flex-col items-stretch overflow-hidden rounded-[3.5rem] bg-lokak-brand text-white shadow-2xl shadow-sky-900/20 lg:flex-row"
+                class="relative mb-28 flex min-h-125 flex-col items-stretch overflow-hidden rounded-[3.5rem] bg-lokak-brand text-white shadow-2xl shadow-sky-900/20 lg:flex-row"
             >
                 <div
                     class="relative z-20 flex w-full flex-col justify-center p-12 md:p-20 lg:w-3/5"
@@ -141,19 +141,19 @@ const mitraTeratas = [
                 </div>
 
                 <div
-                    class="relative min-h-[300px] w-full lg:min-h-full lg:w-2/5"
+                    class="relative min-h-75 w-full lg:min-h-full lg:w-2/5"
                 >
                     <div
-                        class="absolute inset-0 z-10 hidden bg-gradient-to-r from-lokak-brand via-transparent to-transparent lg:block"
+                        class="absolute inset-0 z-10 hidden bg-linear-to-r from-lokak-brand via-transparent to-transparent lg:block"
                     ></div>
                     <div
-                        class="absolute inset-0 z-10 bg-gradient-to-t from-lokak-brand via-transparent to-transparent lg:hidden"
+                        class="absolute inset-0 z-10 bg-linear-to-t from-lokak-brand via-transparent to-transparent lg:hidden"
                     ></div>
 
                     <img
                         src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&q=80"
                         alt="Loker Bengkulu"
-                        class="absolute inset-0 h-full w-full object-cover brightness-75 grayscale-[20%] lg:brightness-100"
+                        class="absolute inset-0 h-full w-full object-cover brightness-75 grayscale-20 lg:brightness-100"
                     />
                 </div>
 

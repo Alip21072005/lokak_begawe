@@ -16,17 +16,15 @@ return new class extends Migration
 
             // HANYA INI YANG BENAR: Relasi ke tabel Induk (User) dan Lokasi utama
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignUuid('lokasi_id')->constrained('lokasis')->onDelete('cascade');
+            $table->foreignUuid('lokasi_id')->nullable()->constrained('lokasis')->onDelete('cascade');
 
-
-            $table->string('nama_pelamar');
-            $table->string('email_pelamar');
-            $table->string('nohp_pelamar');
-            $table->text('alamat_pelamar');
-            $table->string('jenis_kelamin');
+            $table->string('nama_pelamar')->nullable();
+            $table->string('email_pelamar')->nullable();
+            $table->string('nohp_pelamar')->nullable();
+            $table->text('alamat_pelamar')->nullable();
+            $table->string('jenis_kelamin')->nullable();
             $table->string('cv_pelamar')->nullable();
             $table->string('foto_pelamar')->nullable();
-
             $table->timestamps();
         });
     }

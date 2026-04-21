@@ -152,19 +152,7 @@ const confirmDelete = (id: string, name: string) => {
                     <span class="text-[10px]">Menunggu</span>
                 </p>
             </div>
-            <div
-                class="rounded-3xl border border-emerald-100 bg-emerald-50/50 p-6 shadow-sm"
-            >
-                <p
-                    class="text-[9px] font-black tracking-widest text-emerald-600 uppercase italic"
-                >
-                    Aktif Bulan Ini
-                </p>
-                <p class="text-2xl font-black text-emerald-700 italic">
-                    +{{ stats.new_this_month }}
-                    <span class="text-[10px]">Baru</span>
-                </p>
-            </div>
+            
         </div>
 
         <div

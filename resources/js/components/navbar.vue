@@ -111,14 +111,14 @@ onUnmounted(() => {
             <div
                 v-if="isMobileMenuOpen"
                 @click="isMobileMenuOpen = false"
-                class="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm lg:hidden"
+                class="fixed inset-0 z-100 bg-slate-900/40 backdrop-blur-sm lg:hidden"
             ></div>
         </Transition>
 
         <Transition name="slide">
             <div
                 v-if="isMobileMenuOpen"
-                class="fixed top-0 right-0 z-[101] h-full w-72 bg-white shadow-2xl lg:hidden"
+                class="fixed top-0 right-0 z-101 h-full w-72 bg-white shadow-2xl lg:hidden"
             >
                 <div class="flex h-full flex-col">
                     <div
