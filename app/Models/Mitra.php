@@ -63,6 +63,7 @@ class Mitra extends Model
         return $this->hasMany(Lowongan::class, 'mitra_id');
     }
 
+
     /**
      * Relasi ke Rating
      */

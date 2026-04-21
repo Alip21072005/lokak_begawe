@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LowonganController;
+use App\Http\Controllers\MitraController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -25,9 +28,7 @@ use App\Http\Controllers\Pelamar\LowongankerjaController;
 use App\Http\Controllers\Settings\ProfileController;
 
 // --- PUBLIC ROUTES ---
-Route::inertia('/', 'Welcome', [
-    'canRegister' => Features::enabled(Features::registration()),
-])->name('welcome');
+Route::get('/', [LandingController::class, 'index'])->name('welcome');
 
 Route::inertia('/lowongan', 'Lowongan')->name('lowongan');
 Route::inertia('/mitra', 'Mitra')->name('mitra');
@@ -37,7 +38,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/register/pelamar', fn() => inertia('auth/RegisterPelamar'))->name('register.pelamar');
     Route::get('/register/mitra', [RegisterMitraController::class, 'create'])->name('register.mitra');
     Route::post('/register/pelamar', [RegisterPelamarController::class, 'store'])->name('register.pelamar.post');
-    Route::post('/register/mitra', [RegisterMitraController::class, 'store'])->name('register.mitra.post');
+    Route::inertia('/detail/detaillowongan', 'Detail/Detaillowongan')->name('detail.detaillowongan');
 
     Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
@@ -52,10 +53,10 @@ Route::middleware(['auth'])->group(function () {
         $role = $user->role instanceof \UnitEnum ? $user->role->value : $user->role;
 
         return match ($role) {
-            'admin'   => redirect()->route('admin.dashboard'),
-            'mitra'   => redirect()->route('mitra.dashboard'),
+            'admin' => redirect()->route('admin.dashboard'),
+            'mitra' => redirect()->route('mitra.dashboard'),
             'pelamar' => redirect()->route('pelamar.dashboard'),
-            default   => redirect('/'),
+            default => redirect('/'),
         };
     })->name('dashboard');
 
@@ -89,6 +90,9 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/pasanglowongan/{id}', [PasanglowonganController::class, 'destroy'])->name('mitra.pasanglowongan.destroy');
 
             Route::get('/pesanmitra', [PesanmitraController::class, 'index'])->name('mitra.pesanmitra');
+
+            Route::inertia('/detail/detailmitra', 'Detail/Detailmitra')->name('detail.detailmitra');
+
         });
     });
 

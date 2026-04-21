@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { route } from 'ziggy-js';
+import { computed, ref } from 'vue';
 import {
     Search,
     MapPin,
@@ -10,77 +12,31 @@ import {
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
 
-defineProps<{
-    canLogin?: boolean;
-    canRegister?: boolean;
+const props = defineProps<{
+    mitras?: Array<{
+        id: string;
+        name: string;
+        location: string;
+        jobs_count: string;
+        rating: string;
+        logo: string | null;
+    }>;
+    filters?: any;
 }>();
 
-const mitraList = [
-    {
-        id: 1,
-        name: 'UNIVERSITAS DEHASEN',
-        location: 'KOTA BENGKULU',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '🎓',
-    },
-    {
-        id: 2,
-        name: 'CODE 21 BENGKULU',
-        location: 'MUKOMUKO',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '💎',
-    },
-    {
-        id: 3,
-        name: 'DE CODE BENGKULU',
-        location: 'KOTA BENGKULU',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '💻',
-    },
-    {
-        id: 4,
-        name: 'PHINCON ACADEMY BKL',
-        location: 'MANNA, BENGKULU SELATAN',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '🛡️',
-    },
-    {
-        id: 5,
-        name: 'UNIVERSITAS DEHASEN',
-        location: 'KOTA BENGKULU',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '🎓',
-    },
-    {
-        id: 6,
-        name: 'CODE 21 BENGKULU',
-        location: 'MUKOMUKO',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '💎',
-    },
-    {
-        id: 7,
-        name: 'DE CODE BENGKULU',
-        location: 'KOTA BENGKULU',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '💻',
-    },
-    {
-        id: 8,
-        name: 'PHINCON ACADEMY BKL',
-        location: 'MANNA, BENGKULU SELATAN',
-        jobs: '15 PEKERJAAN',
-        rating: '4.3 (154)',
-        logo: '🛡️',
-    },
-];
+// 2. Gunakan Computed untuk safety
+const listMitra = computed(() => props.mitras ?? []);
+
+const search = ref(props.filters?.search || '');
+const lokasi = ref(props.filters?.lokasi || '');
+
+const handleSearch = () => {
+    router.get(
+        route('mitra.index'),
+        { search: search.value, lokasi: lokasi.value },
+        { preserveState: true, replace: true },
+    );
+};
 </script>
 
 <template>
@@ -118,8 +74,9 @@ const mitraList = [
                                 class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400"
                             />
                             <input
+                                v-model="search"
                                 type="text"
-                                placeholder="Kata Kunci (Contoh: Teknologi)"
+                                placeholder="Nama Mitra..."
                                 class="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 pr-4 pl-11 text-xs font-bold transition-all outline-none focus:border-lokak-brand focus:bg-white focus:ring-4 focus:ring-lokak-brand/5"
                             />
                         </div>
@@ -133,7 +90,6 @@ const mitraList = [
                                 <option>Semua Industri</option>
                                 <option>Teknologi</option>
                                 <option>Pendidikan</option>
-                                <option>Kesehatan</option>
                             </select>
                         </div>
                         <div class="relative">
@@ -141,12 +97,14 @@ const mitraList = [
                                 class="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-slate-400"
                             />
                             <input
+                                v-model="lokasi"
                                 type="text"
                                 placeholder="Lokasi (Contoh: Mukomuko)"
                                 class="h-14 w-full rounded-2xl border border-slate-100 bg-slate-50 pr-4 pl-11 text-xs font-bold transition-all outline-none focus:border-lokak-brand focus:bg-white focus:ring-4 focus:ring-lokak-brand/5"
                             />
                         </div>
                         <button
+                            @click="handleSearch"
                             class="flex h-14 items-center justify-center gap-3 rounded-2xl bg-lokak-brand text-xs font-black text-white uppercase italic shadow-xl shadow-sky-900/20 transition-all hover:-translate-y-1 hover:bg-lokak-brand-dark active:scale-95"
                         >
                             CARI SEKARANG
@@ -169,15 +127,17 @@ const mitraList = [
                     </div>
                     <span
                         class="text-[10px] font-black text-slate-400 uppercase italic"
-                        >Menampilkan 128 Mitra</span
                     >
+                        Menampilkan {{ listMitra.length }} Mitra
+                    </span>
                 </div>
 
                 <div
+                    v-if="listMitra.length > 0"
                     class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
                 >
                     <div
-                        v-for="mitra in mitraList"
+                        v-for="mitra in listMitra"
                         :key="mitra.id"
                         class="group relative flex flex-col items-center rounded-[2.5rem] border border-slate-100 bg-white p-8 text-center shadow-sm transition-all duration-500 hover:-translate-y-2 hover:border-sky-300 hover:shadow-2xl hover:shadow-sky-900/10"
                     >
@@ -188,9 +148,14 @@ const mitraList = [
                         </div>
 
                         <div
-                            class="mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-slate-100 bg-slate-50 text-4xl shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
+                            class="mb-6 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border border-slate-100 bg-slate-50 text-4xl shadow-inner transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
                         >
-                            {{ mitra.logo }}
+                            <img
+                                v-if="mitra.logo && mitra.logo.includes('/')"
+                                :src="mitra.logo"
+                                class="h-full w-full object-cover"
+                            />
+                            <span v-else>{{ mitra.logo || '🏢' }}</span>
                         </div>
 
                         <h3
@@ -217,57 +182,57 @@ const mitraList = [
                             <span
                                 class="rounded-xl bg-sky-50 px-3 py-1.5 text-[9px] font-black text-lokak-brand uppercase italic"
                             >
-                                {{ mitra.jobs }}
+                                {{ mitra.jobs_count }}
                             </span>
                         </div>
 
-                        <button
+                        <Link
+                            :href="route('mitra.index')"
                             class="group/btn flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-4 text-[10px] font-black text-white uppercase italic transition-all hover:bg-lokak-brand active:scale-95"
                         >
                             LIHAT PROFIL
                             <ChevronRight
                                 class="h-3 w-3 transition-transform group-hover/btn:translate-x-1"
                             />
-                        </button>
+                        </Link> 
                     </div>
                 </div>
-            </section>
 
-            <div class="flex items-center justify-center gap-3">
-                <button
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
+                <div v-else class="py-32 text-center">
+                    <div class="mb-4 text-6xl">🔍</div>
+                    <p class="font-black text-slate-400 uppercase italic">
+                        Data mitra tidak ditemukan...
+                    </p>
+                </div>
+
+                <div
+                    v-if="listMitra.length > 0"
+                    class="mt-16 flex items-center justify-center gap-3"
                 >
-                    ←
-                </button>
-                <div class="flex gap-2">
                     <button
-                        v-for="n in 3"
-                        :key="n"
-                        :class="
-                            n === 1
-                                ? 'bg-lokak-brand text-white shadow-lg shadow-sky-900/20'
-                                : 'border border-slate-100 bg-white text-slate-400 hover:border-lokak-brand hover:text-lokak-brand'
-                        "
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl text-xs font-black transition-all"
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
                     >
-                        {{ n }}
+                        ←
                     </button>
-                    <span
-                        class="flex h-12 w-12 items-center justify-center text-slate-300"
-                        >...</span
-                    >
+                    <div class="flex gap-2">
+                        <button
+                            class="flex h-12 w-12 items-center justify-center rounded-2xl bg-lokak-brand text-xs font-black text-white shadow-lg shadow-sky-900/20"
+                        >
+                            1
+                        </button>
+                        <button
+                            class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white text-xs font-black text-slate-400 hover:border-lokak-brand hover:text-lokak-brand"
+                        >
+                            2
+                        </button>
+                    </div>
                     <button
-                        class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white text-slate-400 transition-all hover:border-lokak-brand hover:text-lokak-brand"
+                        class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
                     >
-                        24
+                        →
                     </button>
                 </div>
-                <button
-                    class="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:border-lokak-brand hover:text-lokak-brand"
-                >
-                    →
-                </button>
-            </div>
+            </section>
         </main>
 
         <Footer />
@@ -275,12 +240,9 @@ const mitraList = [
 </template>
 
 <style scoped>
-/* Reset Fokus Global */
 *:focus {
     outline: none !important;
 }
-
-/* Transisi Halus Global */
 .transition-all {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
