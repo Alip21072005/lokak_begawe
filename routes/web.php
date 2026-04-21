@@ -1,50 +1,81 @@
 <?php
 
-use App\Http\Controllers\LandingController;
-use App\Http\Controllers\LowonganController;
-use App\Http\Controllers\MitraController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-// --- Controllers ---
+// --- Controllers Publik ---
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LowonganController;
+use App\Http\Controllers\MitraController;
+
+// --- Controllers Admin ---
 use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\Admin\KelolapelamarController;
 use App\Http\Controllers\Admin\KelolalowonganController;
 use App\Http\Controllers\Admin\KelolamitraController;
 use App\Http\Controllers\Admin\PesanadminController;
+
+// --- Controllers Auth & Google ---
 use App\Http\Controllers\Auth\RegisterPelamarController;
 use App\Http\Controllers\Auth\RegisterMitraController;
 use App\Http\Controllers\Auth\GoogleController;
+
+// --- Controllers Mitra ---
 use App\Http\Controllers\Mitra\DashboardMitraController;
 use App\Http\Controllers\Mitra\KelolapelamarkerjaController;
 use App\Http\Controllers\Mitra\PasanglowonganController;
 use App\Http\Controllers\Mitra\PesanmitraController;
+
+// --- Controllers Pelamar ---
 use App\Http\Controllers\Pelamar\DashboardPelamarController;
 use App\Http\Controllers\Pelamar\LamaranController;
 use App\Http\Controllers\Pelamar\PesanController;
 use App\Http\Controllers\Pelamar\LowongankerjaController;
+
+// --- Controller Settings ---
 use App\Http\Controllers\Settings\ProfileController;
 
-// --- PUBLIC ROUTES ---
+/*
+|--------------------------------------------------------------------------
+| PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/', [LandingController::class, 'index'])->name('welcome');
 
-Route::inertia('/lowongan', 'Lowongan')->name('lowongan');
-Route::inertia('/mitra', 'Mitra')->name('mitra');
+// Menggunakan Controller agar data database (Seeder) muncul di halaman publik
+Route::get('/lowongan', [LowonganController::class, 'index'])->name('lowongan.index');
+Route::get('/mitra', [MitraController::class, 'index'])->name('mitra.index');
 
-// --- GUEST ROUTES ---
+
+Route::get('/lowongan/{id}', [LowonganController::class, 'show'])->name('lowongan.show');
+Route::get('/mitra/{id}', [MitraController::class, 'show'])->name('mitra.show');
+
+
+/*
+|--------------------------------------------------------------------------
+| GUEST ROUTES (Hanya untuk yang BELUM Login)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('guest')->group(function () {
     Route::get('/register/pelamar', fn() => inertia('auth/RegisterPelamar'))->name('register.pelamar');
     Route::get('/register/mitra', [RegisterMitraController::class, 'create'])->name('register.mitra');
     Route::post('/register/pelamar', [RegisterPelamarController::class, 'store'])->name('register.pelamar.post');
-    Route::inertia('/detail/detaillowongan', 'Detail/Detaillowongan')->name('detail.detaillowongan');
+    Route::post('/register/mitra', [RegisterMitraController::class, 'store'])->name('register.mitra.post');
 
+    // Google Auth
     Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
 });
 
-// --- AUTH ROUTES ---
+
+/*
+|--------------------------------------------------------------------------
+| AUTH ROUTES (Wajib Login)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
 
     // --- DASHBOARD REDIRECTOR ---
@@ -53,13 +84,12 @@ Route::middleware(['auth'])->group(function () {
         $role = $user->role instanceof \UnitEnum ? $user->role->value : $user->role;
 
         return match ($role) {
-            'admin' => redirect()->route('admin.dashboard'),
-            'mitra' => redirect()->route('mitra.dashboard'),
+            'admin'   => redirect()->route('admin.dashboard'),
+            'mitra'   => redirect()->route('mitra.dashboard'),
             'pelamar' => redirect()->route('pelamar.dashboard'),
-            default => redirect('/'),
+            default   => redirect('/'),
         };
     })->name('dashboard');
-
 
     // --- ADMIN ROUTES ---
     Route::prefix('dashboard/admin')->group(function () {
@@ -90,9 +120,6 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/pasanglowongan/{id}', [PasanglowonganController::class, 'destroy'])->name('mitra.pasanglowongan.destroy');
 
             Route::get('/pesanmitra', [PesanmitraController::class, 'index'])->name('mitra.pesanmitra');
-
-            Route::inertia('/detail/detailmitra', 'Detail/Detailmitra')->name('detail.detailmitra');
-
         });
     });
 
@@ -105,7 +132,11 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// --- CORE SYSTEM ---
+/*
+|--------------------------------------------------------------------------
+| CORE SYSTEM & EXTERNAL ROUTES
+|--------------------------------------------------------------------------
+*/
 if (file_exists(__DIR__ . '/settings.php')) {
     require __DIR__ . '/settings.php';
 }

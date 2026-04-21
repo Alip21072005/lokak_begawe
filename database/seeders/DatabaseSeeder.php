@@ -15,35 +15,21 @@ use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Gunakan Faker Bahasa Indonesia
         $faker = Faker::create('id_ID');
 
-        // ==========================================
         // 1. SEEDER LOKASI & KATEGORI
-        // ==========================================
         $this->seedLokasiBengkulu();
         $this->seedKategoriIndustri();
 
         $lokasiIds = Lokasi::pluck('id')->toArray();
         $kategoriIds = Kategori::pluck('id')->toArray();
 
-        // ==========================================
         // 2. SEEDER AKUN UTAMA (DEFAULT)
-        // ==========================================
         User::updateOrCreate(['email' => 'muhamadalipmaulana3@gmail.com'], [
             'name' => 'Alip Maulana',
             'password' => Hash::make('Alip210725_'),
-            'role' => 'admin',
-        ]);
-
-        User::updateOrCreate(['email' => 'admin@mail.com'], [
-            'name' => 'Admin Utama',
-            'password' => Hash::make('admin'),
             'role' => 'admin',
         ]);
 
@@ -52,12 +38,16 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('mitra'),
             'role' => 'mitra',
         ]);
+
         Mitra::updateOrCreate(['user_id' => $userMitra->id], [
             'lokasi_id' => $faker->randomElement($lokasiIds),
             'kategori_id' => $faker->randomElement($kategoriIds),
             'status_mitra' => 'verified',
             'nama_mitra' => 'PT Makmur Sejahtera (Akun Default)',
             'email_mitra' => 'mitra@mail.com',
+            'website_mitra' => 'https://www.makmursejahtera.co.id',
+            'tahun_berdiri' => '2010', // Data Baru
+            'skala_perusahaan' => '100 - 500 Karyawan', // Data Baru
             'deskripsi_mitra' => 'Perusahaan default untuk testing fitur dashboard mitra. Kami bergerak di bidang teknologi dan inovasi digital untuk masa depan.',
             'alamat_mitra' => 'Jl. P. Natadirja, Kota Bengkulu',
             'nohp_mitra' => '081234567890',
@@ -68,6 +58,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('pelamar'),
             'role' => 'pelamar',
         ]);
+
         Pelamar::updateOrCreate(['user_id' => $userPelamar->id], [
             'lokasi_id' => $faker->randomElement($lokasiIds),
             'nama_pelamar' => 'Budi Santoso (Akun Default)',
@@ -77,11 +68,8 @@ class DatabaseSeeder extends Seeder
             'jenis_kelamin' => 'L',
         ]);
 
-        // ==========================================
         // 3. GENERATE 50 DUMMY MITRA (PERUSAHAAN)
-        // ==========================================
         $mitraUsers = [];
-        // Kita pecah command ini agar terminal kamu ada sedikit progres jika butuh waktu
         $this->command->info('Membuat 50 Data Perusahaan (Mitra)...');
         for ($i = 0; $i < 50; $i++) {
             $user = User::create([
@@ -95,24 +83,23 @@ class DatabaseSeeder extends Seeder
                 'user_id' => $user->id,
                 'lokasi_id' => $faker->randomElement($lokasiIds),
                 'kategori_id' => $faker->randomElement($kategoriIds),
-                'status_mitra' => $faker->randomElement(['verified', 'verified', 'verified', 'pending']), // Lebih banyak yang verified
+                'status_mitra' => $faker->randomElement(['verified', 'verified', 'verified', 'pending']),
                 'nama_mitra' => $faker->company,
                 'email_mitra' => $user->email,
                 'website_mitra' => 'https://www.' . $faker->domainName,
+                'tahun_berdiri' => $faker->year('-5 years'), // Random tahun berdiri
+                'skala_perusahaan' => $faker->randomElement(['1 - 50 Karyawan', '51 - 200 Karyawan', '201 - 500 Karyawan', '500+ Karyawan']), // Random skala
                 'deskripsi_mitra' => $faker->paragraph(rand(2, 4)),
                 'alamat_mitra' => $faker->address,
                 'nohp_mitra' => $faker->phoneNumber,
             ]);
 
-            // Masukkan ke array hanya mitra yang verified agar bisa bikin lowongan
             if ($mitra->status_mitra === 'verified') {
                 $mitraUsers[] = $mitra->id;
             }
         }
 
-        // ==========================================
         // 4. GENERATE 100 DUMMY PELAMAR
-        // ==========================================
         $this->command->info('Membuat 100 Data Pelamar Kerja...');
         $pelamarUsers = [];
         for ($i = 0; $i < 100; $i++) {
@@ -134,11 +121,8 @@ class DatabaseSeeder extends Seeder
             ]);
             $pelamarUsers[] = $pelamar->pelamar_id;
         }
-        $pelamarUsers[] = $userPelamar->pelamar->pelamar_id;
 
-        // ==========================================
         // 5. GENERATE 200 DUMMY LOWONGAN
-        // ==========================================
         $this->command->info('Menerbitkan 200 Lowongan Pekerjaan...');
         $judulPekerjaan = [
             'Frontend Vue Developer',
@@ -155,36 +139,26 @@ class DatabaseSeeder extends Seeder
             'Network Engineer',
             'Social Media Specialist',
             'Graphic Designer',
-            'Content Creator',
-            'Human Resources (HRD) Staff',
-            'Sales Supervisor',
-            'Accounting Staff',
-            'Project Manager',
-            'Business Analyst',
-            'System Administrator',
-            'Quality Assurance (QA) Tester',
-            'Digital Marketing Lead',
-            'Video Editor',
-            'Copywriter'
+            'Content Creator'
         ];
 
         $lowonganIds = [];
         $semuaMitraId = array_merge($mitraUsers, [$userMitra->mitra->id]);
 
         for ($i = 0; $i < 200; $i++) {
-            $gajiMin = $faker->numberBetween(15, 60) * 100000; // 1.5jt - 6jt
-            $gajiMax = $gajiMin + ($faker->numberBetween(10, 80) * 100000); // Gaji min ditambah 1jt - 8jt
+            $gajiMin = $faker->numberBetween(15, 60) * 100000;
+            $gajiMax = $gajiMin + ($faker->numberBetween(10, 80) * 100000);
 
             $lowongan = Lowongan::create([
                 'mitra_id' => $faker->randomElement($semuaMitraId),
                 'lokasi_id' => $faker->randomElement($lokasiIds),
                 'judul_lowongan' => $faker->randomElement($judulPekerjaan),
                 'deskripsi_lowongan' => $faker->paragraphs(rand(2, 5), true),
-                'tipe_pekerjaan' => $faker->randomElement(['Full-time', 'Full-time', 'Part-time', 'Internship', 'Contract']),
+                'tipe_pekerjaan' => $faker->randomElement(['Full-time', 'Part-time', 'Internship', 'Contract']),
                 'gaji_min' => $gajiMin,
                 'gaji_max' => $gajiMax,
                 'tanggal_expired' => $faker->dateTimeBetween('now', '+3 months')->format('Y-m-d'),
-                'status_lowongan' => $faker->randomElement(['verified', 'verified', 'verified', 'verified', 'pending']),
+                'status_lowongan' => $faker->randomElement(['verified', 'verified', 'verified', 'pending']),
             ]);
 
             if ($lowongan->status_lowongan === 'verified') {
@@ -192,9 +166,7 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        // ==========================================
         // 6. GENERATE 500 DUMMY LAMARAN
-        // ==========================================
         $this->command->info('Mengirim 500 Surat Lamaran Kerja...');
         for ($i = 0; $i < 500; $i++) {
             $pelamarId = $faker->randomElement($pelamarUsers);
@@ -202,16 +174,13 @@ class DatabaseSeeder extends Seeder
 
             Lamaran::updateOrCreate(
                 ['pelamar_id' => $pelamarId, 'lowongan_id' => $lowonganId],
-                ['status' => $faker->randomElement(['pending', 'pending', 'accepted', 'rejected'])] // Pending dibanyakin
+                ['status' => $faker->randomElement(['pending', 'accepted', 'rejected'])]
             );
         }
 
         $this->command->info('Selesai! Database sekarang penuh dengan data.');
     }
 
-    // ---------------------------------------------------------
-    // FUNGSI HELPER
-    // ---------------------------------------------------------
     private function seedLokasiBengkulu(): void
     {
         $daftarLokasi = [
@@ -244,9 +213,6 @@ class DatabaseSeeder extends Seeder
             'Pariwisata & Perhotelan',
             'Konstruksi & Bangunan',
             'Pertanian & Perkebunan',
-            'Otomotif & Transportasi',
-            'Media & Hiburan',
-            'Layanan Masyarakat & Pemerintahan',
         ];
 
         foreach ($daftarKategori as $kategori) {

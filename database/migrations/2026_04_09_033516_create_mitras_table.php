@@ -24,6 +24,8 @@ return new class extends Migration
             $table->string('banner_mitra')->nullable();
             $table->string('email_mitra');
             $table->string('website_mitra')->nullable();
+            $table->string('tahun_berdiri')->nullable();
+            $table->string('skala_perusahaan')->nullable();
             $table->text('deskripsi_mitra');
             $table->text('alamat_mitra');
             $table->string('nohp_mitra');

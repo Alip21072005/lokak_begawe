@@ -31,7 +31,10 @@ onUnmounted(() => {
 
 // Helper untuk format rupiah
 const formatRupiah = (value: any) => {
-    if (!value) return 'Bersaing';
+    if (!value) {
+return 'Bersaing';
+}
+
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
@@ -172,7 +175,7 @@ const formatRupiah = (value: any) => {
             </section>
         </main>
 
-        <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div v-if="isModalOpen" class="fixed inset-0 z-100 flex items-center justify-center p-6">
             <div class="absolute inset-0 bg-lokak-text/60 backdrop-blur-md" @click="closeModal"></div>
             <div class="relative z-10 w-full max-w-2xl rounded-[4rem] bg-white p-12 shadow-2xl animate-in">
                 <div class="mb-12 flex justify-between">
