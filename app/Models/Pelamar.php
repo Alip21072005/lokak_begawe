@@ -18,6 +18,7 @@ class Pelamar extends Model
 
     protected $fillable = [
         'user_id',
+        'lokasi_id',
         'nama_pelamar',
         'email_pelamar',
         'nohp_pelamar',
@@ -61,5 +62,10 @@ class Pelamar extends Model
     public function rating(): HasMany
     {
         return $this->hasMany(Rating::class, 'pelamar_id');
+    }
+
+    public function lokasi(): BelongsTo
+    {
+        return $this->belongsTo(Lokasi::class, 'lokasi_id');
     }
 }

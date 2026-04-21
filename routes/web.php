@@ -21,17 +21,17 @@ use App\Http\Controllers\Mitra\DashboardMitraController;
 use App\Http\Controllers\Mitra\KelolapelamarkerjaController;
 use App\Http\Controllers\Mitra\PasanglowonganController;
 use App\Http\Controllers\Mitra\PesanmitraController;
+use App\Http\Controllers\Pelamar\DashboardPelamarController;
 use App\Http\Controllers\Pelamar\LamaranController;
 use App\Http\Controllers\Pelamar\PesanController;
 use App\Http\Controllers\Pelamar\LowongankerjaController;
+use App\Http\Controllers\Settings\ProfileController;
 
 // --- PUBLIC ROUTES ---
 Route::get('/', [LandingController::class, 'index'])->name('welcome');
 
-// Rute Halaman List Lowongan
-Route::get('/lowongan', [LowonganController::class, 'index'])->name('lowongan.index');
-Route::get('/mitra', [MitraController::class, 'index'])->name('mitra.index');
-
+Route::inertia('/lowongan', 'Lowongan')->name('lowongan');
+Route::inertia('/mitra', 'Mitra')->name('mitra');
 
 // --- GUEST ROUTES ---
 Route::middleware('guest')->group(function () {
@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
             default => redirect('/'),
         };
     })->name('dashboard');
+
 
     // --- ADMIN ROUTES ---
     Route::prefix('dashboard/admin')->group(function () {
@@ -97,16 +98,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- PELAMAR ROUTES ---
     Route::prefix('dashboard/pelamar')->group(function () {
-        Route::get('/', function () {
-            $user = User::with('pelamar')->find(Auth::id());
-            $mitraVerified = \App\Models\Mitra::where('status_mitra', 'verified')->with('kategori', 'lokasi')->get();
-
-            return inertia('Pelamar/Dashboard', [
-                'auth' => ['user' => $user],
-                'mitraVerified' => $mitraVerified
-            ]);
-        })->name('pelamar.dashboard');
-
+        Route::get('/', [DashboardPelamarController::class, 'index'])->name('pelamar.dashboard');
         Route::get('/lamaran', [LamaranController::class, 'index'])->name('pelamar.lamaran');
         Route::get('/pesan', [PesanController::class, 'index'])->name('pelamar.pesan');
         Route::get('/lowongankerja', [LowongankerjaController::class, 'index'])->name('pelamar.lowongankerja');
