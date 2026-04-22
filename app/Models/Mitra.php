@@ -24,6 +24,8 @@ class Mitra extends Model
         'banner_mitra',
         'email_mitra',
         'website_mitra',
+        'tahun_berdiri',
+        'skala_perusahaan',
         'deskripsi_mitra',
         'alamat_mitra',
         'nohp_mitra',

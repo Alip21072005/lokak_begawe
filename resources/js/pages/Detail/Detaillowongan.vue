@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { 
@@ -10,8 +11,8 @@ import {
     Bell,
     User
 } from 'lucide-vue-next';
-import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
 
 // Data dummy untuk detail lowongan
 const jobDetail = {
@@ -30,7 +31,7 @@ const jobDetail = {
 <template>
     <Head :title="`${jobDetail.title} - Lokak Begawe`" />
 
-    <div class="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+    <div class="min-h-screen bg-lokak-bg font-sans text-slate-900">
         <Navbar />
 
         <main class="w-full px-6 pt-32 pb-20 md:px-16 lg:px-24 xl:px-32">
