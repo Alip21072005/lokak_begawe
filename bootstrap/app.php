@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // --- TAMBAHKAN ALIAS DI SINI ---
         $middleware->alias([
             'verified_mitra' => \App\Http\Middleware\EnsureMitraIsVerified::class,
+            'profile_complete' => \App\Http\Middleware\CheckProfileCompletion::class,
         ]);
 
         $middleware->web(append: [

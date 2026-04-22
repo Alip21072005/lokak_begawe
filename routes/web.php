@@ -1,9 +1,7 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 
 // --- Controllers Publik ---
 use App\Http\Controllers\LandingController;
@@ -34,9 +32,6 @@ use App\Http\Controllers\Pelamar\LamaranController;
 use App\Http\Controllers\Pelamar\PesanController;
 use App\Http\Controllers\Pelamar\LowongankerjaController;
 
-// --- Controller Settings ---
-use App\Http\Controllers\Settings\ProfileController;
-
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
@@ -44,19 +39,16 @@ use App\Http\Controllers\Settings\ProfileController;
 */
 
 Route::get('/', [LandingController::class, 'index'])->name('welcome');
-
-// Menggunakan Controller agar data database (Seeder) muncul di halaman publik
 Route::get('/lowongan', [LowonganController::class, 'index'])->name('lowongan.index');
 Route::get('/mitra', [MitraController::class, 'index'])->name('mitra.index');
 
-
-Route::get('/lowongan/{id}', [LowonganController::class, 'show'])->name('lowongan.show');
+// Detail Routes
+Route::get('/detail/lowongan/{id}', [LowonganController::class, 'show'])->name('detail.lowongan');
 Route::get('/mitra/{id}', [MitraController::class, 'show'])->name('mitra.show');
-
 
 /*
 |--------------------------------------------------------------------------
-| GUEST ROUTES (Hanya untuk yang BELUM Login)
+| GUEST ROUTES (Belum Login)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
@@ -69,7 +61,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/auth/google/redirect', [GoogleController::class, 'redirect'])->name('google.redirect');
     Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +82,14 @@ Route::middleware(['auth'])->group(function () {
         };
     })->name('dashboard');
 
+    // --- JEMBATAN PENDAFTARAN (PROFILE CHECK) ---
+    Route::middleware(['profile_complete'])->group(function () {
+        Route::get('/lowongan/{id}/daftar', function ($id) {
+            // Jika lolos middleware, balik ke detail dengan instruksi buka modal
+            return redirect()->route('detail.lowongan', $id)->with('openModal', true);
+        })->name('lowongan.daftar');
+    });
+
     // --- ADMIN ROUTES ---
     Route::prefix('dashboard/admin')->group(function () {
         Route::get('/', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
@@ -111,9 +110,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardMitraController::class, 'index'])->name('mitra.dashboard');
 
         Route::middleware(['verified_mitra'])->group(function () {
+            // Kelola Pelamar & Update Status (Decision)
             Route::get('/kelolapelamarkerja', [KelolapelamarkerjaController::class, 'index'])->name('mitra.kelolapelamarkerja');
             Route::patch('/pelamar/{id}/status', [KelolapelamarkerjaController::class, 'updateStatus'])->name('mitra.pelamar.status');
 
+            // Pasang Lowongan
             Route::get('/pasanglowongan', [PasanglowonganController::class, 'index'])->name('mitra.pasanglowongan');
             Route::post('/pasanglowongan', [PasanglowonganController::class, 'store'])->name('mitra.pasanglowongan.store');
             Route::put('/pasanglowongan/{id}', [PasanglowonganController::class, 'update'])->name('mitra.pasanglowongan.update');
@@ -129,12 +130,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/lamaran', [LamaranController::class, 'index'])->name('pelamar.lamaran');
         Route::get('/pesan', [PesanController::class, 'index'])->name('pelamar.pesan');
         Route::get('/lowongankerja', [LowongankerjaController::class, 'index'])->name('pelamar.lowongankerja');
+
+        // Proses Store Lamaran (Dari Modal Konfirmasi)
+        Route::post('/lamar/{id}', [LamaranController::class, 'store'])->name('pelamar.lamar.store');
     });
 });
 
 /*
 |--------------------------------------------------------------------------
-| CORE SYSTEM & EXTERNAL ROUTES
+| EXTERNAL CONFIGS
 |--------------------------------------------------------------------------
 */
 if (file_exists(__DIR__ . '/settings.php')) {

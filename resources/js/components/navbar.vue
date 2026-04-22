@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { Bot, Menu, X, LayoutDashboard, LogIn } from 'lucide-vue-next';
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const isMobileMenuOpen = ref(false);
@@ -23,7 +24,7 @@ onUnmounted(() => {
         class="fixed top-0 z-50 w-full transition-all duration-500"
         :class="[
             isScrolled
-                ? 'border-b border-white/20 bg-white/40 py-3 shadow-sm backdrop-blur-md'
+                ? 'border-b border-white/20 bg-white/70 py-3 shadow-sm backdrop-blur-md'
                 : 'border-b border-slate-100 bg-white py-5',
         ]"
     >
@@ -54,14 +55,20 @@ onUnmounted(() => {
                     <template v-else>
                         <Link href="/dashboard" class="btn-primary-small text-xs">DASHBOARD</Link>
                     </template>
-                    <button class="icon-btn-custom">🔔</button>
+                    
+                    <button class="icon-btn-custom group relative" title="AI Chatbot (Coming Soon)">
+                        <Bot class="h-5 w-5 text-slate-600 transition-colors group-hover:text-lokak-brand" />
+                        <span class="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-lokak-brand animate-pulse"></span>
+                    </button>
                 </div>
             </nav>
 
             <div class="flex items-center gap-3 lg:hidden">
-                <button class="icon-btn-custom h-10 w-10 text-lg">🔔</button>
-                <button @click="isMobileMenuOpen = true" class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md active:scale-95">
-                    ☰
+                <button class="icon-btn-custom h-11 w-11">
+                    <Bot class="h-5 w-5 text-slate-600" />
+                </button>
+                <button @click="isMobileMenuOpen = true" class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md active:scale-95 transition-all">
+                    <Menu class="h-5 w-5" />
                 </button>
             </div>
         </div>
@@ -69,22 +76,45 @@ onUnmounted(() => {
 
     <Teleport to="body">
         <Transition name="fade">
-            <div v-if="isMobileMenuOpen" @click="isMobileMenuOpen = false" class="fixed inset-0 z-100 bg-slate-900/40 backdrop-blur-sm lg:hidden"></div>
+            <div v-if="isMobileMenuOpen" @click="isMobileMenuOpen = false" class="fixed inset-0 z-100 bg-slate-900/60 backdrop-blur-sm lg:hidden"></div>
         </Transition>
         <Transition name="slide">
-            <div v-if="isMobileMenuOpen" class="fixed top-0 right-0 z-101 h-full w-72 bg-white shadow-2xl lg:hidden">
-                <div class="flex h-full flex-col p-6">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-6 mb-6">
-                        <span class="text-lg font-black text-lokak-text italic">MENU</span>
-                        <button @click="isMobileMenuOpen = false" class="text-2xl text-slate-400">✕</button>
+            <div v-if="isMobileMenuOpen" class="fixed top-0 right-0 z-101 h-full w-80 bg-white shadow-2xl lg:hidden">
+                <div class="flex h-full flex-col p-8">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-8 mb-8">
+                        <div class="flex flex-col">
+                            <span class="text-xl font-black text-lokak-text italic tracking-tighter uppercase">MENU</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase italic">Navigasi Cepat</span>
+                        </div>
+                        <button @click="isMobileMenuOpen = false" class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-500">
+                            <X class="h-5 w-5" />
+                        </button>
                     </div>
-                    <div class="flex flex-col gap-4">
-                        <Link href="/" @click="isMobileMenuOpen = false" class="text-base font-bold text-slate-700 uppercase italic">Beranda</Link>
-                        <Link href="/lowongan" @click="isMobileMenuOpen = false" class="text-base font-bold text-slate-700 uppercase italic">Lowongan</Link>
-                        <Link href="/mitra" @click="isMobileMenuOpen = false" class="text-base font-bold text-slate-700 uppercase italic">Mitra</Link>
+
+                    <div class="flex flex-col gap-6">
+                        <Link href="/" @click="isMobileMenuOpen = false" class="mobile-link" :class="{ 'text-lokak-brand': $page.url === '/' }">Beranda</Link>
+                        <Link href="/lowongan" @click="isMobileMenuOpen = false" class="mobile-link" :class="{ 'text-lokak-brand': $page.url.startsWith('/lowongan') }">Lowongan</Link>
+                        <Link href="/mitra" @click="isMobileMenuOpen = false" class="mobile-link" :class="{ 'text-lokak-brand': $page.url.startsWith('/mitra') }">Mitra</Link>
+                    </div>
+
+                    <div class="mt-auto border-t border-slate-100 pt-8">
+                        <template v-if="!$page.props.auth.user">
+                            <Link href="/login" @click="isMobileMenuOpen = false" class="flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 py-4 text-xs font-black text-white uppercase italic shadow-xl transition-all active:scale-95">
+                                <LogIn class="h-4 w-4" /> MASUK KE AKUN
+                            </Link>
+                        </template>
+                        <template v-else>
+                            <Link href="/dashboard" @click="isMobileMenuOpen = false" class="flex w-full items-center justify-center gap-3 rounded-2xl bg-lokak-brand py-4 text-xs font-black text-white uppercase italic shadow-xl shadow-sky-900/20 transition-all active:scale-95">
+                                <LayoutDashboard class="h-4 w-4" /> DASHBOARD SAYA
+                            </Link>
+                        </template>
+                        <p class="mt-6 text-center text-[9px] font-bold text-slate-300 uppercase italic tracking-widest">
+                            © 2026 Lokak Begawe Bengkulu
+                        </p>
                     </div>
                 </div>
             </div>
         </Transition>
     </Teleport>
 </template>
+

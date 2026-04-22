@@ -15,10 +15,12 @@ class Lamaran extends Model
         'pelamar_id',
         'lowongan_id',
         'status',
+        'catatan',       // Pesan dari Pelamar saat melamar
+        'catatan_mitra', // Pesan feedback dari Mitra (HRD)
     ];
 
     /**
-     * Relasi ke Lowongan (Penyebab Error Tadi)
+     * Relasi ke Lowongan
      */
     public function lowongan(): BelongsTo
     {
@@ -33,5 +35,13 @@ class Lamaran extends Model
     {
         // Lamaran ini dilakukan oleh seorang Pelamar
         return $this->belongsTo(Pelamar::class, 'pelamar_id');
+    }
+
+    /**
+     * Scope untuk filter status (Opsional, mempermudah query di Controller)
+     */
+    public function scopeStatus($query, $status)
+    {
+        return $query->where('status', $status);
     }
 }

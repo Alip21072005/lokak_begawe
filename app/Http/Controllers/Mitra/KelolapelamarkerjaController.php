@@ -16,7 +16,6 @@ class KelolapelamarkerjaController extends Controller
         $user = Auth::user();
         $mitra = $user->mitra;
 
-        // Ambil data lamaran yang masuk ke lowongan milik mitra ini
         $applicants = Lamaran::with(['pelamar.user', 'lowongan'])
             ->whereHas('lowongan', function ($q) use ($mitra) {
                 $q->where('mitra_id', $mitra->id);
@@ -29,33 +28,44 @@ class KelolapelamarkerjaController extends Controller
             ->latest()
             ->get()
             ->map(function ($item) {
-                // Logika skor kecocokan sederhana (nanti bisa kamu kembangkan)
-                // Sementara kita buat random 60-95 agar terlihat dinamis di UI
-                $score = rand(60, 95);
-
                 return [
-                    'id' => $item->id,
-                    'name' => $item->pelamar->user->name,
-                    'position' => $item->lowongan->judul_lowongan,
-                    'matchScore' => $score,
-                    'appliedDate' => $item->created_at->format('d M Y'),
-                    'status' => $item->status, // 'pending', 'interview', 'rejected'
-                    'avatar' => strtoupper(substr($item->pelamar->user->name, 0, 1)),
+                    'id'            => $item->id,
+                    'name'          => $item->pelamar->user->name,
+                    'position'      => $item->lowongan->judul_lowongan,
+                    'appliedDate'   => $item->created_at->format('d M Y'),
+                    'status'        => $item->status,
+                    'catatan_mitra' => $item->catatan_mitra,
+                    'avatar'        => strtoupper(substr($item->pelamar->user->name, 0, 1)),
+                    // Data tambahan untuk modal detail di sisi mitra
+                    'email'         => $item->pelamar->user->email,
+                    'phone'         => $item->pelamar->nohp_pelamar,
+                    'cv'            => $item->pelamar->cv_pelamar ? asset('storage/' . $item->pelamar->cv_pelamar) : null,
                 ];
             });
 
         return Inertia::render('Mitra/Kelolapelamarkerja', [
-            'auth' => ['user' => $user->load('mitra')],
+            'auth'       => ['user' => $user->load('mitra')],
             'applicants' => $applicants,
-            'filters' => $request->only(['search'])
+            'filters'    => $request->only(['search'])
         ]);
     }
 
     public function updateStatus(Request $request, $id)
     {
-        $lamaran = Lamaran::findOrFail($id);
-        $lamaran->update(['status' => $request->status]);
+        $request->validate([
+            'status'        => 'required|in:pending,reviewed,interview,accepted,rejected',
+            'catatan_mitra' => 'nullable|string|max:500',
+        ]);
 
-        return redirect()->back()->with('success', 'Status pelamar berhasil diperbarui.');
+        $lamaran = Lamaran::findOrFail($id);
+
+        $lamaran->update([
+            'status'        => $request->status,
+            'catatan_mitra' => $request->catatan_mitra
+        ]);
+
+        // Opsional: Kamu bisa kirim notifikasi email/pesan sistem di sini nantinya
+
+        return redirect()->back()->with('success', 'Status pelamar ' . $lamaran->pelamar->user->name . ' berhasil diperbarui.');
     }
 }
