@@ -155,32 +155,32 @@ const submit = () => {
                             </div>
                             <div class="space-y-1 text-center md:text-left">
                                 <h4 class="text-xs font-black uppercase italic">{{ props.role === 'mitra' ? 'Logo Instansi' : 'Foto Profil' }}</h4>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase italic">Klik gambar untuk mengubah. Maks 2MB.</p>
+                                <p class="text-[14px] font-bold text-slate-400 uppercase italic">Klik gambar untuk mengubah. Maks 2MB.</p>
                             </div>
                         </div>
 
                         <template v-if="props.role === 'pelamar'">
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Nama Lengkap</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Nama Lengkap</label>
                                     <input v-model="form.nama_pelamar" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">WhatsApp</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">WhatsApp</label>
                                     <input v-model="form.nohp_pelamar" type="tel" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
                                 </div>
                             </div>
                             
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Lokasi Domisili</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Lokasi Domisili</label>
                                     <select v-model="form.lokasi_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
                                         <option value="">Pilih...</option>
                                         <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
                                     </select>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Jenis Kelamin</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Jenis Kelamin</label>
                                     <select v-model="form.jenis_kelamin" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
                                         <option value="">Pilih...</option>
                                         <option value="L">Laki-laki</option>
@@ -190,12 +190,12 @@ const submit = () => {
                             </div>
 
                             <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Alamat Lengkap</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Alamat Lengkap</label>
                                 <textarea v-model="form.alamat_pelamar" rows="3" class="w-full rounded-3xl border border-slate-200 bg-slate-50 p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20"></textarea>
                             </div>
 
                             <div class="space-y-4 border-t border-slate-100 pt-6">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase italic">Dokumen CV (PDF)</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase italic">Dokumen CV (PDF)</label>
                                 
                                 <div class="flex flex-col gap-4">
                                     <div v-if="cvFileName" class="flex items-center gap-4 rounded-2xl bg-emerald-50 p-4 border border-emerald-100 shadow-sm">
@@ -203,7 +203,7 @@ const submit = () => {
                                             <FileText class="h-6 w-6" />
                                         </div>
                                         <div class="flex flex-col overflow-hidden">
-                                            <span class="text-[10px] font-black text-emerald-700 uppercase italic leading-none mb-1">Status Dokumen:</span>
+                                            <span class="text-[14px] font-black text-emerald-700 uppercase italic leading-none mb-1">Status Dokumen:</span>
                                             <span class="text-xs font-black text-slate-700 truncate italic">{{ cvFileName }}</span>
                                         </div>
                                         
@@ -240,30 +240,30 @@ const submit = () => {
                         <template v-if="props.role === 'mitra'">
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Nama Instansi</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Nama Instansi</label>
                                     <input v-model="form.nama_mitra" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Website Resmi</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Website Resmi</label>
                                     <input v-model="form.website_mitra" placeholder="https://..." class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Kategori</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Kategori</label>
                                     <select v-model="form.kategori_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
                                         <option v-for="kat in kategoris" :key="kat.id" :value="kat.id">{{ kat.nama_kategori }}</option>
                                     </select>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Lokasi</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Lokasi</label>
                                     <select v-model="form.lokasi_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
                                         <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Deskripsi Profil</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Deskripsi Profil</label>
                                 <textarea v-model="form.deskripsi_mitra" rows="4" class="w-full rounded-3xl border border-slate-200 bg-slate-50 p-6 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20"></textarea>
                             </div>
                         </template>
@@ -290,11 +290,11 @@ const submit = () => {
                     <div class="grid grid-cols-1 gap-8">
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Username</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Username</label>
                                 <input v-model="form.name" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-600/20" />
                             </div>
                             <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Alamat Email</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Alamat Email</label>
                                 <input v-model="form.email" type="email" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-600/20" />
                             </div>
                         </div>
@@ -302,12 +302,12 @@ const submit = () => {
                         <hr class="border-slate-100" />
 
                         <div class="space-y-6">
-                            <div class="flex items-center gap-2 text-rose-500 italic uppercase font-black text-[10px] tracking-widest">
+                            <div class="flex items-center gap-2 text-rose-500 italic uppercase font-black text-[14px] tracking-widest">
                                 <Lock class="h-4 w-4" /> Reset Password (Opsional)
                             </div>
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Sandi Lama</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Sandi Lama</label>
                                     <div class="relative">
                                         <input :type="showCurrentPassword ? 'text' : 'password'" v-model="form.current_password" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20" />
                                         <button type="button" @click="showCurrentPassword = !showCurrentPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -318,7 +318,7 @@ const submit = () => {
                                     <InputError :message="form.errors.current_password" />
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Sandi Baru</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Sandi Baru</label>
                                     <div class="relative">
                                         <input :type="showNewPassword ? 'text' : 'password'" v-model="form.password" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20" />
                                         <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -329,7 +329,7 @@ const submit = () => {
                                     <InputError :message="form.errors.password" />
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Konfirmasi</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Konfirmasi</label>
                                     <div class="relative">
                                         <input :type="showConfirmPassword ? 'text' : 'password'" v-model="form.password_confirmation" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20" />
                                         <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -348,7 +348,7 @@ const submit = () => {
                 <div class="rounded-[2.5rem] bg-slate-900 p-8 text-white shadow-xl">
                     <ShieldCheck class="h-8 w-8 text-emerald-400 mb-6" />
                     <h3 class="text-sm font-black uppercase italic tracking-tighter">Tips Keamanan</h3>
-                    <p class="mt-4 text-[10px] leading-relaxed font-bold uppercase italic opacity-50">
+                    <p class="mt-4 text-[14px] leading-relaxed font-bold uppercase italic opacity-50">
                         Pastikan data yang Anda masukkan sudah valid. Khusus CV, gunakan format PDF agar mitra dapat membaca dokumen dengan baik.
                     </p>
                 </div>

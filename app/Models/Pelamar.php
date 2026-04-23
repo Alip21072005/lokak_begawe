@@ -53,6 +53,7 @@ class Pelamar extends Model
     }
 
 
+
     public function lamaran(): HasMany
     {
         return $this->hasMany(Lamaran::class, 'pelamar_id');

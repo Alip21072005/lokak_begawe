@@ -44,4 +44,9 @@ class Lowongan extends Model
     {
         return $this->hasMany(Lamaran::class, 'lowongan_id');
     }
+
+    public function transaksi(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Transaksi::class, 'lowongan_id');
+    }
 }

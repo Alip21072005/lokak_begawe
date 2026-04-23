@@ -8,13 +8,19 @@ use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class LowonganController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Lowongan::with(['mitra.lokasi', 'lokasi', 'mitra.kategori']);
+        // 1. Query dasar dengan Eager Loading
+        // Kita tambahkan filter: Status Wajib Verified & Belum Expired
+        $query = Lowongan::with(['mitra.lokasi', 'lokasi', 'mitra.kategori'])
+            ->where('status_lowongan', 'verified')
+            ->where('tanggal_expired', '>=', Carbon::today()->toDateString());
 
+        // 2. Filter berdasarkan Keyword (Judul atau Nama Mitra)
         if ($request->keyword) {
             $query->where(function ($q) use ($request) {
                 $q->where('judul_lowongan', 'like', '%' . $request->keyword . '%')
@@ -24,12 +30,14 @@ class LowonganController extends Controller
             });
         }
 
+        // 3. Filter berdasarkan Kategori (Industri Mitra)
         if ($request->category) {
             $query->whereHas('mitra', function ($q) use ($request) {
                 $q->where('kategori_id', $request->category);
             });
         }
 
+        // 4. Filter berdasarkan Lokasi
         if ($request->location) {
             $query->where('lokasi_id', $request->location);
         }
@@ -44,9 +52,14 @@ class LowonganController extends Controller
 
     public function show($id)
     {
-        $lowongan = Lowongan::with(['mitra.kategori', 'lokasi'])->findOrFail($id);
+        // Ambil data lowongan, pastikan juga dicek agar lowongan yang dipanggil 
+        // lewat URL langsung tetap harus memenuhi kriteria verified & not expired
+        $lowongan = Lowongan::with(['mitra.kategori', 'lokasi'])
+            ->where('status_lowongan', 'verified')
+            ->where('tanggal_expired', '>=', Carbon::today()->toDateString())
+            ->findOrFail($id);
 
-        // Ambil data pelamar jika user sedang login
+        // Ambil data pelamar jika user sedang login untuk mempermudah form lamaran
         $authPelamar = null;
         if (Auth::check() && Auth::user()->role === 'pelamar') {
             $authPelamar = \App\Models\Pelamar::where('user_id', Auth::id())->first();
@@ -70,7 +83,7 @@ class LowonganController extends Controller
                     'alamat'    => $lowongan->mitra->alamat_mitra,
                 ]
             ],
-            'authPelamar' => $authPelamar // Kirim data pelamar ke Vue
+            'authPelamar' => $authPelamar
         ]);
     }
 }

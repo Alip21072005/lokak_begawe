@@ -45,7 +45,7 @@ Route::get('/mitra', [MitraController::class, 'index'])->name('mitra.index');
 // Detail Routes
 Route::get('/detail/lowongan/{id}', [LowonganController::class, 'show'])->name('detail.lowongan');
 Route::get('/mitra/{id}', [MitraController::class, 'show'])->name('mitra.show');
-
+Route::post('/mitra/{id}/rating', [MitraController::class, 'storeRating'])->name('mitra.rating.store');
 /*
 |--------------------------------------------------------------------------
 | GUEST ROUTES (Belum Login)
@@ -95,6 +95,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
         Route::get('/kelolapelamar', [KelolapelamarController::class, 'index'])->name('admin.kelolapelamar');
         Route::get('/kelolalowongan', [KelolalowonganController::class, 'index'])->name('admin.kelolalowongan');
+        Route::get('/kelolalowongan/{id}', [KelolalowonganController::class, 'show'])->name('admin.lowongan.show');
+        Route::patch('/kelolalowongan/{id}/status', [KelolalowonganController::class, 'updateStatus'])->name('admin.lowongan.update-status');
         Route::get('/kelolamitra', [KelolamitraController::class, 'index'])->name('admin.kelolamitra');
         Route::get('/pesanadmin', [PesanadminController::class, 'index'])->name('admin.pesanadmin');
 
@@ -114,7 +116,8 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/kelolapelamarkerja', [KelolapelamarkerjaController::class, 'index'])->name('mitra.kelolapelamarkerja');
             Route::patch('/pelamar/{id}/status', [KelolapelamarkerjaController::class, 'updateStatus'])->name('mitra.pelamar.status');
 
-            // Pasang Lowongan
+            Route::get('/pembayaran/{id}/pilih', [PasanglowonganController::class, 'pilihPaket'])->name('mitra.pembayaran.pilih');
+            Route::post('/pembayaran/{id}/bayar', [PasanglowonganController::class, 'bayar'])->name('mitra.pembayaran.bayar');
             Route::get('/pasanglowongan', [PasanglowonganController::class, 'index'])->name('mitra.pasanglowongan');
             Route::post('/pasanglowongan', [PasanglowonganController::class, 'store'])->name('mitra.pasanglowongan.store');
             Route::put('/pasanglowongan/{id}', [PasanglowonganController::class, 'update'])->name('mitra.pasanglowongan.update');
