@@ -1,21 +1,17 @@
-<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import {
     ImagePlus,
     Building2,
-    Globe,
-    Info,
     User,
     Save,
     Lock,
     ShieldCheck,
-    Phone,
-    MapPin,
     Briefcase,
-    Eye,       // TAMBAHAN: Import icon Eye
-    EyeOff     // TAMBAHAN: Import icon EyeOff
-} from 'lucide-vue-next';
+    Eye,
+    EyeOff,
+    FileText,
+    CheckCircle} from 'lucide-vue-next';
 import Swal from 'sweetalert2';
 import { computed, ref } from 'vue';
 import DeleteUser from '@/components/DeleteUser.vue';
@@ -63,15 +59,19 @@ const form = useForm({
     foto_pelamar: null as any,
 });
 
-// TAMBAHAN: State untuk mengatur tampil/sembunyi password
+// State Password
 const showCurrentPassword = ref(false);
 const showNewPassword = ref(false);
 const showConfirmPassword = ref(false);
 
+// State Preview Foto
 const imagePreview = ref<string | null>(
     props.role === 'mitra' && props.mitra?.logo_mitra ? `/storage/${props.mitra.logo_mitra}` : 
     props.role === 'pelamar' && props.pelamar?.foto_pelamar ? `/storage/${props.pelamar.foto_pelamar}` : null
 );
+
+// State Nama File CV (Default ambil dari prop jika ada)
+const cvFileName = ref<string | null>(props.pelamar?.cv_pelamar ? 'CV_Sudah_Terunggah.pdf' : null);
 
 const handleImageChange = (e: any) => {
     const file = e.target.files[0];
@@ -82,7 +82,7 @@ const handleImageChange = (e: any) => {
         } else {
             form.foto_pelamar = file;
         }
-        
+
         const reader = new FileReader();
         reader.onload = (e) => (imagePreview.value = e.target?.result as string);
         reader.readAsDataURL(file);
@@ -93,8 +93,9 @@ const handleCvChange = (e: any) => {
     const file = e.target.files[0];
 
     if (file) {
-form.cv_pelamar = file;
-}
+        form.cv_pelamar = file;
+        cvFileName.value = file.name; // Tampilkan nama file asli yang baru dipilih
+    }
 };
 
 const submit = () => {
@@ -104,7 +105,7 @@ const submit = () => {
             form.reset('current_password', 'password', 'password_confirmation');
             Swal.fire({
                 title: 'Profil Diperbarui!',
-                text: 'Data akun Anda berhasil diperbarui.',
+                text: 'Data profil Anda berhasil disimpan ke sistem.',
                 icon: 'success',
                 confirmButtonColor: '#0369a1',
                 customClass: { popup: 'rounded-[2.5rem]' },
@@ -135,8 +136,7 @@ const submit = () => {
                             <Briefcase v-else class="h-5 w-5" />
                         </div>
                         <h2 class="text-lg font-black tracking-tight uppercase italic">
-                            Identitas
-                            <span class="text-sky-700">{{ props.role === 'mitra' ? 'Perusahaan' : 'Pribadi' }}</span>
+                            Identitas <span class="text-sky-700">{{ props.role === 'mitra' ? 'Perusahaan' : 'Pribadi' }}</span>
                         </h2>
                     </div>
 
@@ -154,66 +154,33 @@ const submit = () => {
                                 </label>
                             </div>
                             <div class="space-y-1 text-center md:text-left">
-                                <h4 class="text-xs font-black uppercase italic">
-                                    {{ props.role === 'mitra' ? 'Logo Instansi' : 'Foto Profil' }}
-                                </h4>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase italic">Klik gambar untuk mengubah foto.</p>
+                                <h4 class="text-xs font-black uppercase italic">{{ props.role === 'mitra' ? 'Logo Instansi' : 'Foto Profil' }}</h4>
+                                <p class="text-[14px] font-bold text-slate-400 uppercase italic">Klik gambar untuk mengubah. Maks 2MB.</p>
                             </div>
                         </div>
-
-                        <template v-if="props.role === 'mitra'">
-                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Nama Perusahaan</label>
-                                    <input v-model="form.nama_mitra" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Website</label>
-                                    <input v-model="form.website_mitra" placeholder="https://..." class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Kategori</label>
-                                    <select v-model="form.kategori_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
-                                        <option v-for="kat in kategoris" :key="kat.id" :value="kat.id">{{ kat.nama_kategori }}</option>
-                                    </select>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Lokasi Utama</label>
-                                    <select v-model="form.lokasi_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
-                                        <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Deskripsi Singkat</label>
-                                <textarea v-model="form.deskripsi_mitra" rows="3" class="w-full rounded-3xl border border-slate-200 bg-slate-50 p-6 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20"></textarea>
-                            </div>
-                        </template>
 
                         <template v-if="props.role === 'pelamar'">
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Nama Lengkap</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Nama Lengkap</label>
                                     <input v-model="form.nama_pelamar" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">No. Handphone (WhatsApp)</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">WhatsApp</label>
                                     <input v-model="form.nohp_pelamar" type="tel" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
                                 </div>
                             </div>
                             
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Domisili Saat Ini</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Lokasi Domisili</label>
                                     <select v-model="form.lokasi_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
-                                        <option value="">Pilih Kota/Kabupaten</option>
+                                        <option value="">Pilih...</option>
                                         <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
                                     </select>
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Jenis Kelamin</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Jenis Kelamin</label>
                                     <select v-model="form.jenis_kelamin" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
                                         <option value="">Pilih...</option>
                                         <option value="L">Laki-laki</option>
@@ -223,20 +190,87 @@ const submit = () => {
                             </div>
 
                             <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Alamat Lengkap</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Alamat Lengkap</label>
                                 <textarea v-model="form.alamat_pelamar" rows="3" class="w-full rounded-3xl border border-slate-200 bg-slate-50 p-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20"></textarea>
                             </div>
 
-                            <div class="space-y-2 border-t border-slate-100 pt-6">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Upload CV (PDF)</label>
-                                <input type="file" @change="handleCvChange" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-sky-50 file:px-4 file:py-3 file:text-xs file:font-bold file:text-sky-700 hover:file:bg-sky-100" />
+                            <div class="space-y-4 border-t border-slate-100 pt-6">
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase italic">Dokumen CV (PDF)</label>
+                                
+                                <div class="flex flex-col gap-4">
+                                    <div v-if="cvFileName" class="flex items-center gap-4 rounded-2xl bg-emerald-50 p-4 border border-emerald-100 shadow-sm">
+                                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-lg shadow-emerald-200">
+                                            <FileText class="h-6 w-6" />
+                                        </div>
+                                        <div class="flex flex-col overflow-hidden">
+                                            <span class="text-[14px] font-black text-emerald-700 uppercase italic leading-none mb-1">Status Dokumen:</span>
+                                            <span class="text-xs font-black text-slate-700 truncate italic">{{ cvFileName }}</span>
+                                        </div>
+                                        
+                                        <div class="ml-auto flex items-center gap-2">
+                                            <a 
+                                                v-if="props.pelamar?.cv_pelamar && cvFileName === 'CV_Sudah_Terunggah.pdf'" 
+                                                :href="`/storage/${props.pelamar.cv_pelamar}`" 
+                                                target="_blank"
+                                                class="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[9px] font-black text-sky-700 shadow-sm border border-sky-100 transition-all hover:bg-sky-700 hover:text-white"
+                                            >
+                                                <Eye class="h-3 w-3" /> LIHAT CV
+                                            </a>
+                                            <div class="flex items-center gap-1 rounded-full bg-emerald-200/50 px-3 py-2 text-[9px] font-black text-emerald-700 uppercase italic">
+                                                <CheckCircle class="h-3 w-3" /> Ready
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <label class="group flex cursor-pointer items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 transition-all hover:border-sky-700 hover:bg-white">
+                                        <div class="flex items-center gap-3 text-slate-400 group-hover:text-sky-700">
+                                            <ImagePlus class="h-5 w-5" />
+                                            <div class="flex flex-col">
+                                                <span class="text-[11px] font-black uppercase italic">{{ cvFileName ? 'Ganti File CV Anda' : 'Pilih File PDF' }}</span>
+                                                <span class="text-[9px] font-bold opacity-60">Maksimal file 2MB</span>
+                                            </div>
+                                        </div>
+                                        <input type="file" @change="handleCvChange" accept=".pdf" class="hidden" />
+                                    </label>
+                                </div>
+                                <InputError :message="form.errors.cv_pelamar" />
+                            </div>
+                        </template>
+
+                        <template v-if="props.role === 'mitra'">
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div class="space-y-2">
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Nama Instansi</label>
+                                    <input v-model="form.nama_mitra" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Website Resmi</label>
+                                    <input v-model="form.website_mitra" placeholder="https://..." class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20" />
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div class="space-y-2">
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Kategori</label>
+                                    <select v-model="form.kategori_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
+                                        <option v-for="kat in kategoris" :key="kat.id" :value="kat.id">{{ kat.nama_kategori }}</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Lokasi</label>
+                                    <select v-model="form.lokasi_id" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none">
+                                        <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Deskripsi Profil</label>
+                                <textarea v-model="form.deskripsi_mitra" rows="4" class="w-full rounded-3xl border border-slate-200 bg-slate-50 p-6 text-xs font-bold outline-none focus:ring-2 focus:ring-sky-700/20"></textarea>
                             </div>
                         </template>
                     </div>
 
-                    <div class="mt-10 flex items-center justify-between border-t border-slate-100 pt-8">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase italic">Klik simpan untuk memperbarui profil.</p>
-                        <button @click="submit" :disabled="form.processing" class="flex items-center gap-3 rounded-2xl bg-sky-700 px-8 py-5 text-sm font-black text-white uppercase italic shadow-xl shadow-sky-900/20 transition-all hover:bg-sky-800 disabled:opacity-50">
+                    <div class="mt-10 flex items-center justify-end border-t border-slate-100 pt-8">
+                        <button @click="submit" :disabled="form.processing" class="flex items-center gap-3 rounded-2xl bg-sky-700 px-10 py-5 text-sm font-black text-white uppercase italic shadow-xl shadow-sky-900/20 transition-all hover:bg-sky-800 disabled:opacity-50">
                             <Save class="h-5 w-5" />
                             {{ form.processing ? 'Menyimpan...' : 'Simpan Perubahan' }}
                         </button>
@@ -248,19 +282,19 @@ const submit = () => {
                         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
                             <User class="h-5 w-5" />
                         </div>
-                        <h2 class="text-lg font-black tracking-tight uppercase italic">
-                            Informasi <span class="text-indigo-600">Login</span>
+                        <h2 class="text-lg font-black tracking-tight uppercase italic text-slate-800">
+                            Akses <span class="text-indigo-600">Akun</span>
                         </h2>
                     </div>
 
                     <div class="grid grid-cols-1 gap-8">
                         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Nama Akun Utama</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Username</label>
                                 <input v-model="form.name" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-600/20" />
                             </div>
                             <div class="space-y-2">
-                                <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Email Akun</label>
+                                <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Alamat Email</label>
                                 <input v-model="form.email" type="email" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-600/20" />
                             </div>
                         </div>
@@ -268,47 +302,42 @@ const submit = () => {
                         <hr class="border-slate-100" />
 
                         <div class="space-y-6">
-                            <div class="flex items-center gap-2 text-rose-500">
-                                <Lock class="h-4 w-4" />
-                                <h3 class="text-[10px] font-black tracking-widest uppercase italic">Ubah Kata Sandi (Opsional)</h3>
+                            <div class="flex items-center gap-2 text-rose-500 italic uppercase font-black text-[14px] tracking-widest">
+                                <Lock class="h-4 w-4" /> Reset Password (Opsional)
                             </div>
                             <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                                
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Sandi Saat Ini</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Sandi Lama</label>
                                     <div class="relative">
-                                        <input :type="showCurrentPassword ? 'text' : 'password'" v-model="form.current_password" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20 hide-password-toggle" />
-                                        <button type="button" @click="showCurrentPassword = !showCurrentPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-rose-500">
+                                        <input :type="showCurrentPassword ? 'text' : 'password'" v-model="form.current_password" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20" />
+                                        <button type="button" @click="showCurrentPassword = !showCurrentPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                                             <EyeOff v-if="!showCurrentPassword" class="h-4 w-4" />
                                             <Eye v-else class="h-4 w-4" />
                                         </button>
                                     </div>
                                     <InputError :message="form.errors.current_password" />
                                 </div>
-
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Sandi Baru</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Sandi Baru</label>
                                     <div class="relative">
-                                        <input :type="showNewPassword ? 'text' : 'password'" v-model="form.password" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20 hide-password-toggle" />
-                                        <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-rose-500">
+                                        <input :type="showNewPassword ? 'text' : 'password'" v-model="form.password" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20" />
+                                        <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                                             <EyeOff v-if="!showNewPassword" class="h-4 w-4" />
                                             <Eye v-else class="h-4 w-4" />
                                         </button>
                                     </div>
                                     <InputError :message="form.errors.password" />
                                 </div>
-
                                 <div class="space-y-2">
-                                    <label class="ml-2 text-[10px] font-black tracking-widest text-slate-400 uppercase">Konfirmasi Sandi</label>
+                                    <label class="ml-2 text-[14px] font-black tracking-widest text-slate-400 uppercase">Konfirmasi</label>
                                     <div class="relative">
-                                        <input :type="showConfirmPassword ? 'text' : 'password'" v-model="form.password_confirmation" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20 hide-password-toggle" />
-                                        <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-rose-500">
+                                        <input :type="showConfirmPassword ? 'text' : 'password'" v-model="form.password_confirmation" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-12 text-xs font-bold outline-none focus:ring-2 focus:ring-rose-500/20" />
+                                        <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                                             <EyeOff v-if="!showConfirmPassword" class="h-4 w-4" />
                                             <Eye v-else class="h-4 w-4" />
                                         </button>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -317,18 +346,15 @@ const submit = () => {
 
             <div class="space-y-8 lg:col-span-4">
                 <div class="rounded-[2.5rem] bg-slate-900 p-8 text-white shadow-xl">
-                    <div class="mb-6 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-emerald-400">
-                        <ShieldCheck class="h-5 w-5" />
-                    </div>
-                    <h3 class="text-sm font-black uppercase italic">Tips Keamanan</h3>
-                    <p class="mt-4 text-[10px] leading-relaxed font-medium uppercase italic opacity-60">
-                        Gunakan kombinasi huruf kapital, angka, dan simbol untuk kata sandi yang kuat. Jangan pernah bagikan email dan sandi login Anda kepada siapapun.
+                    <ShieldCheck class="h-8 w-8 text-emerald-400 mb-6" />
+                    <h3 class="text-sm font-black uppercase italic tracking-tighter">Tips Keamanan</h3>
+                    <p class="mt-4 text-[14px] leading-relaxed font-bold uppercase italic opacity-50">
+                        Pastikan data yang Anda masukkan sudah valid. Khusus CV, gunakan format PDF agar mitra dapat membaca dokumen dengan baik.
                     </p>
                 </div>
-
                 <div class="rounded-[2.5rem] border border-rose-100 bg-rose-50/20 p-2">
-                    <div class="rounded-[2.2rem] border border-rose-50 bg-white p-6 shadow-sm">
-                        <DeleteUser />
+                    <div class="rounded-[2.2rem] border border-rose-50 bg-white p-6 shadow-sm text-center">
+                         <DeleteUser />
                     </div>
                 </div>
             </div>
@@ -337,7 +363,6 @@ const submit = () => {
 </template>
 
 <style scoped>
-/* CSS UNTUK MEMATIKAN MATA (EYE ICON) BAWAAN MICROSOFT EDGE/IE */
 .hide-password-toggle::-ms-reveal,
 .hide-password-toggle::-ms-clear {
     display: none;

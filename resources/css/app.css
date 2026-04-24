@@ -83,44 +83,68 @@
 /* ==================================================
    Custom Components (Navbar & UI Lokak)
    ================================================== */
+
 @layer components {
-    /* Navbar Desktop Links */
+    /* --- Navbar Desktop Links --- */
     .link-desktop {
-        @apply font-bold text-slate-500 transition-colors duration-300 hover:text-lokak-brand;
+        @apply hover:text-lokak-brand font-black uppercase italic tracking-widest text-slate-500 transition-colors duration-300;
     }
 
     .link-desktop.active {
         @apply text-lokak-brand;
     }
 
-    /* Primary Button Style */
+    /* --- Mobile Navigation Links (Baru) --- */
+    .mobile-link {
+        @apply hover:text-lokak-brand text-lg font-black uppercase italic text-slate-800 transition-all duration-300 hover:translate-x-2;
+    }
+
+    /* --- Buttons & Icons --- */
     .btn-primary-small {
-        @apply rounded-2xl bg-lokak-brand px-7 py-3.5 text-[10px] font-black tracking-widest text-white uppercase italic shadow-xl transition-all duration-300 hover:bg-lokak-brand-dark hover:shadow-lokak-brand/20 active:scale-95;
+        @apply hover:bg-lokak-brand rounded-2xl bg-slate-900 px-7 py-3.5 text-[10px] font-black uppercase italic tracking-widest text-white shadow-xl transition-all duration-300 hover:shadow-sky-900/20 active:scale-95;
     }
 
-    /* Icon Button (Notif/Hamburger) */
     .icon-btn-custom {
-        @apply flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-xl transition-all duration-300 hover:scale-105 hover:bg-slate-100 active:scale-95;
+        @apply hover:border-lokak-brand flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-100 bg-white text-xl shadow-sm transition-all duration-300 hover:bg-slate-50 active:scale-90;
     }
 
-    /* --- Animasi Sidebar (Slide dari Kanan) --- */
+    /* --- Transitions & Animations --- */
+
+    /* Animasi Sidebar (Slide dari Kanan) */
     .slide-enter-active,
     .slide-leave-active {
-        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .slide-enter-from,
     .slide-leave-to {
         transform: translateX(100%);
     }
 
-    /* --- Animasi Backdrop (Fade In/Out) --- */
+    /* Animasi Backdrop (Fade) */
     .fade-enter-active,
     .fade-leave-active {
-        transition: opacity 0.3s ease;
+        transition: opacity 0.4s ease;
     }
     .fade-enter-from,
     .fade-leave-to {
         opacity: 0;
+    }
+
+    /* Pulse untuk Bot AI (Coming Soon Indikator) */
+    .animate-pulse-soft {
+        animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse-soft {
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.5;
+            transform: scale(1.2);
+        }
     }
 }
 

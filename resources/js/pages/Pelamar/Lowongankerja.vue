@@ -265,9 +265,12 @@ const resetFilter = () => {
                         <button class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition-all hover:border-lokak-brand hover:text-lokak-brand">
                             <Bookmark class="h-4 w-4" />
                         </button>
-                        <Link :href="`/lowongan/${job.id}`" class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-[10px] font-black text-white uppercase italic shadow-lg transition-all hover:bg-lokak-brand active:scale-95 sm:flex-none">
-                            LIHAT DETAIL <ChevronRight class="h-3 w-3" />
-                        </Link>
+                        <Link 
+    :href="`/detail/lowongan/${job.id}`" 
+    class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-[10px] font-black text-white uppercase italic shadow-lg transition-all hover:bg-lokak-brand active:scale-95 sm:flex-none"
+>
+    LIHAT DETAIL <ChevronRight class="h-3 w-3" />
+</Link>
                         <span class="absolute top-6 right-6 text-[9px] font-bold text-slate-300 uppercase italic sm:static">
                             <Clock class="mr-1 mb-0.5 inline h-3 w-3" />{{ job.postedAt }}
                         </span>

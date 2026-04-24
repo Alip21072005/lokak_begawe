@@ -1,8 +1,7 @@
-<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Search, MapPin, Star, ChevronRight, SlidersHorizontal } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { Search, MapPin, ChevronRight, SlidersHorizontal, Star } from 'lucide-vue-next';
+import { ref } from 'vue';
 import { route } from 'ziggy-js';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
@@ -24,6 +23,20 @@ const handleSearch = () => {
         { search: search.value, lokasi: lokasi.value, kategori: kategori.value },
         { preserveState: true, replace: true }
     );
+};
+
+const getInitials = (name: string) => {
+    if (!name) {
+return '??';
+}
+
+    const words = name.trim().split(' ');
+
+    if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }
+
+    return name.substring(0, 2).toUpperCase();
 };
 </script>
 
@@ -86,21 +99,53 @@ const handleSearch = () => {
             </section>
 
             <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                <div v-for="mitra in mitras" :key="mitra.id" class="group rounded-[2.5rem] border border-slate-100 bg-white p-8 text-center transition-all hover:-translate-y-2 hover:shadow-2xl">
-                    <div class="mx-auto mb-6 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border bg-slate-50 shadow-inner">
-                        <img v-if="mitra.logo" :src="mitra.logo" class="h-full w-full object-cover" />
-                        <span v-else class="text-4xl">🏢</span>
+                <div v-for="mitra in mitras" :key="mitra.id" class="group flex flex-col justify-between rounded-[2.5rem] border border-slate-100 bg-white p-8 text-center transition-all hover:-translate-y-2 hover:shadow-2xl">
+                    
+                    <div>
+                        <div class="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border bg-slate-50 shadow-inner">
+                            <img 
+                                v-if="mitra.logo" 
+                                :src="mitra.logo" 
+                                class="h-full w-full object-cover" 
+                                :alt="mitra.name" 
+                            />
+                            <span v-else class="text-2xl font-black text-lokak-brand uppercase italic">
+                                {{ getInitials(mitra.name) }}
+                            </span>
+                        </div>
+
+                        <div class="mb-4 flex items-center justify-center gap-2">
+                            <div class="flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1">
+                                <Star class="h-3 w-3 text-amber-500 fill-amber-500" />
+                                <span class="text-[10px] font-black text-amber-700 italic">{{ mitra.rating }}</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-slate-300 uppercase italic">
+                                {{ mitra.review_count }} Ulasan
+                            </span>
+                        </div>
+
+                        <h3 class="mb-2 text-sm font-black uppercase italic group-hover:text-lokak-brand transition-colors">
+                            {{ mitra.name }}
+                        </h3>
+
+                        <p class="mb-6 flex items-center justify-center gap-1 text-[10px] font-bold text-slate-400 italic uppercase">
+                            <MapPin class="h-3 w-3" /> 
+                            {{ mitra.location }}
+                        </p>
                     </div>
-                    <h3 class="mb-2 text-sm font-black uppercase italic">{{ mitra.name }}</h3>
-                    <p class="mb-6 flex items-center justify-center gap-1 text-[10px] font-bold text-slate-400">
-                        <MapPin class="h-3 w-3" /> {{ mitra.location }}
-                    </p>
-                    <Link :href="route('mitra.show', mitra.id)" class="block w-full rounded-2xl bg-slate-900 py-4 text-[10px] font-black text-white uppercase italic hover:bg-lokak-brand transition-colors">
+
+                    <Link :href="route('mitra.show', mitra.id)" class="block w-full rounded-2xl bg-slate-900 py-4 text-[10px] font-black text-white uppercase italic hover:bg-lokak-brand transition-colors shadow-lg">
                         LIHAT PROFIL
                     </Link>
                 </div>
             </div>
+
+            <div v-if="mitras.length === 0" class="flex flex-col items-center justify-center py-32 opacity-30">
+                <div class="mb-4 text-6xl">🏢</div>
+                <p class="text-xl font-black italic uppercase">Mitra tidak ditemukan</p>
+            </div>
         </main>
+        
         <Footer />
     </div>
 </template>

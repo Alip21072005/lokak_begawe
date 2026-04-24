@@ -69,8 +69,13 @@ class Mitra extends Model
     /**
      * Relasi ke Rating
      */
-    public function rating(): HasMany
+    public function ratings(): HasMany
     {
         return $this->hasMany(Rating::class, 'mitra_id');
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return round($this->ratings()->avg('bintang'), 1) ?? 0;
     }
 }

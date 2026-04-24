@@ -1,163 +1,193 @@
-<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage, useForm } from '@inertiajs/vue3';
 import { 
-    MapPin, 
-    Briefcase, 
-    GraduationCap, 
-    Wallet,
-    Star,
-    Mail,
-    Bell,
-    User
+    MapPin, Building2, ChevronLeft, Briefcase, 
+    User, Phone, Send, X 
 } from 'lucide-vue-next';
+import { computed, ref } from 'vue';
+import { route } from 'ziggy-js';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
 
-// Data dummy untuk detail lowongan
-const jobDetail = {
-    title: 'FRONTEND DEVELOPER (REACT)',
-    company: 'CODE 21',
-    location: 'Mukomuko',
-    type: 'Full Time - Remote',
-    education: 'S1 Teknik Informatika / S1 Sistem Informasi',
-    salary: '3 - 5 Juta',
-    rating: '4.3 (154)',
-    jobCount: '15 PEKERJAAN',
-    description: 'Code 21 adalah perusahaan teknologi yang bergerak di bidang Web Development dan keamanan cyber. Didirikan di Bengkulu pada 17 Agustus 1947 berbarengan dengan pembacaan proklamasi kemerdekaan Indonesia.',
+const props = defineProps<{
+    lowongan: any;
+    authPelamar: any; // Data pelamar dari Controller
+}>();
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+// --- LOGIC MODAL & FORM ---
+const isConfirmModalOpen = ref(false);
+
+const form = useForm({
+    catatan: '', // Pesan tambahan opsional
+});
+
+const openApplyModal = () => {
+    isConfirmModalOpen.value = true;
 };
+
+const closeApplyModal = () => {
+    isConfirmModalOpen.value = false;
+    form.reset();
+};
+
+const submitApplication = () => {
+    // Arahkan ke rute POST lamaran.store yang sudah kamu buat
+    form.post(route('pelamar.lamar.store', props.lowongan.id), {
+        onSuccess: () => {
+            closeApplyModal();
+            alert('Lamaran berhasil dikirim! Silahkan cek dashboard untuk memantau status.');
+        },
+        preserveScroll: true
+    });
+};
+
 </script>
 
 <template>
-    <Head :title="`${jobDetail.title} - Lokak Begawe`" />
 
-    <div class="min-h-screen bg-lokak-bg font-sans text-slate-900">
-        <Navbar />
+    <Head :title="`${lowongan.judul} - Detail Lowongan`" />
+    <Navbar />
+    <div class="min-h-screen bg-lokak-bg font-sans text-lokak-text">
+        
+        
+        <main class="w-full px-6 pt-32 pb-20 md:px-16 lg:px-32">
+            <Link href="/lowongan" class="mb-8 flex items-center gap-2 text-xs font-black uppercase italic text-slate-400 hover:text-lokak-brand transition-colors">
+                <ChevronLeft class="h-4 w-4" /> Kembali ke Daftar
+            </Link>
 
-        <main class="w-full px-6 pt-32 pb-20 md:px-16 lg:px-24 xl:px-32">
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-                
-                <div class="lg:col-span-8 space-y-8">
-                    
-                    <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                            <h1 class="text-3xl font-black italic tracking-tighter text-slate-800 uppercase">
-                                {{ jobDetail.title }}
-                            </h1>
-                            <button class="rounded-xl bg-[#0f172a] px-10 py-3 text-sm font-black italic text-white transition-all hover:bg-lokak-brand active:scale-95">
-                                LAMAR
-                            </button>
-                        </div>
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="rounded-[2.5rem] bg-white p-8 shadow-sm border border-slate-100 relative overflow-hidden">
+                        <div class="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-lokak-brand/5"></div>
+                        <h1 class="text-3xl font-black italic tracking-tighter uppercase mb-4 text-slate-900 md:text-4xl">{{ lowongan.judul }}</h1>
 
-                        <div class="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-4">
-                            <div class="flex flex-col gap-1">
-                                <span class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic">
-                                    <Briefcase class="h-3 w-3" /> Nama Mitra
-                                </span>
-                                <span class="text-xs font-black italic text-orange-500 uppercase">{{ jobDetail.company }}</span>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <span class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic">
-                                    <MapPin class="h-3 w-3" /> Lokasi
-                                </span>
-                                <span class="text-xs font-black italic text-slate-800 uppercase">{{ jobDetail.location }}</span>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <span class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic">
-                                    <Clock class="h-3 w-3" /> Tipe Pekerjaan
-                                </span>
-                                <span class="text-xs font-black italic text-slate-800 uppercase">{{ jobDetail.type }}</span>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <span class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic">
-                                    <Wallet class="h-3 w-3" /> Gaji
-                                </span>
-                                <span class="text-xs font-black italic text-slate-800 uppercase">{{ jobDetail.salary }}</span>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex flex-col gap-1 border-t border-slate-50 pt-4">
-                             <span class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic">
-                                <GraduationCap class="h-3 w-3" /> Pendidikan
+                        <div class="flex flex-wrap gap-4 text-[10px] font-bold uppercase italic text-slate-400">
+                            <span class="flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-1.5">
+                                <Building2 class="h-3 w-3 text-lokak-brand" /> {{ lowongan.perusahaan.nama }}
                             </span>
-                            <span class="text-xs font-black italic text-slate-800 uppercase leading-relaxed">
-                                {{ jobDetail.education }}
+                            <span class="flex items-center gap-1.5 rounded-lg bg-slate-50 px-3 py-1.5">
+                                <MapPin class="h-3 w-3 text-lokak-brand" /> {{ lowongan.lokasi_nama }}
                             </span>
                         </div>
-                    </div>
-
-                    <div class="rounded-3xl border border-slate-200 bg-white p-10 shadow-sm leading-relaxed">
-                        <div class="space-y-8 text-sm font-medium text-slate-700">
-                            <section>
-                                <h3 class="mb-4 text-base font-black italic text-slate-800">Tanggung Jawab Pekerjaan :</h3>
-                                <ul class="list-disc space-y-2 pl-5">
-                                    <li>Melanesian proses rekrutmen dan seleksi karyawan</li>
-                                    <li>Mengelola administrasi kepegawaian</li>
-                                    <li>Mengelola kepesertaan dan administrasi BPJS Kesehatan & Ketenagakerjaan</li>
-                                    <li>Monitoring absensi dan kedisiplinan karyawan</li>
-                                </ul>
-                            </section>
-
-                            <section>
-                                <h3 class="mb-4 text-base font-black italic text-slate-800">Kualifikasi Pekerjaan :</h3>
-                                <ul class="list-disc space-y-2 pl-5">
-                                    <li>Pendidikan minimal S1 Psikologi / Manajemen SDM / Hukum</li>
-                                    <li>Pengalaman minimal 1-2 tahun sebagai HRD/HR Officer</li>
-                                    <li>Menguasai peraturan ketenagakerjaan yang berlaku</li>
-                                    <li>Terbiasa mengelola administrasi karyawan</li>
-                                </ul>
-                            </section>
-
-                            <section>
-                                <h3 class="mb-4 text-base font-black italic text-slate-800">Benefit Pekerjaan :</h3>
-                                <ul class="list-disc space-y-2 pl-5">
-                                    <li>BPJS Kesehatan & Ketenagakerjaan</li>
-                                    <li>Tunjangan Hari Raya (THR)</li>
-                                    <li>Bonus kinerja (tahunan)</li>
-                                    <li>Lingkungan kerja profesional dan suportif</li>
-                                </ul>
-                            </section>
+                        
+                        <div class="mt-10 border-t border-slate-50 pt-8">
+                            <h3 class="mb-6 flex items-center gap-2 text-sm font-black italic uppercase text-slate-800">
+                                <span class="h-1.5 w-6 rounded-full bg-lokak-brand"></span> Deskripsi Pekerjaan
+                            </h3>
+                            <div class="text-sm leading-relaxed text-slate-600 whitespace-pre-line" v-html="lowongan.deskripsi"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="lg:col-span-4">
-                    <div class="sticky top-32 space-y-6">
-                        <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-                            <div class="flex items-start justify-between">
-                                <div class="h-16 w-16 overflow-hidden rounded-2xl bg-slate-100 flex items-center justify-center">
-                                    <span class="text-2xl font-black italic text-lokak-brand">C21</span>
-                                </div>
-                                <span class="rounded-full bg-slate-100 px-4 py-1.5 text-[10px] font-black italic text-slate-500">
-                                    {{ jobDetail.jobCount }}
-                                </span>
-                            </div>
+                    <div class="sticky">
+                        <div class="rounded-[2.5rem] text-white  shadow-sky-900/20 border border-white/5">
+                          
                             
-                            <div class="mt-6">
-                                <h2 class="text-xl font-black italic text-slate-800">{{ jobDetail.company }}</h2>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase italic">{{ jobDetail.location }}</p>
-                                <div class="mt-2 flex items-center gap-1 text-yellow-400">
-                                    <Star v-for="i in 5" :key="i" class="h-3 w-3 fill-current" />
-                                    <span class="ml-2 text-xs font-bold text-slate-400">{{ jobDetail.rating }}</span>
-                                </div>
-                            </div>
+                            <button 
+                                v-if="user" 
+                                @click="openApplyModal"
+                                class="flex w-full items-center justify-center  rounded-2xl bg-lokak-brand py-5 text-xs font-black uppercase italic text-white shadow-xl shadow-sky-900/40 transition-all hover:-translate-y-1 hover:bg-sky-600 active:scale-95"
+                            >
+                                LAMAR SEKARANG <ChevronRight class="h-3 w-3" />
+                            </button>
 
-                            <p class="mt-6 text-xs font-medium leading-relaxed text-slate-500">
-                                {{ jobDetail.description }}
-                            </p>
+                            <Link 
+                                v-else 
+                                :href="route('lowongan.daftar', lowongan.id)"
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-lokak-brand py-5 text-xs font-black uppercase italic text-white shadow-xl shadow-sky-900/40 transition-all hover:-translate-y-1 hover:bg-sky-600 active:scale-95"
+                            >
+                                LAMAR SEKARANG <ChevronRight class="h-3 w-3" />
+                            </Link>
+
+                            
                         </div>
                     </div>
                 </div>
-
             </div>
         </main>
 
-        <Footer />
+        <Teleport to="body">
+            <Transition name="fade">
+                <div v-if="isConfirmModalOpen" class="fixed inset-0 z-100 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
+                    <div class="w-full max-w-lg rounded-[2.5rem] bg-white p-8 shadow-2xl relative overflow-hidden animate-in fade-in zoom-in duration-300">
+                        
+                        <div class="mb-8 flex items-center justify-between">
+                            <h2 class="text-xl font-black italic tracking-tighter text-slate-900 uppercase">
+                                Konfirmasi <span class="text-lokak-brand">Lamaran</span>
+                            </h2>
+                            <button @click="closeApplyModal" class="rounded-full p-2 hover:bg-slate-100 transition-colors">
+                                <X class="h-5 w-5 text-slate-400" />
+                            </button>
+                        </div>
+
+                        <div class="mb-8 space-y-4 rounded-3xl bg-slate-50 p-6">
+                            <div class="flex items-center gap-4">
+                                <div class="h-10 w-10 shrink-0 rounded-xl bg-lokak-brand/10 flex items-center justify-center text-lokak-brand">
+                                    <Briefcase class="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase italic">Posisi Dilamar</p>
+                                    <p class="text-xs font-black italic text-slate-800 uppercase">{{ lowongan.judul }}</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-200/50 pt-4">
+                                <div class="flex items-center gap-3">
+                                    <User class="h-3.5 w-3.5 text-slate-400" />
+                                    <span class="text-[11px] font-bold text-slate-600 italic">{{ authPelamar?.nama_pelamar }}</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <Phone class="h-3.5 w-3.5 text-slate-400" />
+                                    <span class="text-[11px] font-bold text-slate-600 italic">{{ authPelamar?.nohp_pelamar }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-8 space-y-3">
+                            <label class="ml-4 text-[10px] font-black tracking-widest text-slate-400 uppercase italic">Pesan Tambahan (Opsional)</label>
+                            <textarea 
+                                v-model="form.catatan"
+                                placeholder="Kenapa Anda tertarik dengan posisi ini?..."
+                                class="w-full rounded-3xl border border-slate-100 bg-slate-50 p-5 text-xs font-bold text-slate-700 outline-none focus:border-lokak-brand focus:bg-white transition-all min-h-30"
+                            ></textarea>
+                            <p class="text-[9px] font-bold text-slate-400 italic px-4">
+                                * Pastikan CV Anda di dashboard sudah dalam versi terbaru.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <button 
+                                @click="submitApplication"
+                                :disabled="form.processing"
+                                class="flex w-full items-center justify-center gap-3 rounded-2xl bg-lokak-brand py-5 text-xs font-black uppercase italic text-white shadow-xl shadow-sky-900/20 transition-all hover:bg-sky-600 active:scale-95 disabled:opacity-50"
+                            >
+                                <span v-if="form.processing">MENGIRIM LAMARAN...</span>
+                                <template v-else>
+                                    KIRIM LAMARAN <Send class="h-4 w-4" />
+                                </template>
+                            </button>
+                            <button 
+                                @click="closeApplyModal"
+                                class="w-full py-4 text-[10px] font-black uppercase italic text-slate-400 hover:text-rose-500 transition-colors"
+                            >
+                                Batalkan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+        
+        
     </div>
+    <Footer />
 </template>
 
 <style scoped>
-/* Pastikan animasi halus saat tombol ditekan */
-.active\:scale-95:active {
-    transform: scale(0.95);
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.transition-all { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 </style>
