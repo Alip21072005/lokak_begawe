@@ -19,7 +19,7 @@ use App\Http\Controllers\Admin\PesanadminController;
 use App\Http\Controllers\Auth\RegisterPelamarController;
 use App\Http\Controllers\Auth\RegisterMitraController;
 use App\Http\Controllers\Auth\GoogleController;
-
+use App\Http\Controllers\ChatController;
 // --- Controllers Mitra ---
 use App\Http\Controllers\Mitra\DashboardMitraController;
 use App\Http\Controllers\Mitra\KelolapelamarkerjaController;
@@ -85,6 +85,11 @@ Route::middleware(['auth'])->group(function () {
             default   => redirect('/'),
         };
     })->name('dashboard');
+
+    Route::get('/messages', [ChatController::class, 'index'])->name('messages.index');
+    Route::get('/messages/{id}', [ChatController::class, 'show'])->name('messages.show');
+    Route::post('/messages', [ChatController::class, 'store'])->name('messages.store');
+    Route::post('/messages/{conversation}/read', [ChatController::class, 'markAsRead'])->name('messages.read');
 
     // --- JEMBATAN PENDAFTARAN (PROFILE CHECK) ---
     Route::middleware(['profile_complete'])->group(function () {

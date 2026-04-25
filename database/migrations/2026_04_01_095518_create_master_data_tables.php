@@ -6,24 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    // database/migrations/2026_04_01_095518_create_master_data_tables.php
+
     public function up(): void
     {
-        // 1. Master Skill (Contoh: Laravel, React, Las Listrik, Akuntansi)
         Schema::create('master_skills', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama_skill')->unique();
             $table->timestamps();
         });
 
-        // 2. Master Instansi (Contoh: Universitas Dehasen, UNIB, SMKN 1 Kota Bengkulu)
         Schema::create('master_instansis', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama_instansi')->unique();
-            $table->string('jenis_instansi'); // SMA, SMK, Universitas, Kursus
+            $table->string('jenis_instansi');
             $table->timestamps();
         });
 
-        // 3. Master Perusahaan (Contoh: PT. Aranus, Bank Bengkulu, Telkom)
         Schema::create('master_perusahaans', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('nama_perusahaan')->unique();

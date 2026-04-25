@@ -9,9 +9,10 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
+    // database/migrations/2026_04_09_033518_create_lowongans_table.php
+
     public function up(): void
     {
-        // 1. Membuat Tabel Lowongan Utama
         Schema::create('lowongans', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('mitra_id')->constrained('mitras')->onDelete('cascade');
@@ -19,14 +20,13 @@ return new class extends Migration
 
             $table->string('judul_lowongan');
             $table->text('deskripsi_lowongan');
-            $table->string('tipe_pekerjaan'); // Full-time, Part-time, dll
+            $table->string('tipe_pekerjaan');
 
             $table->bigInteger('gaji_min')->default(0);
             $table->bigInteger('gaji_max')->default(0);
 
-            // --- INTEGRASI SYARAT ATS (Applicant Tracking System) ---
-            $table->string('minimal_pendidikan')->nullable(); // SMA/SMK, D3, S1
-            $table->integer('minimal_pengalaman')->default(0); // Dalam satuan tahun
+            $table->string('minimal_pendidikan')->nullable();
+            $table->integer('minimal_pengalaman')->default(0);
 
             $table->date('tanggal_expired')->nullable();
             $table->enum('status_lowongan', ['pending', 'verified', 'rejected'])->default('pending');
@@ -34,15 +34,14 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 2. Membuat Tabel Pivot Skill (Menyatu di sini agar urutan FK benar)
         Schema::create('lowongan_skills', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('lowongan_id')->constrained('lowongans')->onDelete('cascade');
+            // Pastikan tabel master_skills sudah dibuat di migrasi sebelumnya!
             $table->foreignUuid('master_skill_id')->constrained('master_skills')->onDelete('cascade');
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */

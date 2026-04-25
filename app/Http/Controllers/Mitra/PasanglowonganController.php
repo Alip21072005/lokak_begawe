@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class PasanglowonganController extends Controller
 {
@@ -27,18 +28,13 @@ class PasanglowonganController extends Controller
         $myJobs = Lowongan::with(['lokasi', 'skills'])
             ->where('mitra_id', $mitra->id)
             ->latest()
-            ->get()
-            ->map(function ($job) {
-                $job->is_expired = $job->tanggal_expired < now()->toDateString();
-                return $job;
-            });
+            ->get();
 
         return Inertia::render('Mitra/Pasanglowongan', [
             'auth' => [
                 'user' => $user->load('mitra')
             ],
             'lokasis' => Lokasi::orderBy('nama_lokasi', 'asc')->get(),
-            // Kirim master skill agar mitra bisa pilih syarat skill
             'masterSkills' => MasterSkill::orderBy('nama_skill', 'asc')->get(),
             'myJobs' => $myJobs
         ]);
@@ -56,7 +52,6 @@ class PasanglowonganController extends Controller
             'gaji_max' => 'required|numeric',
             'lokasi_id' => 'required|exists:lokasis,id',
             'deskripsi_lowongan' => 'required|string',
-            // Validasi Kriteria Baru
             'minimal_pendidikan' => 'nullable|string',
             'minimal_pengalaman' => 'nullable|integer',
             'required_skills' => 'nullable|array'
@@ -66,7 +61,6 @@ class PasanglowonganController extends Controller
         $user = Auth::user();
         $mitra = $user->mitra;
 
-        // Gunakan Database Transaction agar data lowongan & skill aman (simpan dua-duanya atau tidak sama sekali)
         $lowongan = DB::transaction(function () use ($request, $mitra) {
             $job = Lowongan::create([
                 'mitra_id' => $mitra->id,
@@ -82,15 +76,12 @@ class PasanglowonganController extends Controller
                 'tanggal_expired' => now()->addMonths(1),
             ]);
 
-            // Simpan relasi ke Master Skill (Tabel Pivot lowongan_skills)
+            // Sinkronisasi Skill dengan UUID Manual
             if ($request->has('required_skills')) {
                 $skillsData = [];
                 foreach ($request->required_skills as $skillId) {
-                    // Kita buatkan UUID manual untuk setiap baris di tabel pivot
-                    $skillsData[$skillId] = ['id' => (string) \Illuminate\Support\Str::uuid()];
+                    $skillsData[$skillId] = ['id' => (string) Str::uuid()];
                 }
-
-                // Gunakan sync agar jika diedit, skill lama terhapus dan diganti yang baru
                 $job->skills()->sync($skillsData);
             }
 
@@ -113,15 +104,31 @@ class PasanglowonganController extends Controller
 
         $request->validate([
             'judul_lowongan' => 'required|string|max:255',
+            'tipe_pekerjaan' => 'required|string',
+            'lokasi_id' => 'required',
             'required_skills' => 'nullable|array'
         ]);
 
         DB::transaction(function () use ($request, $lowongan) {
-            $lowongan->update($request->all());
+            // Update data utama lowongan
+            $lowongan->update($request->only([
+                'judul_lowongan',
+                'tipe_pekerjaan',
+                'gaji_min',
+                'gaji_max',
+                'lokasi_id',
+                'deskripsi_lowongan',
+                'minimal_pendidikan',
+                'minimal_pengalaman'
+            ]));
 
-            // Sync skill: menghapus yang lama dan mengganti dengan yang baru dari request
+            // FIX: Sinkronisasi skill juga harus pakai UUID manual agar tidak error default value
             if ($request->has('required_skills')) {
-                $lowongan->skills()->sync($request->required_skills);
+                $skillsData = [];
+                foreach ($request->required_skills as $skillId) {
+                    $skillsData[$skillId] = ['id' => (string) Str::uuid()];
+                }
+                $lowongan->skills()->sync($skillsData); // Menggunakan sync + UUID manual
             }
         });
 
@@ -129,8 +136,17 @@ class PasanglowonganController extends Controller
     }
 
     /**
-     * Pilih Paket & Bayar (Tetap sama)
+     * Detail Lowongan untuk dilihah Mitra (Mencegah 404 jika dipanggil)
      */
+    public function show($id)
+    {
+        $lowongan = Lowongan::with(['lokasi', 'skills', 'mitra'])->findOrFail($id);
+
+        return Inertia::render('Lowongan/Show', [
+            'lowongan' => $lowongan
+        ]);
+    }
+
     public function pilihPaket($id)
     {
         $lowongan = Lowongan::findOrFail($id);

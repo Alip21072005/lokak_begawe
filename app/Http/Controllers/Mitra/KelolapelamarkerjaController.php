@@ -16,6 +16,7 @@ class KelolapelamarkerjaController extends Controller
         $user = Auth::user();
         $mitra = $user->mitra;
 
+        // Load relasi pelamar.user agar kita bisa dapat ID User si pelamar untuk keperluan Chat
         $applicants = Lamaran::with(['pelamar.user', 'lowongan'])
             ->whereHas('lowongan', function ($q) use ($mitra) {
                 $q->where('mitra_id', $mitra->id);
@@ -30,13 +31,14 @@ class KelolapelamarkerjaController extends Controller
             ->map(function ($item) {
                 return [
                     'id'            => $item->id,
+                    // PENTING: user_id inilah yang dicari oleh tombol Chat di Vue
+                    'user_id'       => $item->pelamar->user->id,
                     'name'          => $item->pelamar->user->name,
                     'position'      => $item->lowongan->judul_lowongan,
                     'appliedDate'   => $item->created_at->format('d M Y'),
                     'status'        => $item->status,
                     'catatan_mitra' => $item->catatan_mitra,
                     'avatar'        => strtoupper(substr($item->pelamar->user->name, 0, 1)),
-                    // Data tambahan untuk modal detail di sisi mitra
                     'email'         => $item->pelamar->user->email,
                     'phone'         => $item->pelamar->nohp_pelamar,
                     'cv'            => $item->pelamar->cv_pelamar ? asset('storage/' . $item->pelamar->cv_pelamar) : null,
@@ -63,8 +65,6 @@ class KelolapelamarkerjaController extends Controller
             'status'        => $request->status,
             'catatan_mitra' => $request->catatan_mitra
         ]);
-
-        // Opsional: Kamu bisa kirim notifikasi email/pesan sistem di sini nantinya
 
         return redirect()->back()->with('success', 'Status pelamar ' . $lamaran->pelamar->user->name . ' berhasil diperbarui.');
     }
