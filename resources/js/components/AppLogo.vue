@@ -4,13 +4,21 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 
 <template>
     <div
-        class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
+        class="flex items-center gap-3 transition-transform hover:scale-[1.02]"
     >
-        <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
-    </div>
-    <div class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold"
-            >Laravel Starter Kit</span
-        >
+        <AppLogoIcon class="size-9 object-contain drop-shadow-md" />
+
+        <div class="flex flex-col justify-center">
+            <span
+                class="truncate text-lg leading-none font-black tracking-tighter text-white uppercase"
+            >
+                LOKAKBEGAWE
+            </span>
+            <span
+                class="mt-1 text-[9px] leading-none font-bold tracking-wide text-slate-400 uppercase italic"
+            >
+                Ado Lokak, Pela Begawe
+            </span>
+        </div>
     </div>
 </template>
