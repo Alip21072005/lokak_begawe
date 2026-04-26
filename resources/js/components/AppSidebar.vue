@@ -10,6 +10,7 @@ import {
     FilePlus,
 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { route } from 'ziggy-js';
 import AppLogo from '@/components/AppLogo.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
@@ -21,21 +22,22 @@ import {
     SidebarMenu,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, welcome } from '@/routes';
+import { dashboard } from '@/routes';
 import {
     kelolalowongan,
     kelolamitra,
     kelolapelamar,
-    pesanadmin,
 } from '@/routes/admin';
-import { kelolapelamarkerja, pasanglowongan, pesanmitra } from '@/routes/mitra';
-import { lamaran, pesan, lowongankerja } from '@/routes/pelamar';
+import { kelolapelamarkerja, pasanglowongan } from '@/routes/mitra';
+import { lamaran, lowongankerja } from '@/routes/pelamar';
 import type { NavItem } from '@/types';
-import Lowongan from '@/pages/Lowongan.vue';
-import Welcome from '@/pages/Welcome.vue';
 
 const page = usePage();
 const userRole = computed(() => page.props.auth.user?.role);
+
+// --- HELPER UNTUK ROUTE CHAT ---
+// Kita arahkan semua ke rute universal 'messages.index' sesuai ChatController
+const chatRoute = () => route('messages.index');
 
 const pelamarNavItems: NavItem[] = [
     {
@@ -55,7 +57,7 @@ const pelamarNavItems: NavItem[] = [
     },
     {
         title: 'Pesan',
-        href: pesan(),
+        href: chatRoute(), // DIARAHKAN KE CHAT
         icon: MessageSquare,
     },
 ];
@@ -83,7 +85,7 @@ const adminNavItems: NavItem[] = [
     },
     {
         title: 'Pesan',
-        href: pesanadmin(),
+        href: chatRoute(), // DIARAHKAN KE CHAT
         icon: MessageSquare,
     },
 ];
@@ -106,19 +108,19 @@ const mitraNavItems: NavItem[] = [
     },
     {
         title: 'Pesan',
-        href: pesanmitra(),
+        href: chatRoute(), // DIARAHKAN KE CHAT
         icon: MessageSquare,
     },
 ];
 
 const activeNavItems = computed(() => {
     if (userRole.value === 'admin') {
-        return adminNavItems;
-    }
+return adminNavItems;
+}
 
     if (userRole.value === 'mitra') {
-        return mitraNavItems;
-    }
+return mitraNavItems;
+}
 
     return pelamarNavItems;
 });

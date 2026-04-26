@@ -17,20 +17,23 @@ class LowongankerjaController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // 1. Ambil input filter dari request (jika ada)
+        // 1. Ambil input filter
         $search = $request->input('search');
         $lokasiId = $request->input('lokasi');
         $kategoriId = $request->input('kategori');
 
-        // 2. Query utama dengan Filter Tanggal Expired & Status Verified
-        $lowongan = Lowongan::with(['mitra.kategori', 'lokasi'])
-            ->where('status_lowongan', 'verified') // Wajib sudah diverifikasi admin
-            ->where('tanggal_expired', '>=', now()->toDateString()) // TIDAK TAMPIL jika sudah lewat tanggal
+        // 2. Query utama
+        // Ganti map() menjadi transform() atau manipulasi koleksi agar tetap objek Eloquent
+        $lowongan = Lowongan::with(['mitra.kategori', 'lokasi', 'mitra.lokasi'])
+            ->where('status_lowongan', 'verified')
+            ->where('tanggal_expired', '>=', now()->toDateString())
             ->when($search, function ($query, $search) {
-                $query->where('judul_lowongan', 'like', "%{$search}%")
-                    ->orWhereHas('mitra', function ($q) use ($search) {
-                        $q->where('nama_mitra', 'like', "%{$search}%");
-                    });
+                $query->where(function ($q) use ($search) {
+                    $q->where('judul_lowongan', 'like', "%{$search}%")
+                        ->orWhereHas('mitra', function ($sq) use ($search) {
+                            $sq->where('nama_mitra', 'like', "%{$search}%");
+                        });
+                });
             })
             ->when($lokasiId, function ($query, $lokasiId) {
                 $query->where('lokasi_id', $lokasiId);
@@ -41,22 +44,17 @@ class LowongankerjaController extends Controller
                 });
             })
             ->orderBy('created_at', 'desc')
-            ->get()
-            // Menambahkan format gaji agar lebih mudah dibaca di Vue
-            ->map(fn($job) => [
-                ...(array) $job,
-                'gaji_format' => 'Rp ' . number_format($job->gaji_min, 0, ',', '.') . ' - ' . number_format($job->gaji_max, 0, ',', '.')
-            ]);
+            ->get();
 
-        // 3. Tarik data pendukung untuk dropdown filter
+        // 3. Tarik data pendukung
         $lokasis = Lokasi::orderBy('nama_lokasi', 'asc')->get();
         $kategoris = Kategori::orderBy('nama_kategori', 'asc')->get();
 
         return Inertia::render('Pelamar/Lowongankerja', [
             'auth' => [
-                'user' => $user->load('pelamar')
+                'user' => $user ? $user->load('pelamar') : null
             ],
-            'lowonganList' => $lowongan,
+            'lowonganList' => $lowongan, // Kirim koleksi asli agar relasi mitra & lokasi tidak hilang
             'lokasis' => $lokasis,
             'kategoris' => $kategoris,
             'filters' => [

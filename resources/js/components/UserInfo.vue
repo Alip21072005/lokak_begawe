@@ -8,7 +8,7 @@ import type { User } from '@/types';
 type Props = {
     user?: User | any | null;
     showEmail?: boolean;
-    isDark?: boolean; // Tambahkan prop untuk deteksi tema sidebar
+    isDark?: boolean; 
 };
 
 const props = withDefaults(defineProps<Props>(), {
@@ -20,29 +20,39 @@ const props = withDefaults(defineProps<Props>(), {
 const { getInitials } = useInitials();
 const page = usePage();
 
+// --- LOGIKA FIX AVATAR URL ---
 const avatarUrl = computed(() => {
-    const mitra = props.user?.mitra || (page.props.auth as any).user?.mitra;
+    const authUser = props.user || (page.props.auth as any).user;
+    
+    // 1. Cek Avatar (Admin)
+    if (authUser?.avatar) {
+return `/storage/${authUser.avatar}`;
+}
+    
+    // 2. Cek Logo Mitra
+    if (authUser?.mitra?.logo_mitra) {
+return `/storage/${authUser.mitra.logo_mitra}`;
+}
+    
+    // 3. Cek Foto Pelamar
+    if (authUser?.pelamar?.foto_pelamar) {
+return `/storage/${authUser.pelamar.foto_pelamar}`;
+}
 
-    return mitra?.logo_mitra
-        ? `/storage/${mitra.logo_mitra}`
-        : props.user?.avatar || null;
+    return null;
 });
 </script>
 
 <template>
     <div class="flex items-center gap-3">
         <template v-if="user">
-            <Avatar
-                class="h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-sky-500/50"
-            >
+            <Avatar class="h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-slate-200/50 bg-white shadow-sm transition-all duration-300 group-hover:scale-105 group-hover:border-sky-500/50">
                 <AvatarImage
                     v-if="avatarUrl"
                     :src="avatarUrl"
-                    class="object-cover"
+                    class="object-cover h-full w-full"
                 />
-                <AvatarFallback
-                    class="rounded-xl bg-slate-100 font-black text-sky-700 uppercase italic"
-                >
+                <AvatarFallback class="rounded-xl bg-slate-100 font-black text-sky-700 uppercase italic">
                     {{ getInitials(user.name) }}
                 </AvatarFallback>
             </Avatar>
