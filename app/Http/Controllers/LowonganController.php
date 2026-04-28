@@ -9,20 +9,46 @@ use App\Models\Pelamar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class LowonganController extends Controller
 {
     public function index(Request $request)
-    { /* ... tetap sama ... */
+    {
+        // 1. Query dasar dengan Eager Loading agar tidak berat
+        $query = Lowongan::with(['mitra.kategori', 'lokasi'])
+            ->where('status_lowongan', 'verified')
+            ->where('tanggal_expired', '>=', now()->toDateString());
+
+        // 2. Filter Pencarian (Disamakan dengan v-model di Vue)
+        if ($request->keyword) {
+            $query->where('judul_lowongan', 'like', '%' . $request->keyword . '%');
+        }
+
+        if ($request->category) {
+            $query->whereHas('mitra', function ($q) use ($request) {
+                $q->where('kategori_id', $request->category);
+            });
+        }
+
+        if ($request->location) {
+            $query->where('lokasi_id', $request->location);
+        }
+
+        // 3. Wajib pakai paginate agar props .data dan .links terbaca di Vue
+        $lowongans = $query->latest()->paginate(12)->withQueryString();
+
+        return Inertia::render('Lowongan', [
+            'lowongans' => $lowongans,
+            'lokasis' => Lokasi::orderBy('nama_lokasi', 'asc')->get(),
+            'kategoris' => Kategori::orderBy('nama_kategori', 'asc')->get(),
+            'filters' => $request->only(['keyword', 'category', 'location']),
+        ]);
     }
 
     public function show($id)
     {
-        // 1. Ambil data dasar
         $lowongan = Lowongan::with(['mitra.kategori', 'lokasi', 'skills'])->findOrFail($id);
 
-        // 2. Cek Akses (Owner/Admin bisa lihat walau pending)
         $isOwner = Auth::check() && Auth::user()->role === 'mitra' && Auth::user()->mitra->id === $lowongan->mitra_id;
         $isAdmin = Auth::check() && Auth::user()->role === 'admin';
 
@@ -32,7 +58,6 @@ class LowonganController extends Controller
             }
         }
 
-        // 3. Data Auth Pelamar
         $authPelamar = null;
         if (Auth::check() && Auth::user()->role === 'pelamar') {
             $authPelamar = Pelamar::where('user_id', Auth::id())->first();
@@ -40,19 +65,19 @@ class LowonganController extends Controller
 
         return Inertia::render('Detail/Detaillowongan', [
             'lowongan' => [
-                'id'            => $lowongan->id,
-                'judul'         => $lowongan->judul_lowongan,
-                'deskripsi'     => $lowongan->deskripsi_lowongan,
-                'tipe'          => $lowongan->tipe_pekerjaan,
-                'gaji_min'      => $lowongan->gaji_min,
-                'gaji_max'      => $lowongan->gaji_max,
-                'deadline'      => $lowongan->tanggal_expired,
-                'status'        => $lowongan->status_lowongan,
+                'id'                => $lowongan->id,
+                'judul'             => $lowongan->judul_lowongan,
+                'deskripsi'         => $lowongan->deskripsi_lowongan,
+                'tipe'              => $lowongan->tipe_pekerjaan,
+                'gaji_min'          => $lowongan->gaji_min,
+                'gaji_max'          => $lowongan->gaji_max,
+                'deadline'          => $lowongan->tanggal_expired,
+                'status'            => $lowongan->status_lowongan,
                 'minimal_pendidikan' => $lowongan->minimal_pendidikan,
                 'minimal_pengalaman' => $lowongan->minimal_pengalaman,
-                'skills'        => $lowongan->skills,
-                'lokasi_nama'   => $lowongan->lokasi->nama_lokasi ?? 'Bengkulu',
-                'perusahaan'    => [
+                'skills'            => $lowongan->skills,
+                'lokasi_nama'       => $lowongan->lokasi->nama_lokasi ?? 'Bengkulu',
+                'perusahaan'        => [
                     'id'        => $lowongan->mitra->id,
                     'nama'      => $lowongan->mitra->nama_mitra,
                     'logo'      => $lowongan->mitra->logo_mitra ? asset('storage/' . $lowongan->mitra->logo_mitra) : null,

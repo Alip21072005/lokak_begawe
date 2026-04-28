@@ -1,10 +1,10 @@
-<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <script setup lang="ts">
 import { Head, Link, usePage, useForm } from '@inertiajs/vue3';
 import { 
     MapPin, Building2, ChevronLeft, Briefcase, 
     User, Phone, Send, X, ChevronRight, 
-    Wrench, GraduationCap, Clock, Banknote, ShieldCheck
+    GraduationCap, Clock, Banknote, ShieldCheck, 
+    Share2, Check, Globe, Star, CheckCircle, Mail
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { route } from 'ziggy-js';
@@ -21,7 +21,7 @@ const user = computed(() => page.props.auth.user);
 
 // --- LOGIC AUTH CHECK ---
 const isPelamar = computed(() => user.value?.role === 'pelamar');
-const isOwner = computed(() => user.value?.role === 'mitra' && props.authPelamar?.id === props.lowongan.id); // Opsional jika butuh check owner
+const isOwner = computed(() => user.value?.role === 'mitra' && props.authPelamar?.id === props.lowongan.id);
 
 // --- LOGIC MODAL & FORM ---
 const isConfirmModalOpen = ref(false);
@@ -43,207 +43,298 @@ const submitApplication = () => {
     form.post(routeFunc('pelamar.lamar.store', props.lowongan.id), {
         onSuccess: () => {
             closeApplyModal();
-            // Gunakan notifikasi yang lebih cantik jika ada
-            alert('Lamaran berhasil dikirim!');
+            // Notifikasi bisa diganti SweetAlert jika diperlukan
+            alert('Lamaran berhasil dikirim!'); 
         },
         preserveScroll: true
     });
 };
 
+// --- LOGIC COPY LINK ---
+const isCopied = ref(false);
+const copyToClipboard = async () => {
+    try {
+        await navigator.clipboard.writeText(window.location.href);
+        isCopied.value = true;
+        setTimeout(() => { isCopied.value = false; }, 2000);
+    } catch (err) {
+        console.error('Failed to copy text: ', err);
+    }
+};
+
 // --- FORMAT GAJI ---
 const formatRupiah = (value: number) => {
+    if (!value) return 'Gaji Dirahasiakan';
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
     }).format(value);
 };
-
 </script>
 
 <template>
     <Head :title="`${lowongan.judul} - Detail Lowongan`" />
-    <Navbar />
     
-    <div class="min-h-screen bg-slate-50 font-sans text-slate-900">
-        <main class="w-full px-6 pt-32 pb-20 md:px-16 lg:px-32">
-            <Link :href="route('lowongan.index')" class="mb-8 flex items-center gap-2 text-[10px] font-black uppercase italic text-slate-400 hover:text-sky-700 transition-all">
-                <ChevronLeft class="h-4 w-4" /> Kembali ke Daftar Lowongan
+    <div class="min-h-screen overflow-x-hidden bg-lokak-bg font-sans text-lokak-text">
+        <Navbar />
+        
+        <main class="w-full px-6 py-12 md:px-16 lg:px-24 xl:px-32 mt-12">
+            
+            <Link :href="route('lowongan.index')" class="group mb-8 inline-flex items-center gap-2 text-[10px] font-black uppercase italic tracking-widest text-slate-400 transition-colors hover:text-lokak-brand">
+                <ChevronLeft class="h-4 w-4 transition-transform group-hover:-translate-x-1" /> 
+                Kembali ke Daftar
             </Link>
 
-            <div class="grid grid-cols-1 gap-10 lg:grid-cols-12">
-                <div class="lg:col-span-8 space-y-8">
-                    <div class="rounded-[3rem] bg-white p-10 shadow-sm border border-slate-100 relative overflow-hidden">
-                        <div class="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-sky-500/5 blur-3xl"></div>
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+                
+                <div class="space-y-8 lg:col-span-8">
+                    
+                    <div class="relative overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+                        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-lokak-brand/5 blur-3xl"></div>
                         
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="relative z-10 flex flex-col-reverse gap-6 md:flex-row md:items-start md:justify-between">
                             <div class="space-y-4">
-                                <div class="flex items-center gap-3">
-                                    <span class="rounded-full bg-sky-100 px-4 py-1 text-[9px] font-black uppercase italic text-sky-700 border border-sky-200">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="rounded-xl bg-sky-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-lokak-brand">
                                         {{ lowongan.tipe }}
                                     </span>
-                                    <span v-if="lowongan.status === 'pending'" class="rounded-full bg-amber-100 px-4 py-1 text-[9px] font-black uppercase italic text-amber-700 border border-amber-200">
+                                    <span v-if="lowongan.status === 'pending'" class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-600">
                                         Menunggu Verifikasi
                                     </span>
                                 </div>
-                                <h1 class="text-3xl font-black italic tracking-tighter uppercase text-slate-900 md:text-5xl leading-[0.9]">
+                                
+                                <h1 class="text-3xl font-black uppercase italic leading-tight text-slate-900 md:text-4xl lg:text-5xl">
                                     {{ lowongan.judul }}
                                 </h1>
-                                <div class="flex flex-wrap gap-6 text-[11px] font-bold uppercase italic text-slate-400">
-                                    <span class="flex items-center gap-2">
-                                        <Building2 class="h-4 w-4 text-sky-700" /> {{ lowongan.perusahaan.nama }}
+                                
+                                <div class="flex flex-wrap items-center gap-4 text-xs font-bold text-slate-500 uppercase tracking-wide">
+                                    <span class="flex items-center gap-1.5 hover:text-lokak-brand transition-colors cursor-pointer">
+                                        <Building2 class="h-4 w-4 shrink-0 text-slate-400" /> {{ lowongan.perusahaan.nama }}
                                     </span>
-                                    <span class="flex items-center gap-2">
-                                        <MapPin class="h-4 w-4 text-sky-700" /> {{ lowongan.lokasi_nama }}
+                                    <span class="hidden h-1.5 w-1.5 rounded-full bg-slate-300 md:block"></span>
+                                    <span class="flex items-center gap-1.5">
+                                        <MapPin class="h-4 w-4 shrink-0 text-slate-400" /> {{ lowongan.lokasi_nama }}
                                     </span>
-                                    <span class="flex items-center gap-2">
-                                        <Clock class="h-4 w-4 text-sky-700" /> Batas: {{ lowongan.deadline }}
+                                    <span class="hidden h-1.5 w-1.5 rounded-full bg-slate-300 md:block"></span>
+                                    <span class="flex items-center gap-1.5 text-rose-500">
+                                        <Clock class="h-4 w-4 shrink-0" /> Batas: {{ lowongan.deadline }}
                                     </span>
                                 </div>
                             </div>
                             
-                            <div class="h-24 w-24 shrink-0 rounded-4xl bg-slate-50 border border-slate-100 p-4 flex items-center justify-center">
-                                <img v-if="lowongan.perusahaan.logo" :src="lowongan.perusahaan.logo" class="max-h-full object-contain" />
-                                <Building2 v-else class="h-10 w-10 text-slate-200" />
+                            <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl border border-slate-100 bg-slate-50 p-3 shadow-inner md:h-28 md:w-28">
+                                <img v-if="lowongan.perusahaan.logo" :src="lowongan.perusahaan.logo" :alt="lowongan.perusahaan.nama" class="h-full w-full object-contain" />
+                                <Building2 v-else class="h-10 w-10 text-slate-300" />
                             </div>
                         </div>
                     </div>
 
-                    <div class="rounded-[3rem] bg-white p-10 shadow-sm border border-slate-100">
+                    <div class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm md:p-10">
                         <div class="space-y-12">
+                            
                             <section>
-                                <h3 class="mb-6 flex items-center gap-3 text-sm font-black italic uppercase text-slate-900">
-                                    <div class="h-2 w-8 rounded-full bg-sky-700"></div> Deskripsi Pekerjaan
+                                <h3 class="mb-5 flex items-center gap-3 text-lg font-black uppercase italic tracking-tight text-slate-900">
+                                    <div class="h-6 w-2 rounded-full bg-lokak-brand"></div> 
+                                    Deskripsi Pekerjaan
                                 </h3>
-                                <div class="text-sm leading-relaxed text-slate-500 whitespace-pre-line italic font-medium">
+                                <div class="prose prose-slate max-w-none text-sm font-medium leading-loose text-slate-600 whitespace-pre-line md:text-base">
                                     {{ lowongan.deskripsi }}
                                 </div>
                             </section>
 
                             <section v-if="lowongan.skills?.length">
-                                <h3 class="mb-6 flex items-center gap-3 text-sm font-black italic uppercase text-slate-900">
-                                    <div class="h-2 w-8 rounded-full bg-sky-700"></div> Keahlian Dibutuhkan
+                                <h3 class="mb-5 flex items-center gap-3 text-lg font-black uppercase italic tracking-tight text-slate-900">
+                                    <div class="h-6 w-2 rounded-full bg-lokak-brand"></div> 
+                                    Keahlian Spesifik
                                 </h3>
-                                <div class="flex flex-wrap gap-2">
-                                    <span v-for="skill in lowongan.skills" :key="skill.id" class="rounded-xl bg-slate-900 px-5 py-2.5 text-[10px] font-black text-white uppercase italic">
-                                        # {{ skill.nama_skill }}
+                                <div class="flex flex-wrap gap-2.5">
+                                    <span v-for="skill in lowongan.skills" :key="skill.id" class="rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-200 hover:text-lokak-brand cursor-default">
+                                        {{ skill.nama_skill }}
                                     </span>
                                 </div>
                             </section>
+                            
                         </div>
                     </div>
                 </div>
 
-                <div class="lg:col-span-4 space-y-6">
-                    <div class="rounded-[3rem] bg-white p-8 shadow-sm border border-slate-100 space-y-6">
-                        <h4 class="text-[11px] font-black uppercase italic text-slate-400 tracking-widest">Ringkasan Kualifikasi</h4>
+                <div class="space-y-6 lg:col-span-4">
+                    
+                    <div class="rounded-[2.5rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+                        <h4 class="mb-6 text-sm font-black uppercase italic tracking-tight text-slate-900">Ringkasan Posisi</h4>
                         
                         <div class="space-y-4">
-                            <div class="flex items-center gap-4 p-4 rounded-3xl bg-slate-50">
-                                <div class="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-sky-700">
+                            <div class="flex items-start gap-4 rounded-2xl bg-slate-50 p-4">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-lokak-brand shadow-sm">
                                     <GraduationCap class="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-black text-slate-400 uppercase italic">Pendidikan Min.</p>
-                                    <p class="text-xs font-black text-slate-900 uppercase italic">{{ lowongan.minimal_pendidikan || 'Semua Jenjang' }}</p>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Minimal Pendidikan</p>
+                                    <p class="mt-0.5 text-sm font-black text-slate-800">{{ lowongan.minimal_pendidikan || 'Semua Jenjang' }}</p>
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-4 p-4 rounded-3xl bg-slate-50">
-                                <div class="h-10 w-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-sky-700">
+                            <div class="flex items-start gap-4 rounded-2xl bg-slate-50 p-4">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-lokak-brand shadow-sm">
                                     <Briefcase class="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-black text-slate-400 uppercase italic">Pengalaman Min.</p>
-                                    <p class="text-xs font-black text-slate-900 uppercase italic">{{ lowongan.minimal_pengalaman }} Tahun</p>
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pengalaman</p>
+                                    <p class="mt-0.5 text-sm font-black text-slate-800">{{ lowongan.minimal_pengalaman }} Tahun</p>
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-4 p-4 rounded-3xl bg-emerald-50 border border-emerald-100">
-                                <div class="h-10 w-10 rounded-2xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-600">
+                            <div class="flex items-start gap-4 rounded-2xl bg-emerald-50 border border-emerald-100 p-4">
+                                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
                                     <Banknote class="h-5 w-5" />
                                 </div>
-                                <div>
-                                    <p class="text-[9px] font-black text-emerald-400 uppercase italic">Estimasi Gaji</p>
-                                    <p class="text-xs font-black text-emerald-700 italic">
-                                        {{ formatRupiah(lowongan.gaji_min) }} - {{ formatRupiah(lowongan.gaji_max) }}
+                                <div class="flex flex-col">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Estimasi Gaji</p>
+                                    <p class="mt-0.5 text-sm font-black text-emerald-700 italic">
+                                        {{ formatRupiah(lowongan.gaji_min) }} 
+                                        <span v-if="lowongan.gaji_max"> - {{ formatRupiah(lowongan.gaji_max) }}</span>
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-6">
+                        <div class="mt-8">
                             <button 
                                 v-if="isPelamar" 
                                 @click="openApplyModal"
-                                class="flex w-full items-center justify-center gap-3 rounded-3xl bg-sky-700 py-6 text-xs font-black uppercase italic text-white shadow-xl shadow-sky-900/20 transition-all hover:-translate-y-1 hover:bg-sky-800 active:scale-95"
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-lokak-brand py-4 text-xs font-black uppercase italic tracking-widest text-white shadow-xl shadow-sky-900/20 transition-all hover:scale-105 hover:bg-blue-600 active:scale-95"
                             >
-                                LAMAR SEKARANG <ChevronRight class="h-4 w-4" />
+                                Lamar Sekarang <ChevronRight class="h-4 w-4" />
                             </button>
 
                             <Link 
                                 v-else-if="!user" 
                                 :href="route('register.pelamar')"
-                                class="flex w-full items-center justify-center gap-3 rounded-3xl bg-slate-900 py-6 text-xs font-black uppercase italic text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-slate-800 active:scale-95"
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-4 text-xs font-black uppercase italic tracking-widest text-white shadow-xl transition-all hover:scale-105 hover:bg-black active:scale-95"
                             >
-                                LOGIN UNTUK MELAMAR <ChevronRight class="h-4 w-4" />
+                                Login Untuk Melamar <ChevronRight class="h-4 w-4" />
                             </Link>
 
-                            <div v-else class="rounded-3xl bg-slate-900 p-6 text-center">
-                                <ShieldCheck class="h-8 w-8 text-sky-500 mx-auto mb-2" />
-                                <p class="text-[10px] font-black text-white uppercase italic">Mode Pratinjau Manajemen</p>
-                                <p class="text-[9px] font-bold text-slate-400 uppercase italic mt-1">Hanya Pelamar yang dapat mengirim lamaran.</p>
+                            <div v-else class="rounded-2xl border border-sky-100 bg-sky-50 p-5 text-center">
+                                <ShieldCheck class="mx-auto mb-2 h-6 w-6 text-lokak-brand" />
+                                <p class="text-xs font-black uppercase italic tracking-wide text-slate-700">Mode Tinjauan Mitra</p>
+                                <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-slate-500">Hanya akun pelamar yang dapat mengirim lamaran.</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="rounded-[3rem] bg-white p-8 shadow-sm border border-slate-100">
-                        <h4 class="mb-6 text-[11px] font-black uppercase italic text-slate-400 tracking-widest">Tentang Perusahaan</h4>
-                        <div class="space-y-4">
-                            <p class="text-lg font-black text-sky-700 uppercase italic leading-none">{{ lowongan.perusahaan.nama }}</p>
-                            <p class="text-[10px] font-black text-slate-400 uppercase italic">{{ lowongan.perusahaan.industri }}</p>
-                            <p class="text-xs font-medium text-slate-500 italic leading-relaxed line-clamp-4">{{ lowongan.perusahaan.deskripsi }}</p>
-                            <div class="pt-4">
-                                <Link :href="route('mitra.show', lowongan.perusahaan.id || 1)" class="text-[10px] font-black text-sky-700 uppercase italic hover:underline">Lihat Profil Lengkap Perusahaan →</Link>
+                    <div class="rounded-[2.5rem] border border-slate-200 bg-white p-6 md:p-8 shadow-sm">
+                        <h4 class="mb-6 text-sm font-black uppercase italic tracking-tight text-slate-900">Tentang Perusahaan</h4>
+                        
+                        <div class="mb-4 flex items-center gap-3">
+                            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 p-1.5">
+                                <img v-if="lowongan.perusahaan.logo" :src="lowongan.perusahaan.logo" class="h-full w-full object-contain" />
+                                <Building2 v-else class="h-6 w-6 text-slate-300" />
+                            </div>
+                            <div class="flex flex-col">
+                                <p class="text-sm font-black uppercase italic text-lokak-brand leading-tight line-clamp-1" :title="lowongan.perusahaan.nama">{{ lowongan.perusahaan.nama }}</p>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">{{ lowongan.perusahaan.industri || 'Industri Umum' }}</p>
                             </div>
                         </div>
+
+                        <div class="mb-4 flex flex-wrap gap-2">
+                            <span class="flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-[10px] font-bold text-amber-700">
+                                <Star class="h-3 w-3 fill-amber-500 text-amber-500" /> {{ lowongan.perusahaan.rating || 'Baru' }}
+                            </span>
+                            <span v-if="lowongan.perusahaan.is_verified || true" class="flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">
+                                <CheckCircle class="h-3 w-3" /> Terverifikasi
+                            </span>
+                        </div>
+
+                        <ul class="mb-5 space-y-2.5">
+                            <li class="flex items-start gap-2 text-xs font-medium text-slate-600">
+                                <MapPin class="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
+                                <span>{{ lowongan.perusahaan.alamat || lowongan.lokasi_nama }}</span>
+                            </li>
+                            <li v-if="lowongan.perusahaan.website" class="flex items-center gap-2 text-xs font-medium text-slate-600">
+                                <Globe class="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                                <a :href="lowongan.perusahaan.website" target="_blank" class="hover:text-lokak-brand hover:underline">{{ lowongan.perusahaan.website.replace(/^https?:\/\//, '') }}</a>
+                            </li>
+                            <li v-if="lowongan.perusahaan.email" class="flex items-center gap-2 text-xs font-medium text-slate-600">
+                                <Mail class="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                                <a :href="'mailto:' + lowongan.perusahaan.email" class="hover:text-lokak-brand">{{ lowongan.perusahaan.email }}</a>
+                            </li>
+                        </ul>
+
+                        <p class="text-xs font-medium leading-relaxed text-slate-600 line-clamp-3">{{ lowongan.perusahaan.deskripsi }}</p>
+                        
+                        <div class="mt-5 border-t border-slate-100 pt-5 text-center">
+                            <Link :href="route('mitra.show', lowongan.perusahaan.id || 1)" class="inline-flex text-[10px] font-black uppercase italic tracking-widest text-lokak-brand hover:text-blue-800">
+                                Lihat Profil Lengkap &rarr;
+                            </Link>
+                        </div>
                     </div>
+
+                    <div class="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm text-center">
+                        <button 
+                            @click="copyToClipboard"
+                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 border border-slate-200 py-3 text-xs font-bold uppercase tracking-wider text-slate-600 transition-all hover:border-lokak-brand hover:bg-sky-50 hover:text-lokak-brand active:scale-95"
+                        >
+                            <Check v-if="isCopied" class="h-4 w-4 text-emerald-500" />
+                            <Share2 v-else class="h-4 w-4" /> 
+                            {{ isCopied ? 'Tautan Disalin!' : 'Bagikan Loker' }}
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </main>
 
         <Teleport to="body">
             <Transition name="fade">
-                <div v-if="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-                    <div class="w-full max-w-lg rounded-[3.5rem] bg-white p-10 shadow-2xl relative animate-in zoom-in-95 duration-300">
-                        <button @click="closeApplyModal" class="absolute top-8 right-8 text-slate-400 hover:text-rose-500 transition-colors">
-                            <X class="h-6 w-6" />
-                        </button>
-
-                        <div class="mb-8">
-                            <h2 class="text-2xl font-black italic tracking-tighter text-slate-900 uppercase">
-                                Kirim <span class="text-sky-700">Lamaran</span>
+                <div v-if="isConfirmModalOpen" class="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+                    <div class="relative w-full max-w-lg overflow-hidden rounded-[3rem] bg-white shadow-2xl">
+                        
+                        <div class="bg-lokak-brand border-b border-lokak-brand p-6 md:p-8 relative">
+                            <button @click="closeApplyModal" class="absolute right-6 top-6 rounded-full bg-white/10 p-1.5 text-white transition-colors hover:bg-white/20">
+                                <X class="h-5 w-5" />
+                            </button>
+                            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20">
+                                <Send class="h-6 w-6 text-white" />
+                            </div>
+                            <h2 class="text-2xl font-black uppercase italic tracking-tighter text-white">
+                                KIRIM LAMARAN
                             </h2>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase italic mt-1">Pastikan data profil Anda sudah benar.</p>
+                            <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-sky-200">
+                                Pastikan profil & resume sudah diperbarui.
+                            </p>
                         </div>
 
-                        <div class="space-y-6">
-                            <div class="rounded-3xl bg-slate-50 p-6 space-y-3">
-                                <div class="flex items-center gap-3 text-xs font-black text-slate-700 uppercase italic">
-                                    <User class="h-4 w-4 text-sky-700" /> {{ authPelamar?.nama_pelamar }}
+                        <div class="p-6 md:p-8 space-y-6">
+                            
+                            <div class="rounded-2xl border border-slate-100 bg-slate-50 p-5 space-y-3">
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Melamar sebagai:</p>
+                                <div class="flex items-center gap-3 text-sm font-bold text-slate-800">
+                                    <User class="h-4 w-4 text-lokak-brand" /> {{ authPelamar?.nama_pelamar || 'Nama Pelamar' }}
                                 </div>
-                                <div class="flex items-center gap-3 text-xs font-black text-slate-700 uppercase italic">
-                                    <Phone class="h-4 w-4 text-sky-700" /> {{ authPelamar?.nohp_pelamar }}
+                                <div class="flex items-center gap-3 text-sm font-bold text-slate-800">
+                                    <Phone class="h-4 w-4 text-lokak-brand" /> {{ authPelamar?.nohp_pelamar || '-' }}
                                 </div>
                             </div>
 
                             <div class="space-y-2">
-                                <label class="ml-4 text-[10px] font-black text-slate-400 uppercase italic">Catatan Tambahan (Opsional)</label>
-                                <textarea v-model="form.catatan" class="w-full rounded-3xl border-slate-100 bg-slate-50 p-5 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-sky-700/20 italic" rows="4" placeholder="Tuliskan pesan untuk HRD..."></textarea>
+                                <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Pesan Pengantar (Opsional)</label>
+                                <textarea 
+                                    v-model="form.catatan" 
+                                    class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-lokak-brand focus:ring-2 focus:ring-lokak-brand/20" 
+                                    rows="4" 
+                                    placeholder="Yth. HRD, saya sangat tertarik dengan posisi ini karena..."
+                                ></textarea>
                             </div>
 
-                            <button @click="submitApplication" :disabled="form.processing" class="flex w-full items-center justify-center gap-3 rounded-2xl bg-sky-700 py-5 text-xs font-black uppercase italic text-white shadow-xl transition-all hover:bg-sky-800 disabled:opacity-50">
-                                <Send class="h-4 w-4" /> KIRIM LAMARAN SEKARANG
+                            <button 
+                                @click="submitApplication" 
+                                :disabled="form.processing" 
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-4 text-xs font-black uppercase italic tracking-widest text-white shadow-xl transition-all hover:scale-105 hover:bg-black active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                <Send class="h-4 w-4" /> 
+                                {{ form.processing ? 'MEMPROSES...' : 'KIRIM LAMARAN SEKARANG' }}
                             </button>
                         </div>
                     </div>
@@ -256,7 +347,6 @@ const formatRupiah = (value: number) => {
 </template>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.4s ease; }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-.line-clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 </style>

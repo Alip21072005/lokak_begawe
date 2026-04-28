@@ -32,6 +32,41 @@ class DashboardAdminController extends Controller
         ]);
     }
 
+    // --- FUNGSI BARU UNTUK HALAMAN DETAIL ---
+
+    public function detailPelamar(string $id)
+    {
+        // Mengambil data pelamar
+        $pelamar = User::findOrFail($id);
+
+        // Pastikan nama file di dalam folder resources/js/Pages/Admin/ sesuai!
+        return Inertia::render('Detail/Detailpelamar', [
+            'pelamar' => $pelamar
+        ]);
+    }
+
+    public function detailMitra(string $id)
+    {
+        // Mengambil data mitra beserta relasinya
+        $mitra = Mitra::with(['kategori', 'lokasi', 'user'])->findOrFail($id);
+
+        return Inertia::render('Admin/DetailVerivikasiMitra', [
+            'mitra' => $mitra
+        ]);
+    }
+
+    public function detailLowongan(string $id)
+    {
+        // Mengambil data lowongan beserta relasinya
+        $lowongan = Lowongan::with(['mitra', 'lokasi'])->findOrFail($id);
+
+        return Inertia::render('Admin/DetailVerifikasiLowongan', [
+            'lowongan' => $lowongan
+        ]);
+    }
+
+    // --- FUNGSI BAWAAN DASHBOARD ---
+
     private function getStatsCounts(): array
     {
         return [
@@ -81,15 +116,9 @@ class DashboardAdminController extends Controller
         return back();
     }
 
-    public function deletePelamar($id)
+    public function deletePelamar(string $id)
     {
         User::destroy($id);
-        return back();
-    }
-
-    public function blockPelamar($id)
-    {
-        User::where('id', $id)->update(['status' => 'blocked']);
         return back();
     }
 }

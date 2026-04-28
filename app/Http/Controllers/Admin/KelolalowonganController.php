@@ -45,7 +45,7 @@ class KelolalowonganController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show(string $id)
     {
         $lowongan = Lowongan::with(['mitra', 'lokasi', 'transaksi'])->findOrFail($id);
 
@@ -73,7 +73,7 @@ class KelolalowonganController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, string $id)
     {
         $request->validate([
             'status' => 'required|in:verified,rejected,pending'
@@ -94,7 +94,7 @@ class KelolalowonganController extends Controller
         return redirect()->route('admin.kelolalowongan')->with('success', 'Status Berhasil Diperbarui');
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
         Lowongan::findOrFail($id)->delete();
         return redirect()->back();
