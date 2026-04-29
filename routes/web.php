@@ -48,7 +48,6 @@ Route::get('/mitra', [MitraController::class, 'index'])->name('mitra.index');
 Route::get('/detail/lowongan/{id}', [LowonganController::class, 'show'])->name('detail.lowongan');
 Route::get('/mitra/{id}', [MitraController::class, 'show'])->name('mitra.show');
 Route::post('/mitra/{id}/rating', [MitraController::class, 'storeRating'])->name('mitra.rating.store');
-Route::get('/p/{slug}', [PelamarController::class, 'showPublicProfile'])->name('pelamar.public');
 
 /*
 |--------------------------------------------------------------------------
@@ -95,19 +94,19 @@ Route::middleware(['auth'])->group(function () {
     // --- ADMIN ROUTES ---
     Route::prefix('dashboard/admin')->group(function () {
         Route::get('/', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
-        Route::get('/detailpelamar/{id}', [DashboardAdminController::class, 'detailPelamar'])->name('admin.detailpelamar');
-        Route::get('/detailvertivikasimitra/{id}', [DashboardAdminController::class, 'detailMitra'])->name('admin.detailmitra');
-        Route::get('/detailvertifikasilowongan/{id}', [DashboardAdminController::class, 'detailLowongan'])->name('admin.detaillowongan');
+
         // Kelola Pelamar
         Route::get('/kelolapelamar', [KelolapelamarController::class, 'index'])->name('admin.kelolapelamar');
         Route::delete('/hapus-akun-user/{id}', [DashboardAdminController::class, 'deletePelamar'])->name('admin.user.delete');
         Route::patch('/blokir-akun-user/{id}', [DashboardAdminController::class, 'blockPelamar'])->name('admin.user.block');
+        Route::get('/detailpelamar/{id}', [PelamarController::class, 'show'])->name('detail.pelamar');
 
         // Kelola Lowongan
         Route::get('/kelolalowongan', [KelolalowonganController::class, 'index'])->name('admin.kelolalowongan');
         Route::get('/kelolalowongan/{id}', [KelolalowonganController::class, 'show'])->name('admin.lowongan.show');
         Route::patch('/kelolalowongan/{id}/status', [KelolalowonganController::class, 'updateStatus'])->name('admin.lowongan.update-status');
         Route::delete('/kelolalowongan/{id}', [KelolalowonganController::class, 'destroy'])->name('admin.lowongan.delete');
+        Route::get('/detailvertifikasilowongan/{id}', [DashboardAdminController::class, 'detailLowongan'])->name('admin.detaillowongan');
 
         // Kelola Mitra
         Route::get('/kelolamitra', [KelolamitraController::class, 'index'])->name('admin.kelolamitra');
@@ -116,6 +115,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/kelolamitra/{id}', [KelolamitraController::class, 'show'])->name('admin.mitra.show');
         Route::patch('/mitra/{id}/status', [KelolamitraController::class, 'updateStatus'])->name('admin.mitra.update-status');
 
+        Route::get('/detailvertivikasimitra/{id}', [DashboardAdminController::class, 'detailMitra'])->name('admin.detailmitra');
         Route::get('/pesanadmin', [PesanadminController::class, 'index'])->name('admin.pesanadmin');
     });
 
@@ -144,9 +144,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardPelamarController::class, 'index'])->name('pelamar.dashboard');
         Route::get('/lamaran', [LamaranController::class, 'index'])->name('pelamar.lamaran');
         Route::get('/pesan', [PesanController::class, 'index'])->name('pelamar.pesan');
-
-        // PENTING: Saya ubah rutenya agar tidak bentrok dengan rute publik /lowongan
+        Route::get('/cari-mitra', [DashboardPelamarController::class, 'cariMitra'])->name('pelamar.cari-mitra');
+        Route::get('/mitra/{id}/profil', [DashboardPelamarController::class, 'lihatProfilMitra'])->name('pelamar.mitra.profil');
+        // Hindari bentrok dengan route publik /lowongan
         Route::get('/lowongan-diikuti', [LowongankerjaController::class, 'index'])->name('pelamar.lowongankerja');
+        Route::get('/lowongan/{id}/detail', [LowongankerjaController::class, 'show'])->name('pelamar.lowongan.detail');
 
         Route::patch('/portfolio', [PelamarController::class, 'updatePortfolio'])->name('pelamar.portfolio.update');
         Route::post('/lamar/{id}', [LamaranController::class, 'store'])->name('pelamar.lamar.store');

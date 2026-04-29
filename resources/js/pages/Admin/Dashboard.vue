@@ -25,6 +25,10 @@ import {
     TrendingUp,
     PieChart,
     Eye,
+    Building2,
+    Activity,
+    Sparkles,
+    RefreshCw,
 } from 'lucide-vue-next';
 import Swal from 'sweetalert2';
 import { ref, computed, onMounted, onUnmounted } from 'vue';
@@ -58,85 +62,182 @@ const props = defineProps<Props>();
 defineOptions({ layout: AppLayout });
 
 const currentTime = ref(new Date().toLocaleTimeString('id-ID'));
-let timer: any;
+let timer: ReturnType<typeof setInterval> | null = null;
+
 onMounted(() => {
     timer = setInterval(() => {
         currentTime.value = new Date().toLocaleTimeString('id-ID');
     }, 1000);
 });
-onUnmounted(() => clearInterval(timer));
+
+onUnmounted(() => {
+    if (timer) clearInterval(timer);
+});
 
 const chartColors = [
-    '#3b82f6', '#f97316', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', 
-    '#06b6d4', '#f59e0b', '#6366f1', '#84cc16', '#14b8a6', '#d946ef', 
-    '#fb7185', '#059669', '#7c3aed', '#475569',
+    '#3b82f6', '#f97316', '#10b981', '#ef4444', '#8b5cf6', '#ec4899',
+    '#06b6d4', '#f59e0b', '#6366f1', '#84cc16', '#14b8a6', '#d946ef',
 ];
+
+const statsCards = computed(() => [
+    { key: 'pelamar', label: 'Pelamar', value: props.counts?.pelamar ?? 0, icon: Users, color: 'text-sky-600', bg: 'bg-sky-50' },
+    { key: 'mitra', label: 'Mitra Aktif', value: props.counts?.mitra ?? 0, icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { key: 'lowongan', label: 'Lowongan', value: props.counts?.lowongan ?? 0, icon: Briefcase, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { key: 'pending', label: 'Antrean Verifikasi', value: props.mitraPending?.length ?? 0, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
+]);
 
 const commonOptions: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
     plugins: {
-        legend: { display: true, position: 'bottom', labels: { usePointStyle: true, font: { size: 10, weight: 'bold' as const } } },
+        legend: {
+            display: true,
+            position: 'bottom',
+            labels: { usePointStyle: true, font: { size: 11, weight: 'bold' as const } },
+        },
+        tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { size: 12, weight: 'bold' as const },
+            bodyFont: { size: 12 },
+            cornerRadius: 10,
+            padding: 10,
+        },
+    },
+    scales: {
+        x: {
+            grid: { display: false },
+            ticks: { color: '#64748b', font: { size: 10 } },
+        },
+        y: {
+            beginAtZero: true,
+            grid: { color: '#e2e8f0' },
+            ticks: { color: '#64748b', font: { size: 10 }, precision: 0 },
+        },
     },
 };
 
 const doughnutOptions: ChartOptions<'doughnut'> = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '75%',
+    cutout: '72%',
     plugins: {
         legend: { display: false },
-        tooltip: { backgroundColor: '#1e293b', padding: 12, titleFont: { size: 12, weight: 'bold' as const }, bodyFont: { size: 12 }, cornerRadius: 12 },
+        tooltip: {
+            backgroundColor: '#0f172a',
+            cornerRadius: 10,
+            padding: 10,
+            titleFont: { size: 12, weight: 'bold' as const },
+            bodyFont: { size: 12 },
+        },
     },
 };
 
 const lineData = computed(() => ({
-    labels: props.registrationTrend.labels,
+    labels: props.registrationTrend?.labels ?? [],
     datasets: [
-        { label: 'Pelamar', borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', data: props.registrationTrend.pelamar, tension: 0.4, borderWidth: 4, fill: true },
-        { label: 'Mitra', borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', data: props.registrationTrend.mitra, tension: 0.4, borderWidth: 4, fill: true },
+        {
+            label: 'Pelamar',
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.12)',
+            data: props.registrationTrend?.pelamar ?? [],
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 2,
+            fill: true,
+        },
+        {
+            label: 'Mitra',
+            borderColor: '#f43f5e',
+            backgroundColor: 'rgba(244, 63, 94, 0.12)',
+            data: props.registrationTrend?.mitra ?? [],
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 2,
+            fill: true,
+        },
     ],
 }));
 
 const pieData = computed(() => ({
-    labels: props.industryStats.map((i) => i.name),
-    datasets: [{ backgroundColor: chartColors, data: props.industryStats.map((i) => i.count), borderWidth: 2, borderColor: '#ffffff', hoverOffset: 15 }],
+    labels: (props.industryStats ?? []).map((i) => i.name),
+    datasets: [
+        {
+            backgroundColor: chartColors,
+            data: (props.industryStats ?? []).map((i) => i.count),
+            borderWidth: 2,
+            borderColor: '#ffffff',
+            hoverOffset: 10,
+        },
+    ],
 }));
+
+const totalIndustryCount = computed(() => {
+    return (props.industryStats ?? []).reduce((sum, item) => sum + (item.count || 0), 0);
+});
+
+const refreshPage = () => router.reload({ preserveScroll: true });
 
 // --- AKSI ---
 const confirmVerifyMitra = (id: string, name: string) => {
     Swal.fire({
-        title: 'Verifikasi Mitra?',
-        text: `Mitra ${name} akan diizinkan untuk memasang lowongan kerja.`,
+        title: 'Verifikasi mitra?',
+        text: `${name} akan diizinkan memasang lowongan.`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#10b981',
+        confirmButtonColor: '#059669',
         cancelButtonColor: '#94a3b8',
-        confirmButtonText: 'Ya, Verifikasi!',
+        confirmButtonText: 'Ya, verifikasi',
         cancelButtonText: 'Batal',
-        customClass: { popup: 'rounded-[2.5rem]' },
+        customClass: { popup: 'rounded-2xl' },
     }).then((result) => {
-        if (result.isConfirmed) {
-            router.patch(`/dashboard/admin/mitra/${id}/status`, { status: 'verified' }, { preserveScroll: true });
-        }
+        if (!result.isConfirmed) return;
+
+        router.patch(
+            route('admin.mitra.update-status', id),
+            { status: 'verified' },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    Swal.fire({
+                        title: 'Berhasil',
+                        text: 'Mitra sudah diverifikasi.',
+                        icon: 'success',
+                        confirmButtonColor: '#059669',
+                        customClass: { popup: 'rounded-2xl' },
+                    });
+                },
+            },
+        );
     });
 };
 
 const confirmDeletePelamar = (id: string, name: string) => {
     Swal.fire({
-        title: 'Hapus Permanen?',
-        text: `Data akun pelamar ${name} akan dihapus selamanya!`,
-        icon: 'error',
+        title: 'Hapus akun pelamar?',
+        text: `Akun ${name} akan dihapus permanen.`,
+        icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e11d48',
         cancelButtonColor: '#94a3b8',
-        confirmButtonText: 'Ya, Hapus Data',
+        confirmButtonText: 'Ya, hapus',
         cancelButtonText: 'Batal',
-        customClass: { popup: 'rounded-[2.5rem]' },
+        customClass: { popup: 'rounded-2xl' },
     }).then((result) => {
-        if (result.isConfirmed) {
-            router.delete(route('admin.user.delete', id), { preserveScroll: true });
-        }
+        if (!result.isConfirmed) return;
+
+        router.delete(route('admin.user.delete', id), {
+            preserveScroll: true,
+            onSuccess: () => {
+                Swal.fire({
+                    title: 'Terhapus',
+                    text: 'Data pelamar berhasil dihapus.',
+                    icon: 'success',
+                    confirmButtonColor: '#0f172a',
+                    customClass: { popup: 'rounded-2xl' },
+                });
+            },
+        });
     });
 };
 </script>
@@ -144,144 +245,266 @@ const confirmDeletePelamar = (id: string, name: string) => {
 <template>
     <Head title="Dashboard Admin" />
 
-    <div class="min-h-screen space-y-8 bg-slate-50/50 p-6 lg:p-10">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                <h1 class="text-3xl font-black tracking-tighter text-slate-900 uppercase italic">
-                    ADMIN <span class="text-sky-700">DASHBOARD</span>
-                </h1>
-                <p class="mt-1 flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase italic">
-                    <Clock class="h-3 w-3" /> {{ currentTime }} WIB • SECURE SESSION
-                </p>
-            </div>
-        </div>
+    <div class="min-h-screen space-y-6 bg-slate-50 p-4 md:p-6 lg:p-8">
+        <!-- Header -->
+        <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-2xl font-black uppercase italic tracking-tight text-slate-900 md:text-3xl">
+                        ADMIN <span class="text-sky-700">DASHBOARD</span>
+                    </h1>
+                    <p class="mt-1 inline-flex items-center gap-2 text-[11px] font-bold uppercase italic tracking-wide text-slate-500">
+                        <Clock class="h-3.5 w-3.5" />
+                        {{ currentTime }} WIB
+                        <span class="text-slate-300">•</span>
+                        Secure Session
+                    </p>
+                </div>
 
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div
-                v-for="s in [
-                    { n: 'Pelamar', v: counts.pelamar, i: Users, c: 'text-sky-600', b: 'bg-sky-50' },
-                    { n: 'Mitra Aktif', v: counts.mitra, i: ShieldCheck, c: 'text-emerald-600', b: 'bg-emerald-50' },
-                    { n: 'Lowongan', v: counts.lowongan, i: Briefcase, c: 'text-indigo-600', b: 'bg-indigo-50' },
-                    { n: 'Antrean', v: mitraPending.length, i: AlertCircle, c: 'text-amber-600', b: 'bg-amber-50' },
-                ]"
-                :key="s.n"
-                class="rounded-4xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md"
+                <button
+                    type="button"
+                    @click="refreshPage"
+                    class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-600 transition hover:bg-slate-100"
+                >
+                    <RefreshCw class="h-4 w-4" />
+                    Refresh Data
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <article
+                v-for="card in statsCards"
+                :key="card.key"
+                class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
             >
-                <div :class="[s.b, 'mb-4 w-fit rounded-2xl p-3']">
-                    <component :is="s.i" :class="[s.c, 'h-5 w-5']" />
+                <div :class="[card.bg, 'mb-4 inline-flex rounded-2xl p-3']">
+                    <component :is="card.icon" :class="[card.color, 'h-5 w-5']" />
                 </div>
-                <p class="text-[9px] font-black tracking-widest text-slate-400 uppercase">{{ s.n }}</p>
-                <h2 class="mt-1 text-3xl font-black text-slate-900">{{ s.v }}</h2>
-            </div>
-        </div>
+                <p class="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                    {{ card.label }}
+                </p>
+                <h2 class="mt-1 text-3xl font-black text-slate-900">
+                    {{ card.value }}
+                </h2>
+            </article>
+        </section>
 
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-            <div class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm lg:col-span-7">
-                <div class="mb-8 flex items-center gap-3">
+        <!-- Charts -->
+        <section class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+            <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6 xl:col-span-7">
+                <div class="mb-5 flex items-center gap-2">
                     <TrendingUp class="h-5 w-5 text-sky-700" />
-                    <h2 class="text-sm font-black text-slate-900 uppercase italic">Tren Pendaftaran</h2>
+                    <h3 class="text-sm font-black uppercase italic text-slate-900">Tren Pendaftaran</h3>
                 </div>
-                <div class="h-80"><Line :data="lineData" :options="commonOptions" /></div>
-            </div>
+                <div class="h-72 md:h-80">
+                    <Line :data="lineData" :options="commonOptions" />
+                </div>
+            </article>
 
-            <div class="flex flex-col rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm lg:col-span-5">
-                <div class="mb-8 flex items-center gap-3">
+            <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6 xl:col-span-5">
+                <div class="mb-5 flex items-center gap-2">
                     <PieChart class="h-5 w-5 text-emerald-600" />
-                    <h2 class="text-sm font-black text-slate-900 uppercase italic">Sebaran Industri</h2>
+                    <h3 class="text-sm font-black uppercase italic text-slate-900">Sebaran Industri</h3>
                 </div>
-                <div class="flex flex-1 flex-col justify-center gap-6">
-                    <div class="relative h-56"><Doughnut :data="pieData" :options="doughnutOptions" /></div>
-                    <div class="mt-4 grid max-h-32 grid-cols-2 gap-x-4 gap-y-2 overflow-y-auto px-2">
-                        <div v-for="(item, index) in industryStats" :key="index" class="flex items-center gap-2">
-                            <div class="h-2.5 w-2.5 shrink-0 rounded-full" :style="{ backgroundColor: chartColors[index % chartColors.length] }"></div>
-                            <span class="truncate text-[10px] font-bold text-slate-600 uppercase" :title="item.name">{{ item.name }}</span>
-                            <span class="ml-auto text-[10px] font-black text-slate-400">{{ item.count }}</span>
+
+                <div v-if="industryStats?.length" class="grid gap-4 md:grid-cols-2">
+                    <div class="relative h-56 md:h-64">
+                        <Doughnut :data="pieData" :options="doughnutOptions" />
+                        <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                            <div class="rounded-full bg-white/90 px-3 py-1 text-center shadow-sm">
+                                <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Total</p>
+                                <p class="text-sm font-black text-slate-700">{{ totalIndustryCount }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="max-h-64 space-y-2 overflow-y-auto pr-1">
+                        <div
+                            v-for="(item, index) in industryStats"
+                            :key="`${item.name}-${index}`"
+                            class="flex items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 px-2.5 py-2"
+                        >
+                            <span
+                                class="h-2.5 w-2.5 shrink-0 rounded-full"
+                                :style="{ backgroundColor: chartColors[index % chartColors.length] }"
+                            />
+                            <span class="truncate text-[11px] font-semibold text-slate-700">{{ item.name }}</span>
+                            <span class="ml-auto text-[11px] font-black text-slate-500">{{ item.count }}</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <div class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-                <h2 class="mb-8 text-sm font-black text-slate-900 uppercase italic">Lowongan Terbaru</h2>
-                <div class="space-y-4">
-                    <div v-for="j in latestJobs" :key="j.id" class="flex items-center justify-between rounded-3xl border border-transparent bg-slate-50 p-4 transition-all hover:border-slate-100">
-                        <div class="flex items-center gap-4">
-                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white font-black text-indigo-600 uppercase italic shadow-sm">
-                                {{ j.mitra?.nama_mitra?.charAt(0) }}
+                <div v-else class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
+                    <p class="text-sm font-semibold text-slate-500">Belum ada data industri.</p>
+                </div>
+            </article>
+        </section>
+
+        <!-- Mid Content -->
+        <section class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                <div class="mb-5 flex items-center gap-2">
+                    <Briefcase class="h-5 w-5 text-indigo-600" />
+                    <h3 class="text-sm font-black uppercase italic text-slate-900">Lowongan Terbaru</h3>
+                </div>
+
+                <div v-if="latestJobs?.length" class="space-y-3">
+                    <div
+                        v-for="job in latestJobs"
+                        :key="job.id"
+                        class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-slate-200 hover:bg-white"
+                    >
+                        <div class="flex min-w-0 items-center gap-3">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white font-black uppercase text-indigo-600 shadow-sm">
+                                {{ job?.mitra?.nama_mitra?.charAt(0) || 'M' }}
                             </div>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-900 uppercase line-clamp-1" :title="j.judul_lowongan">
-                                    {{ j.judul_lowongan }}
-                                </h4>
-                                <p class="mt-0.5 text-[9px] font-bold text-slate-400 italic truncate">{{ j.mitra?.nama_mitra }}</p>
+                            <div class="min-w-0">
+                                <p class="truncate text-xs font-black uppercase text-slate-900">
+                                    {{ job?.judul_lowongan || '-' }}
+                                </p>
+                                <p class="truncate text-[10px] font-semibold text-slate-500">
+                                    {{ job?.mitra?.nama_mitra || 'Mitra tidak diketahui' }}
+                                </p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="hidden sm:block text-[9px] font-black text-slate-300">{{ new Date(j.created_at).toLocaleDateString() }}</span>
-                            <Link :href="route('admin.detaillowongan', j.id)" title="Lihat Detail Lowongan" class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 shadow-sm transition-all hover:bg-indigo-600 hover:text-white active:scale-95">
+
+                        <div class="flex items-center gap-2">
+                            <span class="hidden text-[10px] font-bold text-slate-400 sm:inline">
+                                {{ new Date(job.created_at).toLocaleDateString('id-ID') }}
+                            </span>
+                            <Link
+                                :href="route('admin.detaillowongan', job.id)"
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 transition hover:bg-indigo-600 hover:text-white"
+                                title="Lihat detail lowongan"
+                            >
                                 <Eye class="h-4 w-4" />
                             </Link>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-                <h2 class="mb-8 text-sm font-black text-slate-900 uppercase italic">Log Aktivitas</h2>
-                <div class="relative space-y-6 before:absolute before:left-3 before:h-full before:w-0.5 before:bg-slate-100">
-                    <div v-for="(log, idx) in activityLogs" :key="idx" class="relative pl-8">
-                        <div class="absolute top-1 left-1.5 h-3 w-3 rounded-full border-2 border-white bg-sky-700"></div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase italic">{{ log.time }}</p>
-                        <p class="mt-1 text-[10px] leading-tight font-black text-slate-700 uppercase">{{ log.desc }}</p>
+                <div v-else class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
+                    <p class="text-sm font-semibold text-slate-500">Belum ada lowongan terbaru.</p>
+                </div>
+            </article>
+
+            <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                <div class="mb-5 flex items-center gap-2">
+                    <Activity class="h-5 w-5 text-sky-700" />
+                    <h3 class="text-sm font-black uppercase italic text-slate-900">Log Aktivitas</h3>
+                </div>
+
+                <div v-if="activityLogs?.length" class="relative space-y-4 before:absolute before:left-2.5 before:top-1 before:h-[calc(100%-8px)] before:w-px before:bg-slate-200">
+                    <div v-for="(log, idx) in activityLogs" :key="idx" class="relative pl-7">
+                        <span class="absolute left-0 top-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-sky-700 text-white">
+                            <Sparkles class="h-3 w-3" />
+                        </span>
+                        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">{{ log.time }}</p>
+                        <p class="mt-0.5 text-xs font-semibold text-slate-700">{{ log.desc }}</p>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <div class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-                <h2 class="mb-8 text-sm font-black text-slate-900 uppercase italic">Verifikasi Mitra</h2>
-                <div class="space-y-4">
-                    <div v-if="mitraPending.length === 0" class="py-10 text-center text-[10px] font-black text-slate-300 uppercase italic">
-                        Tidak ada antrean mitra
-                    </div>
-                    <div v-for="m in mitraPending" :key="m.id" class="flex items-center justify-between rounded-3xl border border-amber-100 bg-amber-50/50 p-4 transition-all hover:bg-amber-50">
-                        <span class="text-xs font-black text-slate-700 uppercase italic truncate">{{ m.nama_mitra }}</span>
-                        <div class="flex gap-2">
-                            <Link :href="route('admin.detailmitra', m.id)" title="Lihat Profil Mitra" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-sky-600 shadow-sm transition-all hover:bg-sky-600 hover:text-white active:scale-95">
+                <div v-else class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
+                    <p class="text-sm font-semibold text-slate-500">Belum ada aktivitas terbaru.</p>
+                </div>
+            </article>
+        </section>
+
+        <!-- Bottom Content -->
+        <section class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                <div class="mb-5 flex items-center gap-2">
+                    <Building2 class="h-5 w-5 text-amber-600" />
+                    <h3 class="text-sm font-black uppercase italic text-slate-900">Verifikasi Mitra</h3>
+                </div>
+
+                <div v-if="mitraPending?.length" class="space-y-3">
+                    <div
+                        v-for="mitra in mitraPending"
+                        :key="mitra.id"
+                        class="flex items-center justify-between gap-3 rounded-2xl border border-amber-100 bg-amber-50 p-3"
+                    >
+                        <div class="min-w-0">
+                            <p class="truncate text-xs font-black uppercase text-slate-800">
+                                {{ mitra.nama_mitra || '-' }}
+                            </p>
+                            <p class="text-[10px] font-semibold text-slate-500">
+                                Menunggu verifikasi
+                            </p>
+                        </div>
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <Link
+                                :href="route('admin.detailmitra', mitra.id)"
+                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white text-sky-600 shadow-sm transition hover:bg-sky-600 hover:text-white"
+                                title="Lihat detail mitra"
+                            >
                                 <Eye class="h-4 w-4" />
                             </Link>
-                            <button @click="confirmVerifyMitra(m.id, m.nama_mitra)" title="Verifikasi Mitra" class="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white active:scale-95">
+                            <button
+                                type="button"
+                                @click="confirmVerifyMitra(mitra.id, mitra.nama_mitra)"
+                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-white text-emerald-600 shadow-sm transition hover:bg-emerald-600 hover:text-white"
+                                title="Verifikasi mitra"
+                            >
                                 <Check class="h-4 w-4" />
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-                <h2 class="mb-8 text-sm font-black text-slate-900 uppercase italic">Pelamar Terbaru</h2>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div v-for="p in pelamarTerbaru" :key="p.id" class="flex items-center justify-between rounded-3xl border border-transparent bg-slate-50 p-4 transition-all hover:border-slate-200 hover:bg-white shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white font-black text-sky-700 uppercase italic shadow-sm">
-                                {{ p.name.charAt(0) }}
+                <div v-else class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
+                    <p class="text-sm font-semibold text-slate-500">Tidak ada antrean verifikasi mitra.</p>
+                </div>
+            </article>
+
+            <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                <div class="mb-5 flex items-center gap-2">
+                    <Users class="h-5 w-5 text-sky-700" />
+                    <h3 class="text-sm font-black uppercase italic text-slate-900">Pelamar Terbaru</h3>
+                </div>
+
+                <div v-if="pelamarTerbaru?.length" class="space-y-3">
+                    <div
+                        v-for="pelamar in pelamarTerbaru"
+                        :key="pelamar.id"
+                        class="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-slate-200 hover:bg-white"
+                    >
+                        <div class="flex min-w-0 items-center gap-3">
+                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white font-black uppercase text-sky-700 shadow-sm">
+                                {{ pelamar?.name?.charAt(0) || 'P' }}
                             </div>
-                            <span class="text-[10px] font-black text-slate-800 uppercase truncate" :title="p.name">{{ p.name }}</span>
+                            <p class="truncate text-xs font-black uppercase text-slate-800" :title="pelamar.name">
+                                {{ pelamar.name || '-' }}
+                            </p>
                         </div>
-                        <div class="flex gap-2">
-                            <Link :href="route('admin.detailpelamar', p.id)" title="Lihat Detail Pelamar" class="flex h-8 w-8 items-center justify-center rounded-xl bg-sky-100 text-sky-600 transition-all hover:bg-sky-600 hover:text-white active:scale-95">
+
+                        <div class="flex shrink-0 items-center gap-2">
+                            <Link
+                                :href="route('detail.pelamar', pelamar.id)"
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 text-sky-600 transition hover:bg-sky-600 hover:text-white"
+                                title="Lihat detail pelamar"
+                            >
                                 <Eye class="h-4 w-4" />
                             </Link>
-                            <button @click="confirmDeletePelamar(p.id, p.name)" title="Hapus Pelamar" class="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-100 text-rose-600 transition-all hover:bg-rose-600 hover:text-white active:scale-95">
+                            <button
+                                type="button"
+                                @click="confirmDeletePelamar(pelamar.id, pelamar.name)"
+                                class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-600 transition hover:bg-rose-600 hover:text-white"
+                                title="Hapus pelamar"
+                            >
                                 <Trash2 class="h-4 w-4" />
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+
+                <div v-else class="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center">
+                    <p class="text-sm font-semibold text-slate-500">Belum ada pelamar terbaru.</p>
+                </div>
+            </article>
+        </section>
     </div>
 </template>

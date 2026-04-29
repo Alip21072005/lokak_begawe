@@ -2,23 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageRead;
+use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\Message;
-use App\Models\User;
-use App\Events\MessageSent;
-use App\Events\MessageRead;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class ChatController extends Controller
 {
     /**
      * Menampilkan daftar percakapan (Inbox)
-     * Diakses oleh Pelamar, Mitra, maupun Admin
      */
-    public function index()
+    public function index(): Response
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -30,73 +29,138 @@ class ChatController extends Controller
             'receiver.mitra',
             'messages' => function ($query) {
                 $query->latest()->limit(1);
-            }
+            },
         ])
             ->where(function ($query) use ($user) {
                 $query->where('sender_id', $user->id)
                     ->orWhere('receiver_id', $user->id);
             })
-            ->orderBy('last_message_at', 'desc')
-            ->get();
+            ->orderByDesc('last_message_at')
+            ->get()
+            ->map(function ($conv) use ($user) {
+                $lastMessage = $conv->messages->first();
+
+                $unreadCount = Message::where('conversation_id', $conv->id)
+                    ->where('sender_id', '!=', $user->id)
+                    ->where('read', false)
+                    ->count();
+
+                return [
+                    'id' => $conv->id,
+                    'sender_id' => $conv->sender_id,
+                    'receiver_id' => $conv->receiver_id,
+                    'updated_at' => $conv->updated_at,
+                    'last_message_at' => $conv->last_message_at,
+                    'sender' => $conv->sender,
+                    'receiver' => $conv->receiver,
+                    'last_message' => $lastMessage ? [
+                        'id' => $lastMessage->id,
+                        'body' => $lastMessage->body,
+                        'attachment_url' => $lastMessage->attachment_url,
+                        'attachment_type' => $lastMessage->attachment_type,
+                        'created_at' => $lastMessage->created_at,
+                        'sender_id' => $lastMessage->sender_id,
+                    ] : null,
+                    'unread_count' => $unreadCount,
+                ];
+            })
+            ->values();
 
         return Inertia::render('Chat/Index', [
             'conversations' => $conversations,
             'auth' => [
-                'user' => $user->load(['pelamar', 'mitra'])
-            ]
+                'user' => $user->load(['pelamar', 'mitra']),
+            ],
         ]);
     }
 
     /**
      * API untuk mengambil isi pesan dalam satu percakapan
      */
-    public function show($id)
+    public function show(string $id)
     {
         try {
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
             $conversation = Conversation::with([
+                'messages' => function ($query) {
+                    $query->orderBy('created_at', 'asc');
+                },
                 'messages.sender.pelamar',
                 'messages.sender.mitra',
                 'sender.pelamar',
                 'sender.mitra',
                 'receiver.pelamar',
-                'receiver.mitra'
+                'receiver.mitra',
             ])->findOrFail($id);
 
-            // Keamanan: Pastikan user adalah partisipan dalam chat ini
-            if (Auth::id() !== $conversation->sender_id && Auth::id() !== $conversation->receiver_id) {
+            // Keamanan: pastikan user adalah partisipan
+            if ($user->id !== $conversation->sender_id && $user->id !== $conversation->receiver_id) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
 
-            // Tandai pesan sebagai sudah dibaca (kecuali pesan milik sendiri)
-            Message::where('conversation_id', $id)
-                ->where('sender_id', '!=', Auth::id())
+            // Mark as read pesan lawan bicara
+            Message::where('conversation_id', $conversation->id)
+                ->where('sender_id', '!=', $user->id)
                 ->where('read', false)
                 ->update(['read' => true]);
 
+            $messages = $conversation->messages->map(function ($msg) {
+                return [
+                    'id' => $msg->id,
+                    'conversation_id' => $msg->conversation_id,
+                    'sender_id' => $msg->sender_id,
+                    'body' => $msg->body,
+                    'attachment_url' => $msg->attachment_url,
+                    'attachment_type' => $msg->attachment_type,
+                    'type' => $msg->type,
+                    'read' => (bool) $msg->read,
+                    'created_at' => $msg->created_at,
+                    'updated_at' => $msg->updated_at,
+                ];
+            })->values();
+
             return response()->json([
-                'messages' => $conversation->messages,
-                'conversation' => $conversation
+                'conversation' => [
+                    'id' => $conversation->id,
+                    'sender_id' => $conversation->sender_id,
+                    'receiver_id' => $conversation->receiver_id,
+                    'sender' => $conversation->sender,
+                    'receiver' => $conversation->receiver,
+                ],
+                'messages' => $messages,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json(['error' => 'Percakapan tidak ditemukan'], 404);
         }
     }
 
     /**
-     * Simpan & Broadcast Pesan
+     * Simpan & broadcast pesan (JSON endpoint)
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'receiver_id' => 'required|exists:users,id',
-            'body'        => 'required|string',
-            'file'        => 'nullable|file|max:5120', // Max 5MB
+        $validated = $request->validate([
+            'receiver_id' => ['required', 'exists:users,id'],
+            'body' => ['nullable', 'string'],
+            'file' => ['nullable', 'file', 'max:5120'], // 5MB
         ]);
 
-        $myId = Auth::id();
-        $targetId = $request->receiver_id;
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $myId = $user->id;
+        $targetId = $validated['receiver_id'];
 
-        // 1. Cari atau buat percakapan
+        $body = trim((string) ($validated['body'] ?? ''));
+        $hasFile = $request->hasFile('file');
+
+        // Cegah pesan kosong total
+        if ($body === '' && !$hasFile) {
+            return response()->json(['error' => 'Pesan tidak boleh kosong.'], 422);
+        }
+
+        // Cari / buat conversation
         $conversation = Conversation::where(function ($q) use ($myId, $targetId) {
             $q->where('sender_id', $myId)->where('receiver_id', $targetId);
         })->orWhere(function ($q) use ($myId, $targetId) {
@@ -105,58 +169,80 @@ class ChatController extends Controller
 
         if (!$conversation) {
             $conversation = Conversation::create([
-                'sender_id'       => $myId,
-                'receiver_id'     => $targetId,
+                'sender_id' => $myId,
+                'receiver_id' => $targetId,
                 'last_message_at' => now(),
             ]);
         } else {
             $conversation->update(['last_message_at' => now()]);
         }
 
-        // 2. Handle Attachment (Jika ada)
+        // Handle attachment
         $attachmentUrl = null;
         $attachmentType = null;
+        $messageType = 'text';
 
-        if ($request->hasFile('file')) {
+        if ($hasFile) {
             $file = $request->file('file');
             $path = $file->store('attachments', 'public');
             $attachmentUrl = $path;
-            $attachmentType = str_contains($file->getMimeType(), 'image') ? 'image' : 'file';
+
+            $mime = (string) $file->getMimeType();
+            $attachmentType = str_contains($mime, 'image') ? 'image' : 'file';
+            $messageType = $attachmentType;
         }
 
-        // 3. Simpan Pesan
         $message = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_id'       => $myId,
-            'body'            => $request->body,
-            'attachment_url'  => $attachmentUrl,
+            'sender_id' => $myId,
+            'body' => $body,
+            'attachment_url' => $attachmentUrl,
             'attachment_type' => $attachmentType,
-            'type'            => 'text',
+            'type' => $messageType,
+            'read' => false,
         ]);
 
-        // Eager load profil pengirim untuk keperluan frontend
         $message->load(['sender.pelamar', 'sender.mitra']);
 
-        // 4. Real-time Broadcast dengan Error Handling
         try {
             broadcast(new MessageSent($message))->toOthers();
-        } catch (\Exception $e) {
-            Log::error("Broadcasting failed: " . $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::warning('Chat broadcast failed: ' . $e->getMessage());
         }
 
-        return response()->json($message);
+        return response()->json([
+            'id' => $message->id,
+            'conversation_id' => $message->conversation_id,
+            'sender_id' => $message->sender_id,
+            'body' => $message->body,
+            'attachment_url' => $message->attachment_url,
+            'attachment_type' => $message->attachment_type,
+            'type' => $message->type,
+            'read' => (bool) $message->read,
+            'created_at' => $message->created_at,
+            'updated_at' => $message->updated_at,
+        ]);
     }
 
     /**
-     * Menandai pesan sebagai telah dibaca (Real-time Centang Biru)
+     * Menandai pesan sebagai dibaca
      */
-    public function markAsRead($conversationId)
+    public function markAsRead(string $conversationId)
     {
-        $myId = Auth::id();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $myId = $user->id;
 
         try {
             $conversation = Conversation::findOrFail($conversationId);
-            $targetId = ($conversation->sender_id === $myId) ? $conversation->receiver_id : $conversation->sender_id;
+
+            if ($conversation->sender_id !== $myId && $conversation->receiver_id !== $myId) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+            }
+
+            $targetId = $conversation->sender_id === $myId
+                ? $conversation->receiver_id
+                : $conversation->sender_id;
 
             $affectedRows = Message::where('conversation_id', $conversationId)
                 ->where('sender_id', '!=', $myId)
@@ -168,8 +254,11 @@ class ChatController extends Controller
             }
 
             return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menandai pesan sebagai dibaca.',
+            ], 500);
         }
     }
 }

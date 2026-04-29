@@ -1,20 +1,33 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { route } from 'ziggy-js';
-import { Search, MapPin, Clock, ArrowUpRight, Building2, Star } from 'lucide-vue-next';
+import { 
+    Search, MapPin, ArrowUpRight, Building2, Star, 
+    Layers, X, Sparkles, Briefcase, Flame,
+    ChevronRight
+} from 'lucide-vue-next';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import CustomSelect from '@/components/CustomSelect.vue';
+import { ref, computed } from 'vue';
 
-defineProps<{
+const props = defineProps<{
     lowonganTerbaru: Array<any>;
     mitraTeratas: Array<any>;
+    lokasis?: Array<{id: string; nama_lokasi: string}>;
+    kategoris?: Array<{id: string; nama_kategori: string}>;
 }>();
+
+// --- HERO SEARCH STATE ---
+const heroSearch = ref('');
+const heroCategory = ref('');
+const heroLocation = ref('');
+const showAdvancedSearch = ref(false);
 
 const formatRupiah = (value: any) => {
     if (!value || value == 0) {
         return 'Bersaing';
     }
-
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
@@ -28,6 +41,64 @@ const getInitials = (name: string) => {
     }
     const words = name.trim().split(' ');
     return words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
+};
+
+// Hero search suggestions
+const heroSuggestions = computed(() => {
+    if (!heroSearch.value || heroSearch.value.length < 2) return [];
+    const q = heroSearch.value.toLowerCase();
+    const suggestions = new Set<string>();
+    
+    props.lowonganTerbaru?.forEach(job => {
+        if (job.judul_lowongan?.toLowerCase().includes(q)) {
+            suggestions.add(job.judul_lowongan);
+        }
+        if (job.mitra?.nama_mitra?.toLowerCase().includes(q)) {
+            suggestions.add(job.mitra.nama_mitra);
+        }
+    });
+    
+    return Array.from(suggestions).slice(0, 5);
+});
+
+const selectHeroSuggestion = (suggestion: string) => {
+    heroSearch.value = suggestion;
+    performHeroSearch();
+};
+
+const performHeroSearch = () => {
+    router.get(
+        route('lowongan.index'),
+        {
+            keyword: heroSearch.value || undefined,
+            category: heroCategory.value || undefined,
+            location: heroLocation.value || undefined,
+        },
+        { preserveState: true }
+    );
+};
+
+const isHotJob = (dateString: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    return diffInHours < 24; // HOT untuk lowongan < 24 jam
+};
+
+const timeAgo = (dateString: string) => {
+    if (!dateString) return 'Baru saja';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffInSeconds < 60) return 'Baru saja';
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}m lalu`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}j lalu`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays} hari lalu`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 };
 </script>
 
@@ -65,16 +136,81 @@ const getInitials = (name: string) => {
                 </div>
             </section>
 
-            <div class="relative z-20 mx-auto -mt-16 mb-24 max-w-5xl px-4 md:-mt-20">
-                <form :action="route('lowongan.index')" method="GET" class="flex w-full flex-col items-center gap-4 rounded-3xl bg-white p-4 shadow-2xl md:flex-row md:rounded-full md:p-3">
-                    <div class="flex w-full flex-1 items-center rounded-full bg-slate-50 px-6 py-3">
-                        <Search class="mr-3 h-5 w-5 text-slate-400" />
-                        <input type="text" name="keyword" placeholder="Cari posisi, perusahaan, atau keahlian..." class="w-full border-none bg-transparent text-sm font-bold text-slate-700 focus:outline-none focus:ring-0 placeholder:text-slate-400" />
+            <!-- Professional Search Section -->
+            <div class="relative z-20 mx-auto -mt-16 mb-24 max-w-5xl px-4 sm:px-6 md:-mt-20">
+                <div class="relative w-full rounded-3xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-300/50 md:rounded-full md:p-2">
+                    <!-- Main Search Row -->
+                    <div class="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-0">
+                        <!-- Search Input -->
+                        <div class="relative flex h-14 min-w-0 flex-1 items-center rounded-2xl bg-slate-50 px-4 md:rounded-full md:px-6">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                                <Search class="h-5 w-5" />
+                            </div>
+                            <input 
+                                v-model="heroSearch" 
+                                type="text" 
+                                placeholder="Cari posisi, perusahaan, keahlian..." 
+                                class="h-full min-w-0 flex-1 border-none bg-transparent pl-3 pr-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-0 placeholder:text-slate-400 truncate"
+                                @keyup.enter="performHeroSearch"
+                            />
+                            <button 
+                                v-if="heroSearch" 
+                                @click="heroSearch = ''"
+                                class="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-600"
+                            >
+                                <X class="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <!-- Category Select -->
+                        <div class="md:w-56 md:border-l md:border-slate-100 md:pl-6">
+                            <CustomSelect
+                                v-model="heroCategory"
+                                :options="props.kategoris?.map(k => ({ value: k.id, label: k.nama_kategori })) || []"
+                                placeholder="Semua Kategori"
+                                label="Kategori"
+                                :icon="Layers"
+                            />
+                        </div>
+
+                        <!-- Location Select -->
+                        <div class="md:w-56 md:border-l md:border-slate-100 md:pl-6">
+                            <CustomSelect
+                                v-model="heroLocation"
+                                :options="props.lokasis?.map(l => ({ value: l.id, label: l.nama_lokasi })) || []"
+                                placeholder="Semua Lokasi"
+                                label="Lokasi"
+                                :icon="MapPin"
+                            />
+                        </div>
+
+                        <!-- Search Button -->
+                        <button 
+                            @click="performHeroSearch"
+                            class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-lokak-brand px-8 text-sm font-black uppercase tracking-wider text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-sky-600 hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
+                        >
+                            <Search class="h-4 w-4" />
+                            <span class="italic">Cari Loker</span>
+                        </button>
                     </div>
-                    <button type="submit" class="w-full whitespace-nowrap rounded-full bg-lokak-brand px-10 py-4 text-xs font-black uppercase tracking-widest text-white transition-all hover:bg-blue-700 md:w-auto md:py-3.5 italic shadow-md active:scale-95">
-                        Cari Loker
-                    </button>
-                </form>
+
+                    <!-- Search Suggestions -->
+                    <div 
+                        v-if="heroSuggestions.length > 0" 
+                        class="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-slate-100 bg-white p-2 shadow-xl"
+                    >
+                        <div class="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Saran Pencarian</div>
+                        <button
+                            v-for="suggestion in heroSuggestions"
+                            :key="suggestion"
+                            @click="selectHeroSuggestion(suggestion)"
+                            class="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-sky-50 hover:text-sky-700"
+                        >
+                            <Sparkles class="h-4 w-4 text-sky-500" />
+                            {{ suggestion }}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <section class="mb-28">
@@ -89,7 +225,15 @@ const getInitials = (name: string) => {
 
                 <template v-if="lowonganTerbaru && lowonganTerbaru.length > 0">
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
-                        <Link v-for="job in lowonganTerbaru" :key="job.id" :href="route('detail.lowongan', job.id)" class="group flex flex-col justify-between rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-lokak-brand/30 hover:shadow-xl">
+                        <Link v-for="job in lowonganTerbaru" :key="job.id" :href="route('detail.lowongan', job.id)" class="group relative flex flex-col justify-between rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-lokak-brand/30 hover:shadow-xl">
+                            <!-- HOT Badge -->
+                            <div v-if="isHotJob(job.created_at)" class="absolute -right-1 -top-1">
+                                <div class="flex items-center gap-1 rounded-bl-xl rounded-tr-xl bg-linear-to-br from-amber-500 to-orange-500 px-2.5 py-1 text-[9px] font-black text-white uppercase italic shadow-lg shadow-amber-500/30">
+                                    <Flame class="h-3 w-3" />
+                                    HOT
+                                </div>
+                            </div>
+
                             <div>
                                 <div class="mb-5 flex items-start justify-between">
                                     <div class="rounded-full bg-sky-50 px-3 py-1.5 text-[10px] font-black uppercase text-lokak-brand tracking-wider">
@@ -110,7 +254,7 @@ const getInitials = (name: string) => {
 
                                 <div class="mb-8 flex flex-wrap gap-2">
                                     <div class="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold text-slate-600 uppercase tracking-tight">
-                                        <Clock class="h-3.5 w-3.5 text-slate-400" /> {{ job.tipe_pekerjaan }}
+                                        <Briefcase class="h-3.5 w-3.5 text-slate-400" /> {{ job.tipe_pekerjaan || 'Full Time' }}
                                     </div>
                                     <div class="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold text-slate-600 uppercase tracking-tight">
                                         <MapPin class="h-3.5 w-3.5 text-slate-400" /> <span class="truncate max-w-25">{{ job.lokasi?.nama_lokasi }}</span>
@@ -120,12 +264,15 @@ const getInitials = (name: string) => {
 
                             <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-5">
                                 <div class="flex flex-col">
-                                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Gaji Mulai</span>
-                                    <span class="text-base font-black text-lokak-brand italic">{{ formatRupiah(job.gaji_min) }}</span>
+                                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Gaji</span>
+                                    <span class="text-base font-black italic" :class="job.gaji_min ? 'text-lokak-brand' : 'text-slate-500'">{{ formatRupiah(job.gaji_min) }}</span>
                                 </div>
-                                <span class="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-[10px] font-black uppercase tracking-wider text-white transition-all group-hover:bg-lokak-brand italic shadow-md active:scale-95"> 
-                                    Detail &rarr;
-                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold uppercase italic text-slate-400">{{ timeAgo(job.created_at) }}</span>
+                                    <span class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white transition-all group-hover:bg-lokak-brand italic shadow-md active:scale-95"> 
+                                        Detail
+                                    </span>
+                                </div>
                             </div>
                         </Link>
                     </div>
@@ -209,3 +356,7 @@ const getInitials = (name: string) => {
         <Footer />
     </div>
 </template>
+
+<style scoped>
+/* No custom select styles needed - using CustomSelect component */
+</style>

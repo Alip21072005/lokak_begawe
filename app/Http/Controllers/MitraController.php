@@ -43,7 +43,7 @@ class MitraController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show(string $id)
     {
         $mitra = Mitra::with(['lokasi', 'kategori', 'ratings.user'])
             ->with(['lowongan' => function ($q) {
@@ -85,7 +85,7 @@ class MitraController extends Controller
         ]);
     }
 
-    public function storeRating(Request $request, $id)
+    public function storeRating(Request $request, string $id)
     {
         $request->validate(['bintang' => 'required|integer|min:1|max:5', 'ulasan' => 'required|string|min:5']);
         Rating::updateOrCreate(['user_id' => Auth::id(), 'mitra_id' => $id], $request->only(['bintang', 'ulasan']));

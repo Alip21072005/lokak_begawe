@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Search, MapPin, Layers, Clock, ArrowUpRight, Building2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { 
+    Search, MapPin, Layers, ArrowUpRight, Building2, 
+    X, Sparkles, Briefcase, Flame, ChevronRight,
+    RotateCcw
+} from 'lucide-vue-next';
+import { ref, watch, computed } from 'vue';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import CustomSelect from '@/components/CustomSelect.vue';
 
 const props = defineProps<{
     lowongans?: { data: Array<any>; links: Array<any>; };
@@ -15,6 +20,7 @@ const props = defineProps<{
 const keyword = ref(props.filters?.keyword || '');
 const category = ref(props.filters?.category || '');
 const location = ref(props.filters?.location || '');
+const showFilters = ref(false);
 
 let searchTimeout: ReturnType<typeof setTimeout>;
 
@@ -22,19 +28,59 @@ let searchTimeout: ReturnType<typeof setTimeout>;
 watch([keyword, category, location], () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        router.get(
-            '/lowongan',
-            { keyword: keyword.value, category: category.value, location: location.value },
-            { preserveState: true, replace: true, preserveScroll: true }
-        );
+        applyFilters();
     }, 300);
 });
+
+const applyFilters = () => {
+    router.get(
+        '/lowongan',
+        { 
+            keyword: keyword.value || undefined, 
+            category: category.value || undefined, 
+            location: location.value || undefined 
+        },
+        { preserveState: true, replace: true, preserveScroll: true }
+    );
+};
+
+const resetFilters = () => {
+    keyword.value = '';
+    category.value = '';
+    location.value = '';
+    router.get('/lowongan', {}, { preserveState: true, preserveScroll: true });
+};
+
+const hasActiveFilters = computed(() => keyword.value || category.value || location.value);
 
 const formatRupiah = (v: any) => {
     if (!v || v == 0) return 'Bersaing';
     return new Intl.NumberFormat('id-ID', { 
         style: 'currency', currency: 'IDR', minimumFractionDigits: 0 
     }).format(v);
+};
+
+const isHotJob = (dateString: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    return diffInHours < 24; // HOT untuk lowongan < 24 jam
+};
+
+const timeAgo = (dateString: string) => {
+    if (!dateString) return 'Baru saja';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (diffInSeconds < 60) return 'Baru saja';
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes}m lalu`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}j lalu`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return `${diffInDays} hari lalu`;
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 };
 </script>
 
@@ -55,35 +101,86 @@ const formatRupiah = (v: any) => {
                 </p>
             </header>
 
-            <section class="mb-20">
-                <div class="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-3 shadow-lg md:rounded-full md:p-3">
-                    <div class="flex flex-col md:flex-row md:items-center">
-                        <div class="relative flex h-14 flex-1 items-center border-b border-slate-100 md:border-b-0 md:border-r md:h-12">
-                            <Search class="absolute left-5 h-5 w-5 text-slate-400" />
-                            <input v-model="keyword" type="text" placeholder="Posisi atau Keahlian..." class="h-full w-full border-none bg-transparent pl-12 pr-4 text-sm font-bold text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0" />
+            <!-- Professional Search Section -->
+            <section class="mb-10 px-4 sm:px-6">
+                <div class="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-200/50 md:rounded-full md:p-2">
+                    <div class="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-0">
+                        <!-- Search Input -->
+                        <div class="relative flex h-14 min-w-0 flex-1 items-center rounded-2xl bg-slate-50 px-4 md:rounded-full md:px-6">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                                <Search class="h-5 w-5" />
+                            </div>
+                            <input 
+                                v-model="keyword" 
+                                type="text" 
+                                placeholder="Posisi, perusahaan, keahlian..." 
+                                class="h-full min-w-0 flex-1 border-none bg-transparent pl-3 pr-2 text-sm font-bold text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0 truncate"
+                                @keyup.enter="applyFilters"
+                            />
+                            <button 
+                                v-if="keyword" 
+                                @click="keyword = ''; applyFilters()"
+                                class="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-600"
+                            >
+                                <X class="h-4 w-4" />
+                            </button>
                         </div>
 
-                        <div class="relative flex h-14 flex-1 items-center border-b border-slate-100 md:border-b-0 md:border-r md:h-12">
-                            <Layers class="absolute left-5 h-5 w-5 text-slate-400" />
-                            <select v-model="category" class="h-full w-full cursor-pointer appearance-none border-none bg-transparent pl-12 pr-10 text-sm font-bold text-slate-700 outline-none focus:ring-0">
-                                <option value="">Semua Kategori</option>
-                                <option v-for="kat in kategoris" :key="kat.id" :value="kat.id">{{ kat.nama_kategori }}</option>
-                            </select>
+                        <!-- Category Select -->
+                        <div class="md:w-56 md:border-l md:border-slate-100 md:pl-6">
+                            <CustomSelect
+                                v-model="category"
+                                :options="kategoris.map(k => ({ value: k.id, label: k.nama_kategori }))"
+                                placeholder="Semua Kategori"
+                                label="Kategori"
+                                :icon="Layers"
+                            />
                         </div>
 
-                        <div class="relative flex h-14 flex-1 items-center md:h-12">
-                            <MapPin class="absolute left-5 h-5 w-5 text-slate-400" />
-                            <select v-model="location" class="h-full w-full cursor-pointer appearance-none border-none bg-transparent pl-12 pr-10 text-sm font-bold text-slate-700 outline-none focus:ring-0">
-                                <option value="">Semua Lokasi</option>
-                                <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
-                            </select>
+                        <!-- Location Select -->
+                        <div class="md:w-56 md:border-l md:border-slate-100 md:pl-6">
+                            <CustomSelect
+                                v-model="location"
+                                :options="lokasis.map(l => ({ value: l.id, label: l.nama_lokasi }))"
+                                placeholder="Semua Lokasi"
+                                label="Lokasi"
+                                :icon="MapPin"
+                            />
                         </div>
+
+                        <!-- Search Button -->
+                        <button 
+                            @click="applyFilters"
+                            class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-lokak-brand px-8 text-sm font-black uppercase tracking-wider text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-sky-600 hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
+                        >
+                            <Search class="h-4 w-4" />
+                            <span class="italic">Cari</span>
+                        </button>
                     </div>
+                </div>
+
+                <!-- Reset Filter -->
+                <div v-if="hasActiveFilters" class="mt-3 flex justify-center">
+                    <button 
+                        @click="resetFilters"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50"
+                    >
+                        <RotateCcw class="h-3 w-3" />
+                        Reset Filter
+                    </button>
                 </div>
             </section>
 
             <div v-if="props.lowongans?.data && props.lowongans.data.length > 0" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-8">
-                <Link v-for="job in props.lowongans.data" :key="job.id" :href="'/detail/lowongan/' + job.id" class="group flex flex-col justify-between rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-lokak-brand/30 hover:shadow-xl">
+                <Link v-for="job in props.lowongans.data" :key="job.id" :href="'/detail/lowongan/' + job.id" class="group relative flex flex-col justify-between rounded-3xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-lokak-brand/30 hover:shadow-xl">
+                    <!-- HOT Badge -->
+                    <div v-if="isHotJob(job.created_at)" class="absolute -right-1 -top-1">
+                        <div class="flex items-center gap-1 rounded-bl-xl rounded-tr-xl bg-linear-to-br from-amber-500 to-orange-500 px-2.5 py-1 text-[9px] font-black text-white uppercase italic shadow-lg shadow-amber-500/30">
+                            <Flame class="h-3 w-3" />
+                            HOT
+                        </div>
+                    </div>
+
                     <div>
                         <div class="mb-5 flex items-start justify-between">
                             <div class="rounded-full bg-sky-50 px-3 py-1.5 text-[10px] font-black uppercase text-lokak-brand tracking-wider">
@@ -104,7 +201,7 @@ const formatRupiah = (v: any) => {
 
                         <div class="mb-8 flex flex-wrap gap-2">
                             <div class="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold text-slate-600 uppercase tracking-tight">
-                                <Clock class="h-3.5 w-3.5 text-slate-400" /> {{ job.tipe_pekerjaan }}
+                                <Briefcase class="h-3.5 w-3.5 text-slate-400" /> {{ job.tipe_pekerjaan || 'Full Time' }}
                             </div>
                             <div class="flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1 text-[10px] font-bold text-slate-600 uppercase tracking-tight">
                                 <MapPin class="h-3.5 w-3.5 text-slate-400" /> <span class="truncate max-w-25">{{ job.lokasi?.nama_lokasi }}</span>
@@ -114,12 +211,15 @@ const formatRupiah = (v: any) => {
 
                     <div class="mt-auto flex items-center justify-between border-t border-slate-100 pt-5">
                         <div class="flex flex-col">
-                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Gaji Mulai</span>
-                            <span class="text-base font-black text-lokak-brand italic">{{ formatRupiah(job.gaji_min) }}</span>
+                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Gaji</span>
+                            <span class="text-base font-black italic" :class="job.gaji_min ? 'text-lokak-brand' : 'text-slate-500'">{{ formatRupiah(job.gaji_min) }}</span>
                         </div>
-                        <span class="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-2 text-[10px] font-black uppercase tracking-wider text-white transition-all group-hover:bg-lokak-brand italic shadow-md active:scale-95"> 
-                            Detail &rarr;
-                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold uppercase italic text-slate-400">{{ timeAgo(job.created_at) }}</span>
+                            <span class="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-[10px] font-black uppercase tracking-wider text-white transition-all group-hover:bg-lokak-brand italic shadow-md active:scale-95"> 
+                                Detail
+                            </span>
+                        </div>
                     </div>
                 </Link>
             </div>
@@ -147,5 +247,5 @@ const formatRupiah = (v: any) => {
 </template>
 
 <style scoped>
-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+/* No custom select styles needed - using CustomSelect component */
 </style>

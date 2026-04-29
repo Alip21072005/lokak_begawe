@@ -5,52 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Pelamar;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 
 class PelamarController extends Controller
 {
-    public function showPublicProfile(string $slug)
+    public function show(string $id)
     {
-        // Load semua relasi sesuai migrasi
         $pelamar = Pelamar::with([
             'user',
             'lokasi',
-            'skills.master_skill',
-            'pengalamans.master_perusahaan',
-            'pendidikans.master_instansi'
+            'skills.masterSkill',
+            'pengalamans.masterPerusahaan',
+            'pendidikans.masterInstansi',
         ])
-            ->where('slug', $slug)
-            ->firstOrFail();
+            ->where('pelamar_id', $id)
+            ->orWhere('user_id', $id)
+            ->first();
+
+        if (!$pelamar) {
+            return back()->with('error', 'Profil pelamar tidak ditemukan.');
+        }
 
         return Inertia::render('Detail/Detailpelamar', [
-            'pelamar' => $pelamar
+            'pelamar' => $pelamar,
         ]);
     }
 
     public function updatePortfolio(Request $request)
     {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        $pelamar = $user->pelamar;
-
-        $request->validate([
-            'bio' => 'nullable|string|max:1000',
-            'website_portfolio' => 'nullable|url',
-        ]);
-
-        if (!$pelamar->slug) {
-            $slug = Str::slug($pelamar->nama_pelamar);
-            $count = Pelamar::where('slug', 'LIKE', "{$slug}%")->count();
-            $pelamar->slug = $count ? "{$slug}-" . ($count + 1) : $slug;
-        }
-
-        $pelamar->update([
-            'bio' => $request->bio,
-            'website_portfolio' => $request->website_portfolio,
-            'slug' => $pelamar->slug
-        ]);
-
-        return back()->with('success', 'Portofolio berhasil diperbarui!');
+        // method lain biarkan sesuai implementasi kamu saat ini
     }
 }

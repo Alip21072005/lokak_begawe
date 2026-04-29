@@ -19,9 +19,20 @@ class LowonganController extends Controller
             ->where('status_lowongan', 'verified')
             ->where('tanggal_expired', '>=', now()->toDateString());
 
-        // 2. Filter Pencarian (Disamakan dengan v-model di Vue)
+        // 2. Filter Pencarian Multi-Field (Posisi, Perusahaan, Keahlian)
         if ($request->keyword) {
-            $query->where('judul_lowongan', 'like', '%' . $request->keyword . '%');
+            $keyword = $request->keyword;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('judul_lowongan', 'like', '%' . $keyword . '%')
+                    ->orWhere('deskripsi_lowongan', 'like', '%' . $keyword . '%')
+                    ->orWhereHas('mitra', function ($mq) use ($keyword) {
+                        $mq->where('nama_mitra', 'like', '%' . $keyword . '%')
+                            ->orWhere('deskripsi_mitra', 'like', '%' . $keyword . '%');
+                    })
+                    ->orWhereHas('skills', function ($sq) use ($keyword) {
+                        $sq->where('nama_skill', 'like', '%' . $keyword . '%');
+                    });
+            });
         }
 
         if ($request->category) {

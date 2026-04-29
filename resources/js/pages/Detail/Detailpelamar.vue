@@ -1,193 +1,263 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { 
-    MapPin, Mail, Phone, Globe, GraduationCap, Wrench, 
-    Calendar, Download, ArrowLeft, Briefcase, Info, ExternalLink
-} from 'lucide-vue-next';
 import { route } from 'ziggy-js';
+import {
+    ArrowLeft,
+    MapPin,
+    Mail,
+    Phone,
+    Globe,
+    FileText,
+    Download,
+    MessageCircle,
+    Briefcase,
+    GraduationCap,
+    Calendar,
+    User,
+    CheckCircle2,
+    ExternalLink,
+} from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
 
+defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     pelamar: any;
 }>();
 
+const applicantName = () => props.pelamar?.nama_pelamar || props.pelamar?.user?.name || 'Pelamar';
+const applicantEmail = () => props.pelamar?.email_pelamar || props.pelamar?.user?.email || '-';
+const applicantPhone = () => props.pelamar?.nohp_pelamar || '-';
+const applicantLocation = () => props.pelamar?.lokasi?.nama_lokasi || 'Lokasi belum diatur';
+const applicantBio = () => props.pelamar?.bio || 'Belum ada ringkasan profil.';
+const applicantPortfolio = () => props.pelamar?.website_portfolio || null;
+const applicantPhoto = () => props.pelamar?.foto_pelamar || null;
+const applicantCv = () => props.pelamar?.cv_pelamar || null;
 
+const formatDate = (date?: string | null) => {
+    if (!date) return '-';
+    return new Date(date).toLocaleDateString('id-ID', {
+        month: 'short',
+        year: 'numeric',
+    });
+};
 
-const formatDate = (dateString: string) => {
-    if (!dateString) return 'Sekarang';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+const toWhatsappLink = (phone?: string) => {
+    if (!phone) return null;
+    const normalized = phone.replace(/\D/g, '').replace(/^0/, '62');
+    return `https://wa.me/${normalized}`;
 };
 </script>
 
 <template>
-    <Head :title="`${pelamar?.nama_pelamar} - Profil Profesional`" />
+    <Head :title="`${applicantName()} - Detail Pelamar`" />
 
-    <div class="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-   
-
-        <main class="mx-auto mt-20 max-w-6xl px-6 py-12 md:px-12 lg:px-10">
-            
-            <div class="mb-8">
-                <Link :href="route('welcome')" class="inline-flex items-center gap-2 text-[10px] font-black uppercase italic text-slate-400 transition-all hover:text-lokak-brand">
-                    <ArrowLeft class="h-4 w-4" /> Kembali ke Jelajah
+    <div class="min-h-screen bg-slate-50 pb-10">
+        <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <!-- Top navigation -->
+            <div class="mb-6">
+                <Link
+                    :href="route('admin.kelolapelamar')"
+                    class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100"
+                >
+                    <ArrowLeft class="h-4 w-4" />
+                    Kembali ke Kelola Pelamar
                 </Link>
             </div>
 
-            <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
-                
-                <div class="space-y-6 lg:col-span-4">
-                    <div class="overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
-                        <div class="h-24 w-full bg-lokak-brand relative">
-                            <div class="absolute inset-0 bg-linear-to-br from-white/10 to-transparent"></div>
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                <!-- Left column -->
+                <aside class="space-y-6 lg:col-span-4">
+                    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-5 flex items-start gap-4">
+                            <div class="h-20 w-20 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                                <img
+                                    v-if="applicantPhoto()"
+                                    :src="`/storage/${applicantPhoto()}`"
+                                    alt="Foto pelamar"
+                                    class="h-full w-full object-cover"
+                                />
+                                <div v-else class="flex h-full w-full items-center justify-center text-slate-400">
+                                    <User class="h-8 w-8" />
+                                </div>
+                            </div>
+
+                            <div class="min-w-0">
+                                <h1 class="truncate text-lg font-semibold text-slate-900">
+                                    {{ applicantName() }}
+                                </h1>
+                                <p class="mt-1 flex items-center gap-1 text-sm text-slate-600">
+                                    <MapPin class="h-4 w-4 text-slate-400" />
+                                    {{ applicantLocation() }}
+                                </p>
+                                <div class="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
+                                    <CheckCircle2 class="h-3.5 w-3.5" />
+                                    Profil Aktif
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="px-8 pb-8">
-                            <div class="relative -mt-12 mb-6 inline-block">
-                                <div class="h-32 w-32 overflow-hidden rounded-4xl border-4 border-white bg-slate-100 shadow-lg">
-                                    <img v-if="pelamar?.foto_pelamar" :src="`/storage/${pelamar.foto_pelamar}`" class="h-full w-full object-cover" />
-                                    <div v-else class="flex h-full w-full items-center justify-center bg-sky-50 text-sky-700">
-                                        <span class="text-4xl font-black italic">{{ pelamar?.nama_pelamar?.charAt(0) }}</span>
-                                    </div>
-                                </div>
-                                <div class="absolute bottom-1 right-1 h-6 w-6 rounded-full border-4 border-white bg-emerald-500"></div>
+
+                        <div class="space-y-3 border-t border-slate-100 pt-4">
+                            <div class="flex items-start gap-2 text-sm text-slate-700">
+                                <Mail class="mt-0.5 h-4 w-4 text-slate-400" />
+                                <span class="break-all">{{ applicantEmail() }}</span>
+                            </div>
+                            <div class="flex items-start gap-2 text-sm text-slate-700">
+                                <Phone class="mt-0.5 h-4 w-4 text-slate-400" />
+                                <span>{{ applicantPhone() }}</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <h2 class="mb-4 text-sm font-semibold text-slate-900">Dokumen & Tautan</h2>
+
+                        <div class="space-y-3">
+                            <a
+                                v-if="applicantCv()"
+                                :href="`/storage/${applicantCv()}`"
+                                target="_blank"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-black"
+                            >
+                                <Download class="h-4 w-4" />
+                                Lihat CV
+                            </a>
+                            <div
+                                v-else
+                                class="rounded-lg border border-dashed border-slate-300 px-4 py-3 text-center text-xs text-slate-500"
+                            >
+                                CV belum diunggah
                             </div>
 
-                            <h1 class="text-2xl font-black uppercase italic tracking-tighter text-slate-900">
-                                {{ pelamar?.nama_pelamar }}
-                            </h1>
-                            <p class="mt-1 flex items-center gap-1 text-[10px] font-black uppercase italic tracking-widest text-lokak-brand">
-                                <MapPin class="h-3 w-3" /> {{ pelamar?.lokasi?.nama_lokasi || 'Provinsi Bengkulu' }}
-                            </p>
-
-                            <div class="mt-8 space-y-4 border-t border-slate-50 pt-8">
-                                <div class="flex items-center gap-4">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-400"><Mail class="h-4 w-4" /></div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[9px] font-black uppercase text-slate-400">Email</span>
-                                        <span class="text-xs font-bold text-slate-700 italic truncate">{{ pelamar?.email_pelamar || pelamar?.user?.email }}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-4">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-400"><Phone class="h-4 w-4" /></div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[9px] font-black uppercase text-slate-400">Telepon</span>
-                                        <span class="text-xs font-bold text-slate-700 italic">{{ pelamar?.nohp_pelamar || '-' }}</span>
-                                    </div>
-                                </div>
-                                <div v-if="pelamar?.website_portfolio" class="flex items-center gap-4">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-400"><Globe class="h-4 w-4" /></div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[9px] font-black uppercase text-slate-400">Portfolio</span>
-                                        <a :href="pelamar.website_portfolio" target="_blank" class="flex items-center gap-1 text-xs font-bold text-lokak-brand underline italic">
-                                            Kunjungi Situs <ExternalLink class="h-3 w-3" />
-                                        </a>
-                                    </div>
-                                </div>
+                            <a
+                                v-if="applicantPortfolio()"
+                                :href="applicantPortfolio()"
+                                target="_blank"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-sky-200 bg-sky-50 px-4 py-2.5 text-sm font-medium text-sky-700 transition hover:bg-sky-100"
+                            >
+                                <Globe class="h-4 w-4" />
+                                Buka Portofolio
+                                <ExternalLink class="h-4 w-4" />
+                            </a>
+                            <div
+                                v-else
+                                class="rounded-lg border border-dashed border-slate-300 px-4 py-3 text-center text-xs text-slate-500"
+                            >
+                                Portofolio belum tersedia
                             </div>
 
-                            <a v-if="pelamar?.cv_pelamar" :href="`/storage/${pelamar.cv_pelamar}`" target="_blank" class="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-slate-900 py-4 text-xs font-black uppercase italic text-white shadow-xl transition-all hover:bg-lokak-brand active:scale-95">
-                                <Download class="h-4 w-4" /> Unduh Berkas CV
+                            <a
+                                v-if="toWhatsappLink(props.pelamar?.nohp_pelamar)"
+                                :href="toWhatsappLink(props.pelamar?.nohp_pelamar)!"
+                                target="_blank"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-600"
+                            >
+                                <MessageCircle class="h-4 w-4" />
+                                Hubungi via WhatsApp
                             </a>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-sm">
-                        <h3 class="mb-6 flex items-center gap-2 text-[10px] font-black uppercase italic tracking-[0.2em] text-slate-400">
-                            <Wrench class="h-4 w-4 text-lokak-brand" /> Keahlian Utama
-                        </h3>
+                    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <h2 class="mb-4 text-sm font-semibold text-slate-900">Keahlian</h2>
                         <div class="flex flex-wrap gap-2">
-                            <template v-if="pelamar?.skills?.length">
-                                <span v-for="skill in pelamar.skills" :key="skill.id" class="rounded-lg border border-sky-100 bg-sky-50 px-3 py-1.5 text-[10px] font-black uppercase italic text-lokak-brand">
-                                    {{ skill.master_skill?.nama_skill || skill.nama_skill }}
+                            <template v-if="props.pelamar?.skills?.length">
+                                <span
+                                    v-for="skill in props.pelamar.skills"
+                                    :key="skill.id"
+                                    class="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700"
+                                >
+                                    {{ skill.master_skill?.nama_skill || skill.nama_skill || '-' }}
                                 </span>
                             </template>
-                            <p v-else class="text-[10px] font-bold italic text-slate-300">Belum ada skill terdaftar.</p>
+                            <p v-else class="text-xs text-slate-500">Belum ada data keahlian.</p>
                         </div>
-                    </div>
-                </div>
+                    </section>
+                </aside>
 
-                <div class="space-y-8 lg:col-span-8">
-                    
-                    <div class="relative overflow-hidden rounded-[2.5rem] border border-slate-200 bg-white p-10 shadow-sm">
-                        <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-slate-50"></div>
-                        <h3 class="relative z-10 mb-6 text-[10px] font-black uppercase italic tracking-[0.3em] text-slate-400">Ringkasan Profil</h3>
-                        <p class="relative z-10 text-sm font-medium leading-relaxed italic text-slate-600 whitespace-pre-line">
-                            "{{ pelamar?.bio || 'Pelamar belum menuliskan ringkasan profesional untuk menarik perhatian mitra.' }}"
+                <!-- Right column -->
+                <section class="space-y-6 lg:col-span-8">
+                    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                        <h2 class="mb-3 text-base font-semibold text-slate-900">Ringkasan Profil</h2>
+                        <p class="whitespace-pre-line text-sm leading-relaxed text-slate-700">
+                            {{ applicantBio() }}
                         </p>
-                    </div>
+                    </section>
 
-                    <div class="rounded-[2.5rem] border border-slate-200 bg-white p-10 shadow-sm">
-                        <div class="mb-10 flex items-center justify-between">
-                            <h3 class="text-[10px] font-black uppercase italic tracking-[0.3em] text-slate-400">Pengalaman Kerja</h3>
-                            <Briefcase class="h-5 w-5 text-slate-200" />
+                    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                        <div class="mb-4 flex items-center gap-2">
+                            <Briefcase class="h-4 w-4 text-slate-500" />
+                            <h2 class="text-base font-semibold text-slate-900">Pengalaman Kerja</h2>
                         </div>
-                        
-                        <div class="space-y-12">
-                            <template v-if="pelamar?.pengalamans?.length">
-                                <div v-for="exp in pelamar.pengalamans" :key="exp.id" class="group relative pl-10 before:absolute before:left-0 before:top-2 before:h-full before:w-0.5 before:bg-slate-100 last:before:hidden">
-                                    <div class="absolute -left-2 top-1.5 h-4 w-4 rounded-full border-4 border-white bg-slate-200 transition-colors group-hover:bg-lokak-brand shadow-sm"></div>
-                                    
-                                    <div class="mb-2 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                                        <h4 class="text-lg font-black uppercase italic text-slate-900 leading-none group-hover:text-lokak-brand transition-colors">{{ exp.posisi }}</h4>
-                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[9px] font-black uppercase italic text-slate-500">
-                                            <Calendar class="h-3 w-3" /> {{ formatDate(exp.tgl_mulai) }} — {{ exp.is_current ? 'SEKARANG' : formatDate(exp.tgl_selesai) }}
-                                        </span>
+
+                        <div v-if="props.pelamar?.pengalamans?.length" class="space-y-4">
+                            <article
+                                v-for="exp in props.pelamar.pengalamans"
+                                :key="exp.id"
+                                class="rounded-xl border border-slate-200 p-4 transition hover:border-slate-300"
+                            >
+                                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-slate-900">
+                                            {{ exp.posisi || 'Posisi belum diisi' }}
+                                        </h3>
+                                        <p class="text-sm text-slate-600">
+                                            {{ exp.master_perusahaan?.nama_perusahaan || exp.nama_perusahaan || '-' }}
+                                        </p>
                                     </div>
-                                    <p class="mb-4 text-xs font-black uppercase italic text-lokak-brand">
-                                        {{ exp.master_perusahaan?.nama_perusahaan || exp.nama_perusahaan }}
-                                    </p>
-                                    <p class="text-xs font-medium leading-relaxed text-slate-500 italic">
-                                        {{ exp.deskripsi }}
-                                    </p>
-                                </div>
-                            </template>
-                            <div v-else class="flex flex-col items-center justify-center py-12 text-slate-300">
-                                <Info class="mb-2 h-8 w-8 opacity-20" />
-                                <p class="text-[10px] font-black uppercase italic tracking-widest">Belum ada riwayat pengalaman kerja</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="rounded-[2.5rem] border border-slate-200 bg-white p-10 shadow-sm">
-                        <div class="mb-10 flex items-center justify-between">
-                            <h3 class="text-[10px] font-black uppercase italic tracking-[0.3em] text-slate-400">Riwayat Pendidikan</h3>
-                            <GraduationCap class="h-5 w-5 text-slate-200" />
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            <template v-if="pelamar?.pendidikans?.length">
-                                <div v-for="edu in pelamar.pendidikans" :key="edu.id" class="rounded-4xl border border-slate-100 bg-slate-50 p-6 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/50">
-                                    <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-lokak-brand shadow-sm">
-                                        <GraduationCap class="h-5 w-5" />
-                                    </div>
-                                    <h4 class="text-sm font-black uppercase italic text-slate-900">
-                                        {{ edu.master_instansi?.nama_instansi || edu.nama_instansi }}
-                                    </h4>
-                                    <p class="mt-1 text-[10px] font-black uppercase italic text-lokak-brand">{{ edu.gelar }}</p>
-                                    <div class="mt-4 flex items-center gap-2 text-[9px] font-black uppercase italic text-slate-400">
-                                        <Calendar class="h-3 w-3" /> Lulus: {{ formatDate(edu.tgl_lulus) }}
+                                    <div class="inline-flex items-center gap-1 text-xs text-slate-500">
+                                        <Calendar class="h-3.5 w-3.5" />
+                                        {{ formatDate(exp.tgl_mulai) }} - {{ exp.is_current ? 'Sekarang' : formatDate(exp.tgl_selesai) }}
                                     </div>
                                 </div>
-                            </template>
-                            <div v-else class="col-span-2 flex flex-col items-center justify-center py-12 text-slate-300">
-                                <Info class="mb-2 h-8 w-8 opacity-20" />
-                                <p class="text-[10px] font-black uppercase italic tracking-widest">Belum ada riwayat pendidikan</p>
-                            </div>
+                                <p class="mt-3 text-sm leading-relaxed text-slate-700">
+                                    {{ exp.deskripsi || 'Tidak ada deskripsi pengalaman.' }}
+                                </p>
+                            </article>
                         </div>
-                    </div>
 
-                </div>
+                        <div
+                            v-else
+                            class="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500"
+                        >
+                            Belum ada data pengalaman kerja.
+                        </div>
+                    </section>
+
+                    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                        <div class="mb-4 flex items-center gap-2">
+                            <GraduationCap class="h-4 w-4 text-slate-500" />
+                            <h2 class="text-base font-semibold text-slate-900">Riwayat Pendidikan</h2>
+                        </div>
+
+                        <div v-if="props.pelamar?.pendidikans?.length" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <article
+                                v-for="edu in props.pelamar.pendidikans"
+                                :key="edu.id"
+                                class="rounded-xl border border-slate-200 p-4 transition hover:border-slate-300"
+                            >
+                                <h3 class="text-sm font-semibold text-slate-900">
+                                    {{ edu.master_instansi?.nama_instansi || edu.nama_instansi || '-' }}
+                                </h3>
+                                <p class="mt-1 text-sm text-slate-600">
+                                    {{ edu.gelar || '-' }}
+                                </p>
+                                <p class="mt-3 inline-flex items-center gap-1 text-xs text-slate-500">
+                                    <Calendar class="h-3.5 w-3.5" />
+                                    Lulus: {{ formatDate(edu.tgl_lulus) }}
+                                </p>
+                            </article>
+                        </div>
+
+                        <div
+                            v-else
+                            class="rounded-lg border border-dashed border-slate-300 px-4 py-6 text-center text-sm text-slate-500"
+                        >
+                            Belum ada data pendidikan.
+                        </div>
+                    </section>
+                </section>
             </div>
-        </main>
-
-      
+        </div>
     </div>
 </template>
-
-<style scoped>
-/* Transisi halus untuk hover */
-.transition-all {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-</style>

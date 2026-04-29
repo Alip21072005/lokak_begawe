@@ -6,83 +6,101 @@ use App\Http\Controllers\Controller;
 use App\Models\Lamaran;
 use App\Models\Pelamar;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
 
 class LamaranController extends Controller
 {
     /**
-     * Menampilkan daftar lamaran milik pelamar di Dashboard.
+     * Menampilkan daftar lamaran milik pelamar.
      */
-    public function index()
+    public function index(): Response
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $user->load('pelamar');
 
         $pelamar = $user->pelamar;
-        $daftarLamaran = [];
+        $lamaranList = collect();
 
         if ($pelamar) {
-            // Ambil data lamaran beserta relasi lengkap
-            $daftarLamaran = Lamaran::with(['lowongan.mitra.lokasi'])
+            $lamaranList = Lamaran::with([
+                'lowongan:id,judul_lowongan,mitra_id',
+                'lowongan.mitra:id,nama_mitra,lokasi_id',
+                'lowongan.mitra.lokasi:id,nama_lokasi',
+            ])
                 ->where('pelamar_id', $pelamar->pelamar_id)
-                ->orderBy('created_at', 'desc')
+                ->latest()
                 ->get()
                 ->map(function ($item) {
+                    $status = strtolower((string) $item->status);
+
                     return [
-                        'id'            => $item->id,
-                        'posisi'        => $item->lowongan->judul_lowongan,
-                        'perusahaan'    => $item->lowongan->mitra->nama_mitra,
-                        'lokasi'        => $item->lowongan->mitra->lokasi->nama_lokasi ?? 'Bengkulu',
-                        'tanggal_kirim' => $item->created_at->translatedFormat('d M Y'), // Format tanggal cantik
-                        'status'        => $item->status, // pending, reviewed, interview, accepted, rejected
-                        'catatan_mitra' => $item->catatan_mitra, // Pesan feedback dari HRD
+                        'id' => $item->id,
+                        'posisi' => $item->lowongan?->judul_lowongan ?? 'Posisi tidak tersedia',
+                        'perusahaan' => $item->lowongan?->mitra?->nama_mitra ?? 'Perusahaan tidak tersedia',
+                        'lokasi' => $item->lowongan?->mitra?->lokasi?->nama_lokasi ?? 'Bengkulu',
+                        'tanggal_kirim' => $item->created_at?->translatedFormat('d M Y'),
+                        'status' => $status ?: 'pending',
+                        'catatan_mitra' => $item->catatan_mitra,
+                        'created_at' => $item->created_at?->toDateTimeString(),
                     ];
-                });
+                })
+                ->values();
         }
+
+        $summary = [
+            'total' => $lamaranList->count(),
+            'pending' => $lamaranList->where('status', 'pending')->count(),
+            'reviewed' => $lamaranList->where('status', 'reviewed')->count(),
+            'interview' => $lamaranList->where('status', 'interview')->count(),
+            'accepted' => $lamaranList->where('status', 'accepted')->count(),
+            'rejected' => $lamaranList->where('status', 'rejected')->count(),
+        ];
 
         return Inertia::render('Pelamar/LamaranSaya', [
             'auth' => [
-                'user' => $user
+                'user' => $user,
             ],
-            'lamaranList' => $daftarLamaran
+            'lamaranList' => $lamaranList,
+            'summary' => $summary, // optional, aman walau belum dipakai di Vue
         ]);
     }
 
     /**
-     * Memproses pengiriman lamaran baru dari halaman Detail Lowongan (Modal Konfirmasi).
+     * Proses pengiriman lamaran baru dari detail lowongan.
      */
-    public function store(Request $request, $id)
+    public function store(Request $request, string $id): RedirectResponse
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Ambil data pelamar berdasarkan user_id yang sedang login
         $pelamar = Pelamar::where('user_id', $user->id)->firstOrFail();
 
-        // Validasi 1: Cek apakah pelamar sudah pernah melamar di lowongan ini sebelumnya
-        $exists = Lamaran::where('pelamar_id', $pelamar->pelamar_id)
+        $alreadyApplied = Lamaran::where('pelamar_id', $pelamar->pelamar_id)
             ->where('lowongan_id', $id)
             ->exists();
 
-        if ($exists) {
-            return back()->with('error', 'Waduh! Kamu sudah melamar di lowongan ini sebelumnya. Silakan pantau statusnya di dashboard.');
+        if ($alreadyApplied) {
+            return back()->with(
+                'error',
+                'Kamu sudah pernah melamar di lowongan ini. Silakan pantau statusnya di halaman Lamaran Saya.'
+            );
         }
 
-        // Validasi 2: Pastikan data input aman
-        $request->validate([
-            'catatan' => 'nullable|string|max:500',
+        $validated = $request->validate([
+            'catatan' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // Simpan data lamaran ke database
         Lamaran::create([
-            'pelamar_id'  => $pelamar->pelamar_id,
+            'pelamar_id' => $pelamar->pelamar_id,
             'lowongan_id' => $id,
-            'status'      => 'pending', // Status awal saat melamar
-            'catatan'     => $request->catatan, // Pesan dari pelamar ke mitra
+            'status' => 'pending',
+            'catatan' => $validated['catatan'] ?? null,
         ]);
 
-        return back()->with('success', 'Selamat! Lamaran kamu berhasil terkirim. Semoga beruntung!');
+        return back()->with('success', 'Lamaran berhasil dikirim. Semoga sukses!');
     }
 }

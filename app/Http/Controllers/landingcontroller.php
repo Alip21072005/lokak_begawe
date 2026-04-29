@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Lowongan;
 use App\Models\Mitra;
+use App\Models\Lokasi;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -12,11 +14,11 @@ class LandingController extends Controller
     public function index()
     {
         // 1. Ambil lowongan terbaru yang AKTIF & BELUM EXPIRED
-        $lowongan = Lowongan::with(['mitra', 'lokasi'])
-            ->where('status_lowongan', 'verified') // Hanya yang sudah diverifikasi admin
-            ->where('tanggal_expired', '>=', now()->toDateString()) // Belum melewati tanggal hari ini
+        $lowongan = Lowongan::with(['mitra.kategori', 'lokasi'])
+            ->where('status_lowongan', 'verified')
+            ->where('tanggal_expired', '>=', now()->toDateString())
             ->latest()
-            ->take(4)
+            ->take(8)
             ->get()
             ->map(function ($job) {
                 return [
@@ -24,9 +26,13 @@ class LandingController extends Controller
                     'judul_lowongan' => $job->judul_lowongan,
                     'gaji_min' => $job->gaji_min,
                     'tipe_pekerjaan' => $job->tipe_pekerjaan,
+                    'created_at' => $job->created_at,
                     'mitra' => [
                         'nama_mitra' => $job->mitra->nama_mitra,
                         'logo' => $job->mitra->logo_mitra ? asset('storage/' . $job->mitra->logo_mitra) : null,
+                        'kategori' => [
+                            'nama_kategori' => $job->mitra->kategori?->nama_kategori ?? 'Umum',
+                        ],
                     ],
                     'lokasi' => [
                         'nama_lokasi' => $job->lokasi->nama_lokasi ?? 'Bengkulu',
@@ -34,13 +40,13 @@ class LandingController extends Controller
                 ];
             });
 
-        // 2. Ambil mitra teratas berdasarkan jumlah ulasan (ratings_count)
-        // Menggunakan withAvg untuk efisiensi performa database
+        // 2. Ambil mitra teratas
         $mitra = Mitra::with(['lokasi'])
             ->withCount(['lowongan', 'ratings'])
             ->withAvg('ratings', 'bintang')
-            ->orderBy('ratings_count', 'desc') // Urutkan ulasan terbanyak
-            ->orderBy('ratings_avg_bintang', 'desc') // Lalu rating tertinggi
+            ->where('status_mitra', 'verified')
+            ->orderBy('ratings_count', 'desc')
+            ->orderBy('ratings_avg_bintang', 'desc')
             ->take(4)
             ->get()
             ->map(function ($m) {
@@ -55,9 +61,15 @@ class LandingController extends Controller
                 ];
             });
 
+        // 3. Data untuk filter dropdown
+        $lokasis = Lokasi::orderBy('nama_lokasi', 'asc')->get(['id', 'nama_lokasi']);
+        $kategoris = Kategori::orderBy('nama_kategori', 'asc')->get(['id', 'nama_kategori']);
+
         return Inertia::render('Welcome', [
             'lowonganTerbaru' => $lowongan,
             'mitraTeratas' => $mitra,
+            'lokasis' => $lokasis,
+            'kategoris' => $kategoris,
         ]);
     }
 }

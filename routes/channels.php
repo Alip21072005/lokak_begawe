@@ -3,23 +3,32 @@
 use Illuminate\Support\Facades\Broadcast;
 
 /**
- * Channel Privat User (Bawaan Laravel untuk Notifikasi)
+ * Channel Privat User (Bawaan Laravel)
  */
 Broadcast::channel('App.Models.User.{userId}', function ($user, $userId) {
     return (string) $user->id === (string) $userId;
 });
 
 /**
- * Channel Chat Utama
- * Pastikan di Vue kamu memanggil: Echo.private(`chat.${authUser.id}`)
+ * Channel Chat Utama (Untuk menerima pesan real-time)
  */
 Broadcast::channel('chat.{userId}', function ($user, $userId) {
-    // Logika: User hanya boleh join ke channel yang ID-nya sama dengan ID dia sendiri
     return (string) $user->id === (string) $userId;
 });
 
 /**
- * Channel Percakapan (Untuk fitur 'Typing...' atau 'Presence')
+ * Channel Presence (Status Online/Offline)
+ * PERBAIKAN: Dikeluarkan dari dalam channel conversation
+ */
+Broadcast::channel('online', function ($user) {
+    return [
+        'id' => (string) $user->id,
+        'name' => $user->name
+    ];
+});
+
+/**
+ * Channel Percakapan (Ruang bersama untuk fitur 'Typing...')
  */
 Broadcast::channel('conversation.{conversationId}', function ($user, $conversationId) {
     $conversation = \App\Models\Conversation::find($conversationId);
@@ -28,15 +37,7 @@ Broadcast::channel('conversation.{conversationId}', function ($user, $conversati
         return false;
     }
 
-    Broadcast::channel('online', function ($user) {
-        // Kalau berhasil gabung, kembalikan data user (ID wajib ada)
-        return [
-            'id' => (string) $user->id,
-            'name' => $user->name
-        ];
-    });
-
-    // User harus salah satu dari pengirim atau penerima di percakapan ini
+    // Izinkan masuk jika user adalah pengirim atau penerima di percakapan ini
     return (string) $user->id === (string) $conversation->sender_id ||
-        (string) $user->id === (string) $conversation->receiver_id;
+           (string) $user->id === (string) $conversation->receiver_id;
 });

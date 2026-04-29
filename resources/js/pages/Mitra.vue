@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Search, MapPin, Layers, Star, Building2 } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { 
+    Search, MapPin, Layers, Star, Building2, 
+    X, ChevronRight, RotateCcw
+} from 'lucide-vue-next';
+import { ref, watch, computed } from 'vue';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import CustomSelect from '@/components/CustomSelect.vue';
 import { route } from 'ziggy-js';
 
 const props = defineProps<{
@@ -23,13 +27,30 @@ let searchTimeout: ReturnType<typeof setTimeout>;
 watch([search, kategori, lokasi], () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        router.get(
-            route('mitra.index'),
-            { search: search.value, kategori: kategori.value, lokasi: lokasi.value },
-            { preserveState: true, replace: true, preserveScroll: true }
-        );
+        applyFilters();
     }, 300);
 });
+
+const applyFilters = () => {
+    router.get(
+        route('mitra.index'),
+        { 
+            search: search.value || undefined, 
+            kategori: kategori.value || undefined, 
+            lokasi: lokasi.value || undefined 
+        },
+        { preserveState: true, replace: true, preserveScroll: true }
+    );
+};
+
+const resetFilters = () => {
+    search.value = '';
+    kategori.value = '';
+    lokasi.value = '';
+    router.get(route('mitra.index'), {}, { preserveState: true, preserveScroll: true });
+};
+
+const hasActiveFilters = computed(() => search.value || kategori.value || lokasi.value);
 
 const getInitials = (name: string) => {
     if (!name) return '??';
@@ -55,30 +76,73 @@ const getInitials = (name: string) => {
                 </p>
             </header>
 
-            <section class="mb-20">
-                <div class="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-3 shadow-lg md:rounded-full md:p-3">
-                    <div class="flex flex-col md:flex-row md:items-center">
-                        <div class="relative flex h-14 flex-1 items-center border-b border-slate-100 md:border-b-0 md:border-r md:h-12">
-                            <Search class="absolute left-5 h-5 w-5 text-slate-400" />
-                            <input v-model="search" type="text" placeholder="Cari PT atau Instansi..." class="h-full w-full border-none bg-transparent pl-12 pr-4 text-sm font-bold text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0" />
+            <!-- Professional Search Section -->
+            <section class="mb-10 px-4 sm:px-6">
+                <div class="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-3 shadow-xl shadow-slate-200/50 md:rounded-full md:p-2">
+                    <div class="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-0">
+                        <!-- Search Input -->
+                        <div class="relative flex h-14 min-w-0 flex-1 items-center rounded-2xl bg-slate-50 px-4 md:rounded-full md:px-6">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                                <Search class="h-5 w-5" />
+                            </div>
+                            <input 
+                                v-model="search" 
+                                type="text" 
+                                placeholder="Cari perusahaan..." 
+                                class="h-full min-w-0 flex-1 border-none bg-transparent pl-3 pr-2 text-sm font-bold text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0 truncate"
+                                @keyup.enter="applyFilters"
+                            />
+                            <button 
+                                v-if="search" 
+                                @click="search = ''; applyFilters()"
+                                class="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-200 hover:text-slate-600"
+                            >
+                                <X class="h-4 w-4" />
+                            </button>
                         </div>
 
-                        <div class="relative flex h-14 flex-1 items-center border-b border-slate-100 md:border-b-0 md:border-r md:h-12">
-                            <Layers class="absolute left-5 h-5 w-5 text-slate-400" />
-                            <select v-model="kategori" class="h-full w-full cursor-pointer appearance-none border-none bg-transparent pl-12 pr-10 text-sm font-bold text-slate-700 outline-none focus:ring-0">
-                                <option value="">Semua Industri</option>
-                                <option v-for="kat in kategoris" :key="kat.id" :value="kat.id">{{ kat.nama_kategori }}</option>
-                            </select>
+                        <!-- Category Select -->
+                        <div class="md:w-56 md:border-l md:border-slate-100 md:pl-6">
+                            <CustomSelect
+                                v-model="kategori"
+                                :options="kategoris.map(k => ({ value: k.id, label: k.nama_kategori }))"
+                                placeholder="Semua Industri"
+                                label="Industri"
+                                :icon="Layers"
+                            />
                         </div>
 
-                        <div class="relative flex h-14 flex-1 items-center md:h-12">
-                            <MapPin class="absolute left-5 h-5 w-5 text-slate-400" />
-                            <select v-model="lokasi" class="h-full w-full cursor-pointer appearance-none border-none bg-transparent pl-12 pr-10 text-sm font-bold text-slate-700 outline-none focus:ring-0">
-                                <option value="">Semua Lokasi</option>
-                                <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
-                            </select>
+                        <!-- Location Select -->
+                        <div class="md:w-56 md:border-l md:border-slate-100 md:pl-6">
+                            <CustomSelect
+                                v-model="lokasi"
+                                :options="lokasis.map(l => ({ value: l.id, label: l.nama_lokasi }))"
+                                placeholder="Semua Lokasi"
+                                label="Lokasi"
+                                :icon="MapPin"
+                            />
                         </div>
+
+                        <!-- Search Button -->
+                        <button 
+                            @click="applyFilters"
+                            class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-lokak-brand px-8 text-sm font-black uppercase tracking-wider text-white shadow-lg shadow-sky-500/30 transition-all hover:bg-sky-600 hover:shadow-xl hover:-translate-y-0.5 active:scale-95"
+                        >
+                            <Search class="h-4 w-4" />
+                            <span class="italic">Cari</span>
+                        </button>
                     </div>
+                </div>
+
+                <!-- Reset Filter -->
+                <div v-if="hasActiveFilters" class="mt-3 flex justify-center">
+                    <button 
+                        @click="resetFilters"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50"
+                    >
+                        <RotateCcw class="h-3 w-3" />
+                        Reset Filter
+                    </button>
                 </div>
             </section>
 
@@ -130,5 +194,5 @@ const getInitials = (name: string) => {
 </template>
 
 <style scoped>
-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+/* No custom select styles needed - using CustomSelect component */
 </style>
