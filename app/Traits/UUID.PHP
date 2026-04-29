@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Traits;
+
 use Illuminate\Support\Str;
 
 trait UUID
@@ -9,9 +10,9 @@ trait UUID
     {
         parent::boot();
 
-        static:: creating(function ($model) {
-            if ($model->getkey() === null) {
-                $model->setAttribute($model->getKeyName(),Str::uuid()->toString());
+        static::creating(function (\Illuminate\Database\Eloquent\Model $model) {
+            if ($model->getKey() === null) {
+                $model->setAttribute($model->getKeyName(), Str::uuid()->toString());
             }
         });
     }

@@ -46,7 +46,7 @@ class KelolamitraController extends Controller
     /**
      * Menampilkan halaman detail verifikasi mitra
      */
-    public function show($id)
+    public function show(string $id)
     {
         $mitra = Mitra::with(['kategori', 'lokasi', 'user'])->findOrFail($id);
 
@@ -58,7 +58,7 @@ class KelolamitraController extends Controller
     /**
      * Menyetujui atau mengubah status mitra
      */
-    public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, string $id)
     {
         $request->validate(['status' => 'required|in:verified,pending']);
 

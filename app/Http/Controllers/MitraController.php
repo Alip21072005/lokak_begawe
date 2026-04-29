@@ -5,54 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\Mitra;
 use App\Models\Lokasi;
 use App\Models\Kategori;
-use App\Models\Rating; // WAJIB IMPORT INI
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Rating;
 
 class MitraController extends Controller
 {
     public function index(Request $request)
     {
-        // Menggunakan withCount untuk menghitung ulasan dan withAvg untuk rata-rata rating
-        $query = Mitra::with(['lokasi', 'kategori', 'lowongan', 'ratings'])
+        $query = Mitra::with(['lokasi', 'kategori'])
+            ->withCount(['lowongan' => function ($q) {
+                $q->where('status_lowongan', 'verified');
+            }])
             ->withCount('ratings')
             ->withAvg('ratings', 'bintang');
 
-        // Filter Nama
-        if ($request->search) {
-            $query->where('nama_mitra', 'like', '%' . $request->search . '%');
-        }
+        if ($request->search) $query->where('nama_mitra', 'like', '%' . $request->search . '%');
+        if ($request->lokasi) $query->where('lokasi_id', $request->lokasi);
+        if ($request->kategori) $query->where('kategori_id', $request->kategori);
 
-        // Filter Lokasi (ID)
-        if ($request->lokasi) {
-            $query->where('lokasi_id', $request->lokasi);
-        }
-
-        // Filter Kategori (ID)
-        if ($request->kategori) {
-            $query->where('kategori_id', $request->kategori);
-        }
-
-        // LOGIKA PENGURUTAN: 
-        // 1. Berdasarkan jumlah ulasan terbanyak (ratings_count)
-        // 2. Berdasarkan rata-rata bintang tertinggi (ratings_avg_bintang)
-        $mitras = $query->orderBy('ratings_count', 'desc')
-            ->orderBy('ratings_avg_bintang', 'desc')
-            ->get()
-            ->map(function ($mitra) {
-                return [
-                    'id' => (string) $mitra->id,
-                    'name' => $mitra->nama_mitra,
-                    'location' => $mitra->lokasi->nama_lokasi ?? 'Provinsi Bengkulu',
-                    'industry' => $mitra->kategori->nama_kategori ?? 'Umum',
-                    'jobs_count' => $mitra->lowongan->count() . ' Lowongan',
-                    // Rating dinamis hasil rata-rata database
-                    'rating' => (string) ($mitra->ratings_avg_bintang ? round($mitra->ratings_avg_bintang, 1) : 0),
-                    'review_count' => $mitra->ratings_count,
-                    'logo' => $mitra->logo_mitra ? asset('storage/' . $mitra->logo_mitra) : null,
-                ];
-            });
+        $mitras = $query->orderBy('ratings_count', 'desc')->get()->map(fn($m) => [
+            'id' => (string) $m->id,
+            'name' => $m->nama_mitra,
+            'location' => $m->lokasi->nama_lokasi ?? 'Bengkulu',
+            'industry' => $m->kategori->nama_kategori ?? 'Umum',
+            'rating' => (string) round($m->ratings_avg_bintang ?? 0, 1),
+            'review_count' => $m->ratings_count,
+            'logo' => $m->logo_mitra ? asset('storage/' . $m->logo_mitra) : null,
+        ]);
 
         return Inertia::render('Mitra', [
             'mitras' => $mitras,
@@ -64,70 +45,50 @@ class MitraController extends Controller
 
     public function show($id)
     {
-        // Ambil mitra beserta relasi ulasan dan user yang memberikannya
-        $mitra = Mitra::with(['lokasi', 'kategori', 'lowongan', 'ratings.user'])->findOrFail($id);
+        $mitra = Mitra::with(['lokasi', 'kategori', 'ratings.user'])
+            ->with(['lowongan' => function ($q) {
+                // Hanya ambil lowongan yang statusnya verified
+                $q->where('status_lowongan', 'verified')->orderBy('created_at', 'desc');
+            }])
+            ->findOrFail($id);
 
         return Inertia::render('Detail/Detailmitra', [
             'partnerDetail' => [
                 'id' => $mitra->id,
                 'name' => $mitra->nama_mitra,
                 'industry' => $mitra->kategori->nama_kategori ?? 'Sektor Umum',
-                'location' => $mitra->lokasi->nama_lokasi ?? 'Bengkulu, Indonesia',
-                'website' => $mitra->website_mitra ?? 'Tidak tersedia',
-                'founded' => $mitra->tahun_berdiri ?? '-',
-                'size' => $mitra->skala_perusahaan ?? '1-50 Karyawan',
-                // Rating rata-rata dinamis
-                'rating' => (string) ($mitra->ratings->avg('bintang') ? round($mitra->ratings->avg('bintang'), 1) : 0),
+                'location' => $mitra->lokasi->nama_lokasi ?? 'Bengkulu',
+                'website' => $mitra->website_mitra,
+                'founded' => $mitra->tahun_berdiri,
+                'size' => $mitra->skala_perusahaan,
+                'rating' => (string) round($mitra->ratings->avg('bintang') ?? 0, 1),
                 'reviewCount' => $mitra->ratings->count(),
-                // List ulasan dari yang terbaru
                 'reviews' => $mitra->ratings->sortByDesc('created_at')->map(fn($rev) => [
                     'user_name' => $rev->user->name ?? 'Anonim',
                     'bintang' => $rev->bintang,
                     'ulasan' => $rev->ulasan,
                     'date' => $rev->created_at->diffForHumans(),
                 ])->values(),
-                'jobCount' => $mitra->lowongan->count() . ' LOWONGAN AKTIF',
-                'description' => $mitra->deskripsi_mitra ?? 'Perusahaan ini belum menambahkan deskripsi profil.',
+                'description' => $mitra->deskripsi_mitra ?? 'Belum ada deskripsi.',
                 'logo' => $mitra->logo_mitra ? asset('storage/' . $mitra->logo_mitra) : null,
+                'banner' => $mitra->banner_mitra ? asset('storage/' . $mitra->banner_mitra) : null,
                 'email' => $mitra->email_mitra,
+                'phone' => $mitra->nohp_mitra,
                 'address' => $mitra->alamat_mitra,
                 'activeJobs' => $mitra->lowongan->map(fn($job) => [
                     'id' => $job->id,
                     'title' => $job->judul_lowongan,
                     'type' => $job->tipe_pekerjaan ?? 'Full Time',
                 ]),
+                'jobCount' => $mitra->lowongan->count(),
             ]
         ]);
     }
 
-    /**
-     * UNTUK MENYIMPAN RATING DARI PELAMAR
-     */
     public function storeRating(Request $request, $id)
     {
-        // 1. Validasi Input
-        $request->validate([
-            'bintang' => 'required|integer|min:1|max:5',
-            'ulasan' => 'required|string|min:5|max:500',
-        ], [
-            'bintang.required' => 'Pilih jumlah bintang dulu ya kawan.',
-            'ulasan.required' => 'Jangan lupa isi ulasannya sedikit.',
-            'ulasan.min' => 'Ulasannya terlalu singkat, minimal 5 karakter.',
-        ]);
-
-        // 2. Simpan atau Update (Satu user hanya boleh kasih 1 ulasan per perusahaan)
-        Rating::updateOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'mitra_id' => $id,
-            ],
-            [
-                'bintang' => $request->bintang,
-                'ulasan' => $request->ulasan,
-            ]
-        );
-
-        // 3. Kembali dengan Flash Message
-        return back()->with('success', 'Ulasan Anda berhasil dikirim!');
+        $request->validate(['bintang' => 'required|integer|min:1|max:5', 'ulasan' => 'required|string|min:5']);
+        Rating::updateOrCreate(['user_id' => Auth::id(), 'mitra_id' => $id], $request->only(['bintang', 'ulasan']));
+        return back();
     }
 }

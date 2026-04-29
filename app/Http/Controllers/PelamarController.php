@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pelamar;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
@@ -11,16 +10,15 @@ use Illuminate\Support\Facades\Auth;
 
 class PelamarController extends Controller
 {
-
-    public function showPublicProfile($slug)
+    public function showPublicProfile(string $slug)
     {
-
+        // Load semua relasi sesuai migrasi
         $pelamar = Pelamar::with([
             'user',
             'lokasi',
-            'skills',
-            'pengalamans',
-            'pendidikans'
+            'skills.master_skill',
+            'pengalamans.master_perusahaan',
+            'pendidikans.master_instansi'
         ])
             ->where('slug', $slug)
             ->firstOrFail();
@@ -32,7 +30,6 @@ class PelamarController extends Controller
 
     public function updatePortfolio(Request $request)
     {
-
         /** @var \App\Models\User $user */
         $user = Auth::user();
         $pelamar = $user->pelamar;
@@ -42,11 +39,8 @@ class PelamarController extends Controller
             'website_portfolio' => 'nullable|url',
         ]);
 
-
         if (!$pelamar->slug) {
             $slug = Str::slug($pelamar->nama_pelamar);
-
-
             $count = Pelamar::where('slug', 'LIKE', "{$slug}%")->count();
             $pelamar->slug = $count ? "{$slug}-" . ($count + 1) : $slug;
         }

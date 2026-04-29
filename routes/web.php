@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\LowonganController;
 use App\Http\Controllers\MitraController;
+use App\Http\Controllers\PelamarController;
 
 // --- Controllers Admin ---
 use App\Http\Controllers\DashboardAdminController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Auth\RegisterPelamarController;
 use App\Http\Controllers\Auth\RegisterMitraController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\ChatController;
+
 // --- Controllers Mitra ---
 use App\Http\Controllers\Mitra\DashboardMitraController;
 use App\Http\Controllers\Mitra\KelolapelamarkerjaController;
@@ -31,11 +33,10 @@ use App\Http\Controllers\Pelamar\DashboardPelamarController;
 use App\Http\Controllers\Pelamar\LamaranController;
 use App\Http\Controllers\Pelamar\PesanController;
 use App\Http\Controllers\Pelamar\LowongankerjaController;
-use App\Http\Controllers\PelamarController;
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC ROUTES
+| PUBLIC ROUTES (Bisa Diakses Tanpa Login)
 |--------------------------------------------------------------------------
 */
 
@@ -43,16 +44,15 @@ Route::get('/', [LandingController::class, 'index'])->name('welcome');
 Route::get('/lowongan', [LowonganController::class, 'index'])->name('lowongan.index');
 Route::get('/mitra', [MitraController::class, 'index'])->name('mitra.index');
 
-// Detail & Interaction Routes
+// Detail & Interaction
 Route::get('/detail/lowongan/{id}', [LowonganController::class, 'show'])->name('detail.lowongan');
 Route::get('/mitra/{id}', [MitraController::class, 'show'])->name('mitra.show');
 Route::post('/mitra/{id}/rating', [MitraController::class, 'storeRating'])->name('mitra.rating.store');
-
 Route::get('/p/{slug}', [PelamarController::class, 'showPublicProfile'])->name('pelamar.public');
 
 /*
 |--------------------------------------------------------------------------
-| GUEST ROUTES (Belum Login)
+| GUEST ROUTES (Hanya Jika Belum Login)
 |--------------------------------------------------------------------------
 */
 Route::middleware('guest')->group(function () {
@@ -86,62 +86,52 @@ Route::middleware(['auth'])->group(function () {
         };
     })->name('dashboard');
 
+    // --- CHAT SYSTEM (REAL-TIME) ---
     Route::get('/messages', [ChatController::class, 'index'])->name('messages.index');
     Route::get('/messages/{id}', [ChatController::class, 'show'])->name('messages.show');
     Route::post('/messages', [ChatController::class, 'store'])->name('messages.store');
     Route::post('/messages/{conversation}/read', [ChatController::class, 'markAsRead'])->name('messages.read');
 
-    // --- JEMBATAN PENDAFTARAN (PROFILE CHECK) ---
-    Route::middleware(['profile_complete'])->group(function () {
-        Route::get('/lowongan/{id}/daftar', function ($id) {
-            return redirect()->route('detail.lowongan', $id)->with('openModal', true);
-        })->name('lowongan.daftar');
-    });
-
     // --- ADMIN ROUTES ---
     Route::prefix('dashboard/admin')->group(function () {
         Route::get('/', [DashboardAdminController::class, 'index'])->name('admin.dashboard');
-
+        Route::get('/detailpelamar/{id}', [DashboardAdminController::class, 'detailPelamar'])->name('admin.detailpelamar');
+        Route::get('/detailvertivikasimitra/{id}', [DashboardAdminController::class, 'detailMitra'])->name('admin.detailmitra');
+        Route::get('/detailvertifikasilowongan/{id}', [DashboardAdminController::class, 'detailLowongan'])->name('admin.detaillowongan');
         // Kelola Pelamar
         Route::get('/kelolapelamar', [KelolapelamarController::class, 'index'])->name('admin.kelolapelamar');
         Route::delete('/hapus-akun-user/{id}', [DashboardAdminController::class, 'deletePelamar'])->name('admin.user.delete');
         Route::patch('/blokir-akun-user/{id}', [DashboardAdminController::class, 'blockPelamar'])->name('admin.user.block');
 
-        // Kelola Lowongan (Moderasi)
+        // Kelola Lowongan
         Route::get('/kelolalowongan', [KelolalowonganController::class, 'index'])->name('admin.kelolalowongan');
         Route::get('/kelolalowongan/{id}', [KelolalowonganController::class, 'show'])->name('admin.lowongan.show');
         Route::patch('/kelolalowongan/{id}/status', [KelolalowonganController::class, 'updateStatus'])->name('admin.lowongan.update-status');
         Route::delete('/kelolalowongan/{id}', [KelolalowonganController::class, 'destroy'])->name('admin.lowongan.delete');
 
-        // Kelola Mitra (Moderasi)
+        // Kelola Mitra
         Route::get('/kelolamitra', [KelolamitraController::class, 'index'])->name('admin.kelolamitra');
-
-        // PENTING: Route statis seperti /tambah HARUS di atas route parameter seperti /{id}
         Route::get('/kelolamitra/tambah', [KelolamitraController::class, 'create'])->name('admin.mitra.create');
         Route::post('/kelolamitra', [KelolamitraController::class, 'store'])->name('admin.mitra.store');
-
         Route::get('/kelolamitra/{id}', [KelolamitraController::class, 'show'])->name('admin.mitra.show');
         Route::patch('/mitra/{id}/status', [KelolamitraController::class, 'updateStatus'])->name('admin.mitra.update-status');
 
-        // Pesan
         Route::get('/pesanadmin', [PesanadminController::class, 'index'])->name('admin.pesanadmin');
     });
+
     // --- MITRA ROUTES ---
     Route::prefix('dashboard/mitra')->group(function () {
         Route::get('/', [DashboardMitraController::class, 'index'])->name('mitra.dashboard');
 
         Route::middleware(['verified_mitra'])->group(function () {
-            // Kelola Pelamar Kerja
             Route::get('/kelolapelamarkerja', [KelolapelamarkerjaController::class, 'index'])->name('mitra.kelolapelamarkerja');
             Route::patch('/pelamar/{id}/status', [KelolapelamarkerjaController::class, 'updateStatus'])->name('mitra.pelamar.status');
 
-            // Alur Pasang Lowongan & Pembayaran
             Route::get('/pasanglowongan', [PasanglowonganController::class, 'index'])->name('mitra.pasanglowongan');
             Route::post('/pasanglowongan', [PasanglowonganController::class, 'store'])->name('mitra.pasanglowongan.store');
             Route::put('/pasanglowongan/{id}', [PasanglowonganController::class, 'update'])->name('mitra.pasanglowongan.update');
             Route::delete('/pasanglowongan/{id}', [PasanglowonganController::class, 'destroy'])->name('mitra.pasanglowongan.destroy');
 
-            // Khusus Pembayaran
             Route::get('/pembayaran/{id}/pilih', [PasanglowonganController::class, 'pilihPaket'])->name('mitra.pembayaran.pilih');
             Route::post('/pembayaran/{id}/bayar', [PasanglowonganController::class, 'bayar'])->name('mitra.pembayaran.bayar');
 
@@ -154,9 +144,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardPelamarController::class, 'index'])->name('pelamar.dashboard');
         Route::get('/lamaran', [LamaranController::class, 'index'])->name('pelamar.lamaran');
         Route::get('/pesan', [PesanController::class, 'index'])->name('pelamar.pesan');
-        Route::get('/lowongankerja', [LowongankerjaController::class, 'index'])->name('pelamar.lowongankerja');
 
-        Route::patch('/dashboard/pelamar/portfolio', [PelamarController::class, 'updatePortfolio'])->name('pelamar.portfolio.update');
+        // PENTING: Saya ubah rutenya agar tidak bentrok dengan rute publik /lowongan
+        Route::get('/lowongan-diikuti', [LowongankerjaController::class, 'index'])->name('pelamar.lowongankerja');
+
+        Route::patch('/portfolio', [PelamarController::class, 'updatePortfolio'])->name('pelamar.portfolio.update');
         Route::post('/lamar/{id}', [LamaranController::class, 'store'])->name('pelamar.lamar.store');
     });
 });
@@ -169,7 +161,6 @@ Route::middleware(['auth'])->group(function () {
 if (file_exists(__DIR__ . '/settings.php')) {
     require __DIR__ . '/settings.php';
 }
-
 if (file_exists(__DIR__ . '/auth.php')) {
     require __DIR__ . '/auth.php';
 }

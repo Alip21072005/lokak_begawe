@@ -1,5 +1,5 @@
 import '../css/app.css';
-import './echo'; // Import file echo.ts saja, jangan buat konfigurasi baru di sini
+import './echo';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
@@ -25,23 +25,21 @@ createInertiaApp({
         page.then((module) => {
             if (module.default.layout === undefined) {
                 const n = name.toLowerCase();
-                const isLandingPage =
-                    [
-                        'welcome',
-                        'lowongan',
-                        'lowongan/lowongan',
-                        'mitra/carimitra',
-                    ].includes(n) ||
-                    n.startsWith('lowongan/') ||
-                    n.startsWith('mitra/');
 
-                if (isLandingPage) {
+                // Logika Pemisah Layout:
+                // Halaman publik langsung di root folder Pages
+                const isPublicPage =
+                    ['welcome', 'lowongan', 'mitra'].includes(n) ||
+                    n.startsWith('detail/');
+
+                if (isPublicPage) {
                     module.default.layout = null;
                 } else if (n.startsWith('auth/')) {
                     module.default.layout = AuthLayout;
                 } else if (n.startsWith('settings/')) {
                     module.default.layout = [AppLayout, SettingsLayout];
                 } else {
+                    // Semua halaman dalam folder Admin, Mitra, Pelamar otomatis pakai Sidebar
                     module.default.layout = AppLayout;
                 }
             }

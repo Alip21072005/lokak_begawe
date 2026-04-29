@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Search, MapPin, ChevronRight, SlidersHorizontal, Star } from 'lucide-vue-next';
-import { ref } from 'vue';
-import { route } from 'ziggy-js';
+import { Search, MapPin, Layers, Star, Building2 } from 'lucide-vue-next';
+import { ref, watch } from 'vue';
 import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import { route } from 'ziggy-js';
 
 const props = defineProps<{
     mitras: any[];
@@ -13,139 +13,122 @@ const props = defineProps<{
     filters: any;
 }>();
 
-const search = ref(props.filters.search || '');
-const lokasi = ref(props.filters.lokasi || '');
-const kategori = ref(props.filters.kategori || '');
+const search = ref(props.filters?.search || '');
+const kategori = ref(props.filters?.kategori || '');
+const lokasi = ref(props.filters?.lokasi || '');
 
-const handleSearch = () => {
-    router.get(
-        route('mitra.index'),
-        { search: search.value, lokasi: lokasi.value, kategori: kategori.value },
-        { preserveState: true, replace: true }
-    );
-};
+let searchTimeout: ReturnType<typeof setTimeout>;
+
+// Fitur Live Search dengan Debounce
+watch([search, kategori, lokasi], () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(
+            route('mitra.index'),
+            { search: search.value, kategori: kategori.value, lokasi: lokasi.value },
+            { preserveState: true, replace: true, preserveScroll: true }
+        );
+    }, 300);
+});
 
 const getInitials = (name: string) => {
-    if (!name) {
-return '??';
-}
-
+    if (!name) return '??';
     const words = name.trim().split(' ');
-
-    if (words.length >= 2) {
-        return (words[0][0] + words[1][0]).toUpperCase();
-    }
-
-    return name.substring(0, 2).toUpperCase();
+    return words.length >= 2 ? (words[0][0] + words[1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
 };
 </script>
 
 <template>
     <Head title="Cari Mitra - Lokak Begawe" />
-    <div class="min-h-screen bg-lokak-bg font-sans text-lokak-text">
+    
+    <div class="mt-12 min-h-screen overflow-x-hidden bg-lokak-bg font-sans text-lokak-text">
         <Navbar />
 
-        <main class="mt-12 px-6 py-12 md:px-16 lg:px-32">
+        <main class="w-full px-6 py-12 md:px-16 lg:px-24 xl:px-32">
+            
+            <header class="mb-12 flex flex-col items-center text-center">
+                <h1 class="mb-4 text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl lg:text-6xl uppercase italic">
+                    Cari <span class="text-lokak-brand">Mitra</span>
+                </h1>
+                <p class="max-w-2xl text-base font-medium leading-relaxed text-slate-500 md:text-lg">
+                    Temukan dan pelajari perusahaan-perusahaan terbaik di Provinsi Bengkulu. Ado loker, pela begawe!
+                </p>
+            </header>
+
             <section class="mb-20">
-                <div class="mb-10 space-y-4">
-                    <h1 class="text-4xl font-black tracking-tighter uppercase italic md:text-6xl">
-                        CARI <span class="text-lokak-brand">MITRA</span>
-                    </h1>
-                    <div class="h-2 w-24 rounded-full bg-lokak-brand"></div>
-                </div>
-
-                <div class="relative rounded-[3rem] border border-slate-100 bg-white p-6 shadow-2xl shadow-slate-200/50 md:p-8">
-                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-                        <div class="lg:col-span-4">
-                            <label class="mb-2 ml-4 block text-[10px] font-black text-slate-400 uppercase">Nama Perusahaan</label>
-                            <div class="relative">
-                                <Search class="absolute top-1/2 left-5 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                <input v-model="search" type="text" placeholder="Cari PT atau Instansi..." 
-                                    class="h-16 w-full rounded-4xl border border-slate-100 bg-slate-50 pl-14 text-xs font-bold focus:border-lokak-brand focus:bg-white outline-none transition-all" />
-                            </div>
+                <div class="mx-auto max-w-5xl rounded-3xl border border-slate-200 bg-white p-3 shadow-lg md:rounded-full md:p-3">
+                    <div class="flex flex-col md:flex-row md:items-center">
+                        <div class="relative flex h-14 flex-1 items-center border-b border-slate-100 md:border-b-0 md:border-r md:h-12">
+                            <Search class="absolute left-5 h-5 w-5 text-slate-400" />
+                            <input v-model="search" type="text" placeholder="Cari PT atau Instansi..." class="h-full w-full border-none bg-transparent pl-12 pr-4 text-sm font-bold text-slate-700 outline-none placeholder:text-slate-400 focus:ring-0" />
                         </div>
 
-                        <div class="lg:col-span-3">
-                            <label class="mb-2 ml-4 block text-[10px] font-black text-slate-400 uppercase">Sektor Industri</label>
-                            <div class="relative">
-                                <SlidersHorizontal class="absolute top-1/2 left-5 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                <select v-model="kategori" class="h-16 w-full appearance-none rounded-4xl border border-slate-100 bg-slate-50 pl-14 pr-10 text-xs font-bold outline-none focus:border-lokak-brand">
-                                    <option value="">Semua Industri</option>
-                                    <option v-for="kat in kategoris" :key="kat.id" :value="kat.id">{{ kat.nama_kategori }}</option>
-                                </select>
-                                <ChevronRight class="absolute top-1/2 right-5 h-4 w-4 -translate-y-1/2 rotate-90 text-slate-300 pointer-events-none" />
-                            </div>
+                        <div class="relative flex h-14 flex-1 items-center border-b border-slate-100 md:border-b-0 md:border-r md:h-12">
+                            <Layers class="absolute left-5 h-5 w-5 text-slate-400" />
+                            <select v-model="kategori" class="h-full w-full cursor-pointer appearance-none border-none bg-transparent pl-12 pr-10 text-sm font-bold text-slate-700 outline-none focus:ring-0">
+                                <option value="">Semua Industri</option>
+                                <option v-for="kat in kategoris" :key="kat.id" :value="kat.id">{{ kat.nama_kategori }}</option>
+                            </select>
                         </div>
 
-                        <div class="lg:col-span-3">
-                            <label class="mb-2 ml-4 block text-[10px] font-black text-slate-400 uppercase">Wilayah</label>
-                            <div class="relative">
-                                <MapPin class="absolute top-1/2 left-5 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                <select v-model="lokasi" class="h-16 w-full appearance-none rounded-4xl border border-slate-100 bg-slate-50 pl-14 pr-10 text-xs font-bold outline-none focus:border-lokak-brand">
-                                    <option value="">Semua Lokasi</option>
-                                    <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
-                                </select>
-                                <ChevronRight class="absolute top-1/2 right-5 h-4 w-4 -translate-y-1/2 rotate-90 text-slate-300 pointer-events-none" />
-                            </div>
-                        </div>
-
-                        <div class="flex items-end lg:col-span-2">
-                            <button @click="handleSearch" class="h-16 w-full rounded-4xl bg-lokak-brand font-black text-white italic transition-all hover:-translate-y-1 hover:bg-sky-700 shadow-xl shadow-sky-900/20">
-                                CARI
-                            </button>
+                        <div class="relative flex h-14 flex-1 items-center md:h-12">
+                            <MapPin class="absolute left-5 h-5 w-5 text-slate-400" />
+                            <select v-model="lokasi" class="h-full w-full cursor-pointer appearance-none border-none bg-transparent pl-12 pr-10 text-sm font-bold text-slate-700 outline-none focus:ring-0">
+                                <option value="">Semua Lokasi</option>
+                                <option v-for="lok in lokasis" :key="lok.id" :value="lok.id">{{ lok.nama_lokasi }}</option>
+                            </select>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                <div v-for="mitra in mitras" :key="mitra.id" class="group flex flex-col justify-between rounded-[2.5rem] border border-slate-100 bg-white p-8 text-center transition-all hover:-translate-y-2 hover:shadow-2xl">
+            <div v-if="mitras && mitras.length > 0" class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-8">
+                <Link v-for="mitra in mitras" :key="mitra.id" :href="route('mitra.show', mitra.id)" class="group flex flex-col justify-between rounded-3xl border border-slate-100 bg-white p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-lokak-brand/30 hover:shadow-xl">
                     
-                    <div>
-                        <div class="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border bg-slate-50 shadow-inner">
-                            <img 
-                                v-if="mitra.logo" 
-                                :src="mitra.logo" 
-                                class="h-full w-full object-cover" 
-                                :alt="mitra.name" 
-                            />
-                            <span v-else class="text-2xl font-black text-lokak-brand uppercase italic">
-                                {{ getInitials(mitra.name) }}
-                            </span>
+                    <div class="flex flex-col items-center">
+                        <div class="mb-5 flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-100 bg-slate-50 shadow-inner">
+                            <img v-if="mitra.logo" :src="mitra.logo" class="h-full w-full object-cover" :alt="mitra.name" />
+                            <span v-else class="text-3xl font-bold text-lokak-brand">{{ getInitials(mitra.name) }}</span>
                         </div>
 
-                        <div class="mb-4 flex items-center justify-center gap-2">
-                            <div class="flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1">
-                                <Star class="h-3 w-3 text-amber-500 fill-amber-500" />
-                                <span class="text-[10px] font-black text-amber-700 italic">{{ mitra.rating }}</span>
-                            </div>
-                            <span class="text-[9px] font-bold text-slate-300 uppercase italic">
-                                {{ mitra.review_count }} Ulasan
-                            </span>
-                        </div>
-
-                        <h3 class="mb-2 text-sm font-black uppercase italic group-hover:text-lokak-brand transition-colors">
+                        <h3 class="mb-2 line-clamp-2 text-lg font-black leading-snug text-slate-900 transition-colors group-hover:text-lokak-brand uppercase italic" :title="mitra.name">
                             {{ mitra.name }}
                         </h3>
 
-                        <p class="mb-6 flex items-center justify-center gap-1 text-[10px] font-bold text-slate-400 italic uppercase">
-                            <MapPin class="h-3 w-3" /> 
-                            {{ mitra.location }}
-                        </p>
+                        <div class="mb-4 flex items-center justify-center gap-2">
+                            <div class="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1">
+                                <Star class="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                                <span class="text-xs font-bold text-amber-700">{{ mitra.rating ?? '0' }}</span>
+                            </div>
+                            <span class="text-xs font-bold text-slate-400">({{ mitra.review_count ?? '0' }} Ulasan)</span>
+                        </div>
+                        
+                        <div class="mb-6 flex items-center gap-1.5 text-sm font-bold text-slate-500">
+                            <MapPin class="h-4 w-4 shrink-0 text-slate-400" /> 
+                            <span class="truncate">{{ mitra.location }}</span>
+                        </div>
                     </div>
 
-                    <Link :href="route('mitra.show', mitra.id)" class="block w-full rounded-2xl bg-slate-900 py-4 text-[10px] font-black text-white uppercase italic hover:bg-lokak-brand transition-colors shadow-lg">
-                        LIHAT PROFIL
-                    </Link>
-                </div>
+                    <div class="mt-auto pt-4 border-t border-slate-100 w-full">
+                        <span class="inline-flex w-full items-center justify-center rounded-full bg-slate-50 py-3 text-[10px] font-black uppercase tracking-wider text-slate-600 transition-colors group-hover:bg-lokak-brand group-hover:text-white italic">
+                            Profil Perusahaan &rarr;
+                        </span>
+                    </div>
+                </Link>
             </div>
 
-            <div v-if="mitras.length === 0" class="flex flex-col items-center justify-center py-32 opacity-30">
-                <div class="mb-4 text-6xl">🏢</div>
-                <p class="text-xl font-black italic uppercase">Mitra tidak ditemukan</p>
+            <div v-else class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-24 text-center shadow-sm">
+                <Building2 class="mb-4 h-16 w-16 text-slate-300" />
+                <h3 class="text-xl font-bold text-slate-800">Mitra Tidak Ditemukan</h3>
+                <p class="mt-2 text-sm font-medium text-slate-500">Coba gunakan kata kunci pencarian atau filter yang berbeda.</p>
             </div>
+            
         </main>
         
         <Footer />
     </div>
 </template>
+
+<style scoped>
+select { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+</style>
